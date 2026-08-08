@@ -21,6 +21,7 @@ satisfaction, compare branches, and manage clinics, services, and staff.
 - [Database setup](#database-setup)
 - [Development](#development)
 - [Quality checks](#quality-checks)
+- [Contributing](#contributing)
 - [Project structure](#project-structure)
 - [Documentation](#documentation)
 - [Development philosophy](#development-philosophy)
@@ -113,6 +114,13 @@ pnpm format:check  # Prettier (verify)
 pnpm test          # Vitest unit tests
 pnpm test:e2e      # Playwright e2e tests (starts the dev server automatically)
 ```
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before creating a branch, commit, or
+pull request. It defines the branch naming conventions, Conventional Commits,
+the PR/review workflow, the database-change procedure, and the checks that
+must pass before merging.
 
 ## Project structure
 

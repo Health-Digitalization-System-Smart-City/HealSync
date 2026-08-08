@@ -2,12 +2,20 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://ci:ci@localhost:5432/healsync_ci
+  BETTER_AUTH_SECRET: ci-only-placeholder-secret-0123456789abcdef0123456789
 
 jobs:
   quality:
@@ -15,28 +23,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # Placeholder secrets for CI. `pnpm prisma generate` reads DATABASE_URL
-    # from prisma.config.ts, and Better Auth requires BETTER_AUTH_SECRET when
-    # its config module is evaluated (e.g. during a production build). Neither
-    # value is used to connect anywhere in CI — they only satisfy validation.
-    env:
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/healsync_ci
-      BETTER_AUTH_SECRET: ci-only-placeholder-secret-0123456789abcdef0123456789
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
+
+      - name: Verify toolchain
+        run: |
+          node --version
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -55,6 +58,9 @@ jobs:
 
       - name: Unit tests
         run: pnpm test
+
+      - name: Production build
+        run: pnpm build
 
   # E2E tests run against a locally started dev server (no external services).
   # Uncomment when the first e2e suite is ready for CI.

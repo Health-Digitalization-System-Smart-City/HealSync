@@ -1,0 +1,19 @@
+# CODEOWNERS
+#
+# Declare which GitHub users or teams are automatically requested to review
+# changes to matching paths. See:
+# https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The team ownership structure for HealSync is not defined yet, so no owners
+# are declared in this file. Add real GitHub usernames or teams here once the
+# ownership is decided. Example:
+#
+#   *               @owner-username
+#   /docs/          @docs-maintainer
+#   /prisma/        @database-maintainer
+#   /src/lib/auth/  @security-maintainer
+#
+# Format: <pattern> <owner...>  (one or more @users or @org/team)
+#
+# Do not add placeholder or fictional usernames — GitHub will fail to resolve
+# them and every PR will report an "unresolved owner" warning.
