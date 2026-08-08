@@ -1,0 +1,12 @@
+# pnpm workspace / build configuration
+# `onlyBuiltDependencies` whitelists packages that are allowed to run
+# postinstall build scripts. Prisma requires its postinstall to download
+# its query/schema engines, so it must be listed here.
+onlyBuiltDependencies:
+  - prisma
+  - "@prisma/engines"
+  - "@prisma/client"
+
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

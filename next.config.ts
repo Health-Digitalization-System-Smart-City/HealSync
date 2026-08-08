@@ -1,0 +1,10 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Prisma 7 requires the query compiler runtime (WASM) at runtime.
+  // Externalizing these packages prevents Next.js from attempting to bundle
+  // the WASM modules and keeps the Prisma client outside the server bundle.
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg"],
+};
+
+export default nextConfig;

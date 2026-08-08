@@ -1,0 +1,87 @@
+// Prisma schema — Phase 1 (Foundation)
+//
+// This schema is intentionally minimal. It contains ONLY the core models
+// required by Better Auth (the authentication foundation). Product models
+// (clinics, branches, services, staff, feedback, analytics) will be designed
+// in the dedicated database-design phase — do NOT add them here yet.
+//
+// Prisma 7 notes:
+// - The `prisma-client` generator (new default) emits the client to a custom
+//   output directory instead of node_modules. See `output` below.
+// - The datasource block only declares the provider; the connection URL is
+//   configured in prisma.config.ts.
+// - The client requires a driver adapter at runtime (@prisma/adapter-pg),
+//   wired up in src/lib/db.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Better Auth core models
+// See: https://www.better-auth.com/docs/adapters/prisma
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@map("verification")
+}
