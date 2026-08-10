@@ -1,219 +1,655 @@
-# HealSync — Security & Privacy
+# Security
 
-**Status: Draft — Phase 2 (design; Phase 1 principles verified in the
-foundation)**
+**Document:** `security.md`
+**Version:** 1.0
+**Status:** Draft
 
-HealSync handles **healthcare-related feedback and personal information**
-(patient phone numbers, free-text comments, clinic/staff data, admin
-accounts). This document defines the security model and must be taken
-seriously.
+## 1. Security Model
 
-Related: [PRD.md](PRD.md) · [ARCHITECTURE.md](ARCHITECTURE.md) ·
-[DATABASE.md](DATABASE.md) · [API.md](API.md) · [DEPLOYMENT.md](DEPLOYMENT.md)
-
----
-
-## 1. Compliance Statement
-
-> HealSync does **not** claim HIPAA, GDPR, or any other legal compliance.
-> Compliance requirements depend on the deployment jurisdiction, clinic
-> contracts, data-processing arrangements, and the exact information
-> collected. A formal compliance assessment is a prerequisite before
-> production deployment in any jurisdiction.
-
-Design intent: HealSync aims to follow **privacy-by-design and
-security-by-design** principles (data minimization, least privilege,
-encryption in transit/at rest, access control, auditability) so that a
-compliance assessment has a solid foundation.
-
----
-
-## 2. Assets & Trust Boundaries
-
-### 2.1 Assets to protect
-
-| Asset                            | Sensitivity                                 |
-| -------------------------------- | ------------------------------------------- |
-| Patient phone numbers            | High (PII) — see §6                         |
-| Feedback comments                | High (may contain health-adjacent context)  |
-| Admin credentials & sessions     | High                                        |
-| Clinic/branch/service/staff data | Medium (operational)                        |
-| Analytics aggregates             | Low–medium (no personal data in aggregates) |
-
-### 2.2 Trust boundaries
+The system uses:
 
 ```text
-Internet ──▶ Public feedback endpoint (POST /api/feedback)      [unauthenticated]
-Internet ──▶ Auth endpoints (/api/auth/*)                       [authentication]
-Internet ──▶ Admin UI + /api/admin/*                            [authenticated + authorized]
-                    │
-                    ▼
-Application services ──▶ Prisma ──▶ PostgreSQL                  [server-side only]
+Authentication → Authorization → Validation → Business Logic → Database
 ```
 
-- The patient boundary is **public by design** — it is protected by
-  validation + rate limiting, not by authentication.
-- The admin boundary is protected by **authentication** (Better Auth) and
-  **authorization** (server-side).
-- The database is reachable **only** through the application layer.
+Security is enforced **server-side**. Client-side restrictions are only for UI.
 
 ---
 
-## 3. Threat Model
+# 2. Roles
 
-| Threat                                   | Mitigation                                                                                                                                         | Status        |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Unauthorized admin access                | Better Auth sessions; server-side session checks on every admin route/API                                                                          | Design        |
-| Brute-force login                        | Better Auth rate limiting; strong secret; monitoring                                                                                               | Design/config |
-| Fake / spam feedback submissions         | Input validation, payload caps, rate limiting; CAPTCHA as post-MVP fallback                                                                        | Design        |
-| Automated spam flooding the endpoint     | Per-IP rate limits at app + edge; abuse monitoring                                                                                                 | Design        |
-| Malicious input (injection)              | Zod validation at boundary; parameterized Prisma queries (no string SQL)                                                                           | Design        |
-| SQL injection                            | Prisma ORM with parameterized queries; no raw SQL without review                                                                                   | Built-in      |
-| XSS (stored in comments)                 | React escapes output by default; comments rendered as plain text; never `dangerouslySetInnerHTML`                                                  | Design        |
-| CSRF                                     | SameSite cookies (Better Auth defaults); state-changing endpoints only via POST with validation; no cookie-based mutations from cross-site origins | Design/config |
-| IDOR (accessing others' data)            | Server-side ownership checks (e.g., branch-scoped admins); opaque ids; never trust client ids                                                      | Design        |
-| Information leakage / excessive exposure | Masked phone by default; analytics return aggregates only; error contract hides internals                                                          | Design        |
-| Credential theft                         | HTTPS everywhere; hashed passwords (Better Auth); secret management; no secrets in code                                                            | Design/config |
-| Session theft                            | Signed, httpOnly, Secure cookies; short-lived sessions; rotation on privilege change                                                               | Config        |
-| Abuse of public feedback endpoint        | §8 rate limiting + validation                                                                                                                      | Design        |
-| Supply chain (dependency compromise)     | Lockfile (`pnpm-lock.yaml`), pinned CI Node/pnpm, dependency update policy                                                                         | In place      |
+The system has three predefined roles:
+
+| Role        | Access                                            |
+| ----------- | ------------------------------------------------- |
+| **Admin**   | Full system access                                |
+| **Manager** | Dashboard + analytics + permitted feedback access |
+| **Analyst** | Dashboard + analytics                             |
+
+Roles are fixed. Admins cannot create custom roles.
 
 ---
 
-## 4. Authentication vs. Authorization
+# 3. Permission Model
+
+Use RBAC with predefined permissions.
 
 ```text
-Authentication = Who are you?        (Better Auth session)
-Authorization  = What are you allowed to do?   (server-side permission checks)
+User → Role → Permissions
 ```
 
-- **Authentication** exists today (Better Auth, email + password, admin
-  users).
-- **Authorization** does **not** exist yet and is deliberately deferred.
-  Principle: merely being authenticated grants **no** implicit permissions.
-- A future **RBAC** model may distinguish e.g. _platform admin_ vs.
-  _branch manager_ (see [PRD.md](PRD.md) §16). Until then, the single admin
-  role must still pass explicit server-side checks on every admin entry
-  point.
+Example permissions:
 
-**Rules for Phase 3 implementation:**
+```text
+analytics.read
 
-- Every `/api/admin/*` handler and every `(admin)` route verifies the session
-  server-side.
-- Never trust client-provided flags (`isAdmin: true`), role strings, or ids.
-- Admin pages never render phone numbers or sensitive fields to unauthorized
-  roles; masking is enforced server-side, not just in the UI.
+feedback.read
+feedback.update
+feedback.delete
 
----
+branch.read
+branch.create
+branch.update
+branch.delete
 
-## 5. Patient Data & Data Minimization
+service.read
+service.create
+service.update
+service.delete
 
-### 5.1 Principle
+user.read
+user.create
+user.update
+user.disable
+```
 
-**Collect only what the product requires** (PRD §6). The MVP collects:
-
-1. Branch + service (operational context),
-2. Phone number (contact/follow-up; PII),
-3. Overall rating + optional comment.
-
-Nothing else. No names, no email, no medical details, no account.
-
-### 5.2 Phone number — full treatment (see also DATABASE.md §5)
-
-| Aspect        | Policy (proposed)                                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Storage**   | Normalized (E.164) in the database; storage form (raw vs. hashed vs. encrypted) is an **open decision** — see [DATABASE.md](DATABASE.md) §5 |
-| **Access**    | Only authenticated admins; masked by default in every UI/API response                                                                       |     | **Masking** | E.g. `+20 ••• ••• 1234`; raw value requires explicit, authorized request, and such access is recorded as an audit/access event (see [DATABASE.md](DATABASE.md) §3.7 `AuditLog`) |
-| **Logging**   | **Never log raw phone numbers.** Logs may contain a masked form or a request id only                                                        |
-| **Retention** | Defined retention period (open decision); automatic deletion per policy                                                                     |
-| **Deletion**  | Feedback/phone deletion must support data-subject deletion requests; admin deletion is audited                                              |
-
-### 5.3 Comments
-
-- Treated as sensitive content.
-- Stored as plain text; rendered escaped (no HTML).
-- Length-capped; scanned (post-MVP) for PII before analytics display.
+The exact permission matrix must be defined in the application seed/configuration and must not be editable through the dashboard.
 
 ---
 
-## 6. Public Feedback Endpoint Protection
+# 4. Admin Privileges
 
-`POST /api/feedback` is intentionally public; protections:
+Admin is the only role with full system management access.
 
-| Control           | Proposal (see [API.md](API.md) §8)                             |
-| ----------------- | -------------------------------------------------------------- |
-| Rate limiting     | Per-IP sliding window (app layer) + edge limits (platform)     |
-| Input validation  | Zod; allowed values bound to the actual branch/service catalog |
-| Payload limits    | Body size cap; comment length cap                              |
-| Duplicate control | Optional phone-hash dedupe (post-MVP)                          |
-| CAPTCHA           | Post-MVP option only; never require patient accounts           |
-| Abuse detection   | Spike monitoring (post-MVP)                                    |
+Admin can:
 
----
+* Create dashboard users
+* Disable users
+* Manage branches
+* Manage services
+* View all feedback
+* Update/delete feedback
+* View all analytics
+* Access patient phone numbers
+* Manage system configuration
 
-## 7. Logging Policy
+Only Admin can register new dashboard users.
 
-**Never log:**
-
-- raw phone numbers;
-- authentication secrets / session tokens / passwords;
-- sensitive feedback content unnecessarily;
-- full request bodies containing PII.
-
-**Do log (production):**
-
-- request ids (correlate errors across the stack);
-- errors (with request id, route, error class — no stack internals to
-  clients, stacks to logs only);
-- security events (failed logins, auth failures, rate-limit hits,
-  unauthorized-access attempts);
-- operational metrics (latency, error rate, feedback volume).
-
-Logs are server-side only; nothing sensitive reaches the browser console.
+Admin creates dashboard users through the `createUser` Server Action
+(`API.md` §14); public self-registration is disabled at the auth layer
+(§9).
 
 ---
 
-## 8. Application Security Checklist (Phase 3 gate)
+# 5. Manager
 
-Before any admin or feedback feature ships:
+Manager can access operational dashboard functionality according to the predefined permission set.
 
-- [ ] All external input passes Zod validation at the boundary
-- [ ] All admin routes/APIs verify session server-side
-- [ ] IDOR tests: client-supplied ids cannot reach others' data
-- [ ] Phone numbers masked in all responses by default
-- [ ] Error responses never expose internals (verified by tests)
-- [ ] No raw SQL except via reviewed Prisma queries
-- [ ] Comments render as escaped plain text (no XSS)
-- [ ] Cookies: httpOnly, Secure, SameSite (production)
-- [ ] No sensitive data in URLs, logs, or analytics payloads
-- [ ] Rate limiting active on the public endpoint
-- [ ] Audit log records admin mutations
+Manager:
+
+* Can view dashboard analytics
+* Can view permitted feedback
+* Cannot create dashboard users
+* Cannot access patient phone numbers
+* Cannot manage roles
+* Cannot grant permissions
+* Cannot perform Admin-only system operations
 
 ---
 
-## 9. Secrets & Configuration
+# 6. Analyst
 
-Phase 1 already enforces:
+Analyst is primarily read-only.
 
-- Secrets only in environment variables (`.env`, gitignored); `.env.example`
-  holds placeholders only.
-- `BETTER_AUTH_SECRET` required (Better Auth refuses to run without it).
-- CI uses non-functional placeholder values — never real credentials.
+Analyst:
 
-Production secret management is covered in
-[DEPLOYMENT.md](DEPLOYMENT.md) §5.
+* Can view dashboard
+* Can view analytics
+* Can view permitted aggregated feedback data
+* Cannot create users
+* Cannot manage branches
+* Cannot manage services
+* Cannot delete feedback
+* Cannot access patient phone numbers
 
 ---
 
-## 10. Open Decisions
+# 7. Patient Access
 
-- Phone storage strategy (raw / hashed / encrypted / optional) —
-  see [DATABASE.md](DATABASE.md) §5.
-- Which roles can view raw phone numbers (depends on RBAC design).
-- Retention periods for feedback, comments, and phone numbers.
-- RBAC design (roles, scope, delegation).
-- Whether comment content is ever included in analytics/AI summaries and
-  under what minimization.
-- CAPTCHA / abuse-control trigger thresholds.
-- Whether a formal privacy policy / patient consent notice is required by
-  the deployment jurisdiction.
+Patients do not create accounts.
+
+The public feedback flow allows:
+
+```text
+Phone Number
+     ↓
+Branch
+     ↓
+Service
+     ↓
+Rating / Text Feedback
+     ↓
+Submit
+```
+
+Patients can only create feedback.
+
+They cannot:
+
+* View existing feedback
+* View analytics
+* Access dashboard data
+* Access other patients' information
+* Modify administrative configuration
+
+---
+
+# 8. Phone Number Protection
+
+Patient phone numbers are restricted data.
+
+```text
+Admin      → Visible
+Manager    → Hidden
+Analyst    → Hidden
+Patient    → Hidden
+Public     → Never exposed
+```
+
+This restriction must be enforced in server-side data access.
+
+Do not fetch the phone number and merely hide it in React.
+
+Prefer role-specific database queries/selects that do not return the field to unauthorized users.
+
+---
+
+# 9. Authentication
+
+Dashboard users authenticate using:
+
+```text
+Email + Password
+```
+
+The project uses **Better Auth** (`better-auth`) as its authentication library.
+It is configured in `src/lib/auth/index.ts`, and its endpoints are mounted
+under `/api/auth/*` by the catch-all route handler in
+`src/app/api/auth/[...all]/route.ts` (see `API.md` §30).
+
+Requirements:
+
+* Passwords must be securely hashed (handled by Better Auth).
+* Passwords must never be stored in plaintext.
+* Sessions must be securely managed (Better Auth session cookies).
+* Disabled users cannot authenticate/access protected resources.
+* Authentication state must be verified server-side — resolve the session with
+  the auth library on the server; never trust session/role claims from the
+  client.
+
+Configuration notes:
+
+* `BETTER_AUTH_SECRET` — required; signs session cookies and tokens. Never
+  expose it through `NEXT_PUBLIC_*` (see `.env.example`).
+* `BETTER_AUTH_URL` — public base URL of the application (no trailing slash).
+* Auth data (users, sessions, accounts) is stored in PostgreSQL via the Prisma
+  adapter (`src/lib/db`).
+* Use Better Auth's documented configuration to extend behavior; do not build
+  custom session logic.
+
+### Dashboard user provisioning
+
+Only Admin can create dashboard users. Public self-registration is disabled;
+there is no open `/api/auth/sign-up/email` path.
+
+Flow:
+
+```text
+Setup / seed   →  initial Admin created by a controlled bootstrap, never by a
+                  public request (seed data in dev/staging; one-time bootstrap
+                  in production)
+
+Admin          →  createUser Server Action (requires user.create)
+                    ↓
+                    validate input (Zod): email, password, roleId
+                    ↓
+                    create the auth user server-side via the auth library's
+                    admin API (bypasses disableSignUp; caller must be Admin)
+                    ↓
+                    assign one of the fixed roles (Admin / Manager / Analyst)
+                    ↓
+                    write an AuditLog record
+                    ↓
+                    return a safe result (never the raw password)
+```
+
+Rules:
+
+* Configure `emailAndPassword.disableSignUp = true` (`src/lib/auth/index.ts`)
+  so unauthenticated clients cannot self-register. Sign-in via
+  `/api/auth/sign-in/email` remains available to all dashboard users.
+* The `createUser` Server Action (`API.md` §14) is the only path for creating
+  dashboard users. It must verify the Admin session and the `user.create`
+  permission server-side; never trust client-provided roles or permissions.
+* Role assignment uses the fixed role set (§2). Users start active
+  (`isActive = true`); they can be disabled later via `disableUser`
+  (`API.md` §14).
+* The auth library's admin API requires its admin plugin to be enabled with
+  Admin as the admin role; without it, server-side user creation is not
+  available.
+* Every user creation is audited (§18).
+
+---
+
+# 10. Authorization
+
+Every protected Server Action must verify authorization.
+
+```text
+Server Action
+    ↓
+Authenticated?
+    ↓
+Correct Permission?
+    ↓
+Execute
+```
+
+Never trust:
+
+```text
+role
+userId
+permission
+isAdmin
+```
+
+when supplied by the client.
+
+These values must come from the authenticated server-side session/database.
+
+---
+
+# 11. Server Action Security
+
+Every Server Action must:
+
+1. Validate input.
+2. Authenticate the caller when required.
+3. Check permissions.
+4. Verify resource ownership/access where applicable.
+5. Perform the operation server-side.
+6. Return safe errors.
+
+Example:
+
+```text
+deleteFeedback(id)
+       ↓
+requireAuth()
+       ↓
+requirePermission("feedback.delete")
+       ↓
+validate id
+       ↓
+delete
+       ↓
+audit
+```
+
+---
+
+# 12. Input Validation
+
+All external input must be validated server-side.
+
+Use Zod for:
+
+* Phone numbers
+* IDs
+* Ratings
+* Comments
+* Dates
+* Filters
+* User information
+* Branch/service data
+
+Client-side validation improves UX but is never a security control.
+
+---
+
+# 13. Phone Number Handling
+
+Phone numbers must be:
+
+* Normalized before storage.
+* Validated server-side.
+* Excluded from unauthorized responses.
+* Excluded from unnecessary logs.
+* Excluded from AI requests by default.
+
+Searching by phone number must require Admin authorization.
+
+---
+
+# 14. Feedback Protection
+
+Public feedback submission must be protected against abuse.
+
+Controls should include:
+
+* Rate limiting
+* Input validation
+* Maximum comment length
+* Request throttling
+* Duplicate-submission protection where appropriate
+
+Do not rely on the phone number alone as an authentication mechanism.
+
+### Default rate-limiting policy
+
+Concrete limits for the public `submitFeedback` action (`API.md` §11):
+
+```text
+Per-IP sliding window     10 submissions / 10 minutes
+Request payload cap       16 KB
+Comment length cap        1,000 characters
+```
+
+Platform-level limits may be applied at the edge in addition to the
+application-layer limits above. The limits are tuned based on observed abuse;
+any change must be documented here.
+
+---
+
+# 15. CSRF / Request Security
+
+Server Actions must use the security mechanisms provided by Next.js and the application's authentication/session implementation.
+
+Sensitive mutations must not be exposed through an uncontrolled client-side endpoint.
+
+---
+
+# 16. Database Security
+
+Database access is server-only.
+
+```text
+Browser
+   ✕
+   │
+   │ direct database access prohibited
+   ▼
+Next.js Server
+   ↓
+Prisma
+   ↓
+Neon PostgreSQL
+```
+
+Never expose:
+
+```text
+DATABASE_URL
+database credentials
+Prisma client
+```
+
+to the browser.
+
+Never use `NEXT_PUBLIC_` for secrets.
+
+---
+
+# 17. Database Authorization
+
+Application authorization must happen before sensitive queries/mutations.
+
+Example:
+
+```text
+Manager requests feedback
+        ↓
+Permission check
+        ↓
+Query excludes phoneNumber
+        ↓
+Return safe data
+```
+
+Security must not depend only on UI visibility.
+
+---
+
+# 18. Audit Logging
+
+Sensitive administrative operations must create an audit record.
+
+Audit:
+
+* User creation
+* User disabling
+* Branch changes
+* Service changes
+* Feedback updates
+* Feedback deletion
+* Permission-sensitive actions
+
+Audit records should include:
+
+```text
+actor
+action
+resource
+resourceId
+timestamp
+metadata
+```
+
+Avoid storing unnecessary patient information in audit metadata.
+
+---
+
+# 19. Data Deletion
+
+Do not physically delete branches or services when doing so would destroy historical relationships.
+
+Prefer:
+
+```text
+isActive = false
+```
+
+for configuration entities.
+
+Feedback deletion must follow the retention policy and must be auditable.
+
+---
+
+# 20. AI Security
+
+AI is not an authorization layer.
+
+Before sending data to an AI provider:
+
+```text
+Authenticate
+    ↓
+Authorize
+    ↓
+Select required data
+    ↓
+Remove unnecessary sensitive data
+    ↓
+AI provider
+```
+
+Patient phone numbers must not be sent to AI unless a future documented requirement explicitly requires it.
+
+AI output must never directly perform privileged database operations without server-side authorization and validation.
+
+---
+
+# 21. Secrets
+
+Secrets must be stored in environment variables/secrets management.
+
+Examples:
+
+```text
+DATABASE_URL
+AUTH_SECRET
+AI_API_KEY
+```
+
+Never commit secrets to Git.
+
+Never expose secrets through:
+
+```text
+NEXT_PUBLIC_*
+```
+
+Never include secrets in logs.
+
+---
+
+# 22. Error Handling
+
+Do not expose internal details to users.
+
+Bad:
+
+```text
+PrismaClientKnownRequestError:
+Unique constraint failed on ...
+DATABASE_URL=...
+```
+
+Good:
+
+```text
+Something went wrong. Please try again.
+```
+
+Detailed errors belong in secure server logs.
+
+---
+
+# 23. Logging
+
+Logs must not contain:
+
+* Passwords
+* Session tokens
+* API keys
+* Full phone numbers
+* Unnecessary patient feedback
+* Database credentials
+
+Use request IDs and structured logs for debugging.
+
+---
+
+# 24. Security Headers
+
+Production deployment should use appropriate security headers, including where applicable:
+
+```text
+Content-Security-Policy
+X-Content-Type-Options
+Referrer-Policy
+Strict-Transport-Security
+```
+
+Configuration should be tested against the actual Next.js deployment environment.
+
+---
+
+# 25. Dependency Security
+
+The team must:
+
+* Keep dependencies updated.
+* Review security advisories.
+* Avoid unnecessary dependencies.
+* Commit lockfile changes.
+* Run dependency/security checks in CI where practical.
+
+---
+
+# 26. Security Testing
+
+Before production, test at minimum:
+
+```text
+Authentication
+Authorization
+Role restrictions
+Phone-number protection
+Public feedback abuse
+Input validation
+Session handling
+Admin-only operations
+Database access
+```
+
+Important negative tests:
+
+```text
+Manager → access phone number       ❌
+Analyst → delete feedback           ❌
+Manager → create user               ❌
+Analyst → create branch             ❌
+Unauthenticated → dashboard         ❌
+Anonymous → self-register           ❌
+Patient → view feedback             ❌
+Patient → view analytics            ❌
+```
+
+---
+
+# 27. Security Rules for AI Agents
+
+AI coding agents must:
+
+1. Never bypass authorization.
+2. Never expose `phoneNumber` to Manager or Analyst.
+3. Never expose secrets to client code.
+4. Never access Prisma from Client Components.
+5. Never trust client-provided roles or permissions.
+6. Validate all external input.
+7. Preserve audit logging for sensitive mutations.
+8. Avoid sending unnecessary patient data to AI services.
+9. Never weaken security to make a feature "work."
+10. Update `security.md` when a security requirement changes.
+
+---
+
+# 28. Security Principle
+
+The system follows:
+
+```text
+Least Privilege
++
+Server-Side Authorization
++
+Data Minimization
++
+Secure Defaults
++
+Auditability
+```
+
+Security decisions must remain consistent with `PRD.md`, `Architecture.md`, `API.md`, and `database.md`.

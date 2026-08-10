@@ -1,381 +1,881 @@
-# HealSync — Database Design
+# Database Design
 
-**Status: Draft — Phase 2 (design; only auth tables exist in the schema)**
-
-This document describes the **proposed domain model** for HealSync. It is a
-design document — **`prisma/schema.prisma` is intentionally NOT modified in
-this phase.** The schema will be implemented in the database-finalization
-phase, after the open decisions below are resolved.
-
-Related: [PRD.md](PRD.md) (product requirements) · [ARCHITECTURE.md](ARCHITECTURE.md)
-(layers, analytics approach) · [API.md](API.md) (what the data must serve) ·
-[SECURITY.md](SECURITY.md) (privacy, phone-number treatment).
+**Document:** `database.md`
+**Version:** 1.0
+**Database:** PostgreSQL
+**Provider:** Neon
+**ORM:** Prisma
 
 ---
 
-## 1. Current State (Phase 1)
+# 1. Database Architecture
 
-The schema contains only the four Better Auth core tables (required by the
-authentication foundation):
-
-| Table          | Purpose                      |
-| -------------- | ---------------------------- |
-| `user`         | Administrator accounts       |
-| `session`      | Signed session records       |
-| `account`      | Credentials / OAuth accounts |
-| `verification` | Verification tokens          |
-
-- Connection URL lives in `prisma.config.ts` (Prisma 7 pattern).
-- Client is generated to `src/generated/prisma` (`prisma-client` generator).
-- **Design note:** the existing `user` table is the future _administrator_
-  table. Do not create a separate admin table; extend `user` (or add a role
-  column) when roles are designed (PRD §16 — open decision).
-
----
-
-## 2. Design Principles
-
-1. **Normalized relational data.** One fact in one place; use foreign keys.
-2. **Foreign-key integrity.** Dependents constrain deletion; no orphaned
-   feedback.
-3. **Appropriate indexes.** Index what query patterns actually need (§8).
-4. **Timestamps.** Every entity has `createdAt`/`updatedAt` where meaningful.
-5. **Unique constraints** where identity is intrinsic (e.g., branch slug
-   within a clinic).
-6. **Nullable vs. required.** A field is nullable only when "absent" is a
-   real, meaningful state (e.g., optional comment).
-7. **Soft deletion only where justified.** Archive (soft delete) is used for
-   entities that must preserve historical references (clinics, branches,
-   services) — see §7. Not applied everywhere automatically.
-8. **Auditability.** Administrative changes to clinic data are recorded (audit
-   log table, §6.6).
-9. **Analytics-ready but not warehouse-ready.** The transactional schema
-   supports the aggregation queries analytics needs (§9) without a separate
-   analytics store.
-
----
-
-## 3. Entities (Proposed)
-
-The entities below are **proposed**. Each is justified — nothing is added
-just because it was on a wishlist.
-
-### 3.1 Clinic
-
-The organization/brand.
-
-| Field               | Notes                                       |
-| ------------------- | ------------------------------------------- |
-| id                  | PK                                          |
-| name                | Required, unique                            |
-| active              | Default true; archived clinics keep history |
-| createdAt/updatedAt | Timestamps                                  |
-
-**Justified?** Yes — PRD defines clinic-level management and "compare clinic
-branches". Needed to group branches.
-
-### 3.2 Branch
-
-A physical location belonging to a clinic. **The patient selects the branch.**
-
-| Field               | Notes                                         |
-| ------------------- | --------------------------------------------- |
-| id                  | PK                                            |
-| clinicId            | FK → Clinic, required                         |
-| name                | Required (unique within a clinic)             |
-| address / city      | Optional operational context, only if needed  |
-| active              | Default true; archived branches keep feedback |
-| createdAt/updatedAt | Timestamps                                    |
-
-**Justified?** Yes — feedback must be tied to a branch; branch comparison is
-a core PRD requirement.
-
-### 3.3 Service
-
-What a patient received.
-
-| Field               | Notes                                                           |
-| ------------------- | --------------------------------------------------------------- |
-| id                  | PK                                                              |
-| branchId            | FK → Branch (see **Open Decision A**: branch- vs clinic-scoped) |
-| name                | Required (unique within its scope)                              |
-| active              | Default true                                                    |
-| createdAt/updatedAt | Timestamps                                                      |
-
-**Justified?** Yes — every feedback requires a service (FR-PAT-3); service
-analysis is core.
-
-### 3.4 Staff (conditional — see Open Decisions)
-
-A person at a branch who can be attributed to feedback.
-
-| Field     | Notes                                                               |
-| --------- | ------------------------------------------------------------------- |
-| id        | PK                                                                  |
-| branchId  | FK → Branch                                                         |
-| name      | Required                                                            |
-| staffType | Doctor / Nurse / Receptionist / Pharmacist / Lab technician / Other |
-| active    | Default true                                                        |
-
-**Justified?** Only if staff attribution/analytics is in scope (PRD §16 open
-decision). The data model supports it, but MVP may exclude it.
-
-### 3.5 Feedback
-
-A single patient submission — the core table.
-
-| Field      | Notes                                                         |
-| ---------- | ------------------------------------------------------------- |
-| id         | PK (opaque, non-sequential to avoid enumeration)              |
-| branchId   | FK → Branch, required                                         |
-| serviceId  | FK → Service, required                                        |
-| categoryId | FK → Category, **optional** (MVP: form keeps it optional)     |
-| staffId    | FK → Staff, **optional** (only if staff in scope)             |
-| phone      | Stored per policy — see §5 (PII)                              |
-| phoneHash  | Optional hash for duplicate detection (see §5)                |
-| rating     | Integer 1–5, required                                         |
-| comment    | Text, optional, length-capped (proposed 1,000 chars)          |
-| status     | Proposed: `new` / `reviewed` / `archived` — **open decision** |
-| createdAt  | Server timestamp (submission time)                            |
-
-**Indexes:** see §8.
-
-### 3.6 FeedbackCategory
-
-A curated list of aspects (doctor, nurse, reception, waiting time, ...).
-
-| Field  | Notes                                    |
-| ------ | ---------------------------------------- |
-| id     | PK                                       |
-| code   | Unique stable code (e.g. `reception`)    |
-| label  | Display label                            |
-| active | Default true (allows future re-labeling) |
-
-**Justified?** PRD §9 — categories are a fixed seeded set in MVP, stored in
-DB (not hardcoded in UI) so they remain comparable and future-configurable.
-
-### 3.7 AuditLog (administrative changes)
-
-| Field        | Notes                                  |
-| ------------ | -------------------------------------- |
-| id           | PK                                     |
-| actorUserId  | FK → user (admin who made the change)  |
-| entityType   | clinic / branch / service / staff      |
-| entityId     | The changed record                     |
-| action       | create / update / archive / restore    |
-| before/after | JSON snapshot of the change (PII-free) |
-| createdAt    | Timestamp                              |
-
-**Justified?** PRD NFR-9 — auditability of administrative changes.
-
-### 3.8 What is NOT modeled (justification)
-
-| Entity               | Why not                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| Patient              | No accounts; patients are anonymous contact points, not entities. A feedback record is the unit. |
-| RatingDimension      | Post-MVP (service/staff-specific ratings) — do not model yet (PRD §8.3).                         |
-| Analytics tables     | Analytics are computed, not stored (§9).                                                         |
-| Notification / Alert | Post-MVP (PRD §13.2).                                                                            |
-
----
-
-## 4. Relationships & Cardinality
+PostgreSQL on **Neon** is the system of record.
 
 ```text
-Clinic 1 ──── * Branch
-Branch 1 ──── * Service
-Branch 1 ──── * Staff        (if staff in scope)
-Branch 1 ──── * Feedback
-Service 1 ──── * Feedback
-Staff  1 ──── * Feedback     (optional FK, if staff in scope)
-Category 1 ── * Feedback     (optional FK)
+Next.js Server Actions
+        ↓
+Prisma ORM
+        ↓
+PostgreSQL (Neon)
 ```
 
-```mermaid
-erDiagram
-    CLINIC ||--o{ BRANCH : has
-    BRANCH ||--o{ SERVICE : offers
-    BRANCH ||--o{ STAFF : employs
-    BRANCH ||--o{ FEEDBACK : receives
-    SERVICE ||--o{ FEEDBACK : "associated with"
-    STAFF ||--o{ FEEDBACK : "attributed to (optional)"
-    CATEGORY ||--o{ FEEDBACK : "classifies (optional)"
-    USER ||--o{ AUDITLOG : performs
+The browser never connects directly to PostgreSQL.
+
+---
+
+# 2. Core Entities
+
+```text
+User
+Role
+Permission
+
+Branch
+Service
+BranchService
+
+Feedback
+FeedbackRating
+
+AuditLog
 ```
 
-Cardinality summary:
+Relationship overview:
 
-| Relationship        | Cardinality                                                |
-| ------------------- | ---------------------------------------------------------- |
-| Clinic → Branch     | One clinic has many branches                               |
-| Branch → Service    | One branch has many services                               |
-| Branch → Staff      | One branch has many staff                                  |
-| Branch → Feedback   | One branch receives many feedback records                  |
-| Service → Feedback  | One service is referenced by many records                  |
-| Staff → Feedback    | One staff member may be attributed many records (nullable) |
-| Category → Feedback | One category may classify many records (nullable)          |
+```text
+Role ───────< User
 
----
+Branch ─────< BranchService >───── Service
 
-## 5. Patient Phone Number (Sensitive PII)
+Branch ─────< Feedback >────────── Service
 
-The phone number is the only direct personal identifier collected in the MVP.
-Its handling is governed by [SECURITY.md](SECURITY.md); this section records
-the data-model implications.
-
-### 5.1 Options under consideration
-
-| Option                | Description                                                        | Trade-offs                                                |
-| --------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
-| A. Store raw          | Normalized E.164 string. Full fidelity; enables contact/follow-up. | PII at rest; needs masking, access control, retention.    |
-| B. Store hash only    | Store a keyed hash (HMAC) for dedupe/abuse; no raw number.         | Cannot contact patients; hash still needs key management. |
-| C. Optional raw       | Patients may leave it blank; raw stored when given.                | Weakens follow-up and dedupe; reduces friction.           |
-| D. Store raw, encrypt | Encrypt at rest with app-level key.                                | Key management complexity; stronger protection.           |
-
-### 5.2 Working assumptions (to confirm — see Open Decisions)
-
-- **Normalize** the number to E.164 before storage.
-- **Mask by default** in admin UI (e.g. `+20x ···· 1234`) — raw visible only
-  with explicit, authorized access (PRD FR-ADM-10).
-- **Never log** raw phone numbers (see [SECURITY.md](SECURITY.md) §Logging).
-- **Retention:** define a retention period and deletion process (open).
-
-> Do not finalize storage strategy without resolving PRD §16 (required vs.
-> optional phone) and the follow-up feature scope.
+User ───────< AuditLog
+```
 
 ---
 
-## 6. Conventions
+# 3. User
 
-### 6.1 Naming
+Represents an administrative dashboard user.
 
-- Tables: `snake_case`, singular model names mapped via `@@map` (existing
-  convention, e.g. `@@map("user")`).
-- FK columns: `<entity>Id` (e.g. `branchId`).
-- Prisma models: PascalCase singular.
-
-### 6.2 IDs
-
-- Auth tables: string IDs (Better Auth convention).
-- Domain tables: proposed opaque string IDs (e.g. `cuid2`) or UUID v4 —
-  **open decision**. Prefer non-sequential to avoid enumerating feedback
-  records (SECURITY consideration).
-
-### 6.3 Timestamps
-
-`createdAt DateTime @default(now())`, `updatedAt DateTime @updatedAt` on
-mutable entities.
-
-### 6.4 Enums vs. reference tables
-
-- Small, stable, global values (e.g. `staffType`) → **enum**.
-- Values that must remain editable/comparable across clinics (categories) →
-  **reference table** (`FeedbackCategory`).
-- `rating` is an integer column with a check constraint (1–5); validated in
-  Zod at the boundary.
-
-### 6.5 Nullable vs. required
-
-- `comment`, `categoryId`, `staffId`: nullable (meaningful absence).
-- `branchId`, `serviceId`, `rating`: required.
-- `phone`: per resolved policy (§5, Open Decisions).
-
-### 6.6 Audit
-
-Administrative mutations (create/update/archive of clinics, branches,
-services, staff) append to `AuditLog` (see §3.7). Feedback submissions are
-immutable patient data — they are **not** audited in the audit log (they are
-the domain data itself); corrections (if ever needed) are admin operations
-that go through the audit trail.
-
----
-
-## 7. Soft Deletion
-
-- **Use** for Clinic, Branch, Service, Staff: a boolean `active` flag.
-  Archived entities:
-  - remain referenced by historical feedback (FK integrity preserved);
-  - disappear from new patient selections and default admin filters;
-  - can be restored.
-- **Do not use** for Feedback: records are immutable; "deleting" feedback is
-  an admin action with audit, and only if legally required (data deletion
-  requests) — handled as a hard delete with logging, not soft-delete
-  everywhere.
-- No `deletedAt` columns are added unless a concrete need appears.
-
----
-
-## 8. Indexing
-
-Indexes follow **query patterns**, not field existence. Expected patterns:
-
-| Index (proposed)                | Query pattern it serves                                                       |
-| ------------------------------- | ----------------------------------------------------------------------------- |
-| `Feedback(branchId)`            | Branch dashboard, branch comparison, branch-scoped filters                    |
-| `Feedback(serviceId)`           | Service analysis, service-scoped filters                                      |
-| `Feedback(createdAt)`           | Date-range filters and trend aggregation                                      |
-| `Feedback(branchId, createdAt)` | Per-branch trends within a date range (common admin query)                    |
-| `Feedback(categoryId)`          | Category filters / top-issues aggregation                                     |
-| `Feedback(staffId)`             | Staff attribution queries (only if staff in scope)                            |
-| `Feedback(rating)`              | Rating-distribution aggregation (may be covered by composite indexes; verify) |
-| `Branch(clinicId)`              | Listing branches per clinic                                                   |
-| `Service(branchId)`             | Service catalog per branch (patient flow)                                     |
+```text
+User
+├── id
+├── email
+├── passwordHash
+├── roleId
+├── isActive
+├── createdAt
+├── updatedAt
+└── lastLoginAt
+```
 
 Rules:
 
-- Add indexes **during schema implementation**, after validating against real
-  query shapes; avoid speculative indexes.
-- Composite indexes beat single-column ones for the common
-  `WHERE branchId = ? AND createdAt BETWEEN ?` pattern.
-- Feedback volume is the table to watch: with millions of rows, date-range
-  analytics would need a BRIN index or partitioning — revisit only at that
-  scale (documented, not implemented).
+* Email must be unique.
+* Passwords must never be stored in plaintext.
+* Disabled users cannot access the dashboard.
+* Users belong to a role.
+* Only authorized administrators can manage users.
 
 ---
 
-## 9. Analytics Data
+# 4. Role
 
-- Analytics are **computed from transactional feedback data** via SQL
-  aggregation (`feedback → aggregation → results`). There is **no** separate
-  analytics database, data warehouse, event stream, or OLAP store in the MVP.
-- A service-layer module owns all metric definitions and parameters (date
-  range, branch/service/category filters) so numbers stay consistent
-  (PRD §11, [ARCHITECTURE.md](ARCHITECTURE.md) §9).
-- Aggregations run on demand (dashboard queries). If dashboard performance
-  ever becomes a problem, options are: precomputed summary tables or caching —
-  decisions for a later phase, not MVP infrastructure.
+Represents an administrative access role.
+
+```text
+Role
+├── id
+├── name
+├── description
+├── createdAt
+└── updatedAt
+```
+
+Examples:
+
+```text
+Admin
+Manager
+Analyst
+```
+
+Roles are fixed per `security.md` §2; the system does not support custom roles.
+
+Roles should not be used as the only authorization mechanism.
+
+Permissions should determine what a role can actually do.
 
 ---
 
-## 10. Migration Policy
+# 5. Permission
 
-- Migrations are versioned in `prisma/migrations/`.
-- **Development:** `pnpm prisma migrate dev` (creates and applies).
-- **Production:** `pnpm prisma migrate deploy` (see
-  [DEPLOYMENT.md](DEPLOYMENT.md)).
-- Every product model change ships with a migration in the same PR as the
-  code that uses it.
-- The generated client (`src/generated/prisma`) is regenerated by
-  `pnpm prisma generate` and is gitignored.
+Represents an individual capability.
+
+Examples:
+
+```text
+feedback.read
+feedback.update
+feedback.delete
+
+branch.read
+branch.create
+branch.update
+branch.delete
+
+service.read
+service.create
+service.update
+service.delete
+
+analytics.read
+analytics.ai
+
+user.read
+user.create
+user.update
+user.disable
+```
+
+Relationship:
+
+```text
+Role
+  ↓
+RolePermission
+  ↓
+Permission
+```
+
+This allows permissions to evolve without rewriting application logic.
 
 ---
 
-## 11. Open Decisions
+# 6. Branch
 
-- **A. Service scope:** do services belong to a **branch** (each branch has
-  its own catalog) or to a **clinic** (shared catalog)? Affects the patient
-  flow and the `Service.branchId` FK.
-- **B. Phone storage:** raw / hashed / optional / encrypted (see §5) — and
-  whether the phone is required at all (PRD §16).
-- **C. Staff in MVP:** include `Staff` and feedback attribution now, or
-  defer (PRD §16)?
-- **D. Feedback status field:** `new / reviewed / archived` or purely
-  transactional?
-- **E. ID strategy:** opaque string IDs (cuid2/UUID) vs. auto-increment for
-  domain tables.
-- **F. Category reference table vs. enum** (proposed: table, per PRD §9).
-- **G. Rating thresholds:** confirm satisfaction ≥4 / dissatisfaction ≤2.
-- **H. Retention period** for feedback and phone numbers.
-- **I. Address/city fields** on Branch — needed for MVP, or omitted?
-- **J. Audit log depth:** snapshot `before/after` JSON vs. minimal action
-  records.
+Represents one clinic branch.
+
+```text
+Branch
+├── id
+├── name
+├── code
+├── isActive
+├── createdAt
+└── updatedAt
+```
+
+The system currently expects approximately **13 branches**.
+
+Branches must be stored as database records rather than hard-coded in the frontend.
+
+---
+
+# 7. Service
+
+Represents a service or department offered by the clinic.
+
+```text
+Service
+├── id
+├── name
+├── description
+├── isActive
+├── createdAt
+└── updatedAt
+```
+
+Services should be configurable by authorized users.
+
+---
+
+# 8. BranchService
+
+A branch may offer multiple services, and a service may be available at multiple branches.
+
+Therefore use a many-to-many relationship.
+
+```text
+Branch
+   │
+   ├── BranchService
+   │
+   └── Service
+```
+
+Example:
+
+```text
+Branch A
+ ├── Laboratory
+ ├── Pharmacy
+ └── Reception
+
+Branch B
+ ├── Laboratory
+ └── Pharmacy
+```
+
+Conceptual structure:
+
+```text
+BranchService
+├── branchId
+├── serviceId
+├── isActive
+├── createdAt
+└── updatedAt
+```
+
+`branchId + serviceId` should be unique.
+
+---
+
+# 9. Feedback
+
+The feedback table is the most important business entity.
+
+```text
+Feedback
+├── id
+├── phoneNumber
+├── branchId
+├── serviceId
+├── rating
+├── comment
+├── createdAt
+├── updatedAt
+└── deletedAt
+```
+
+### Required
+
+```text
+phoneNumber
+branchId
+serviceId
+rating
+createdAt
+```
+
+### Optional
+
+```text
+comment
+updatedAt
+deletedAt
+```
+
+---
+
+# 10. Phone Number Privacy
+
+The patient's phone number is sensitive application data.
+
+### Visibility rule
+
+```text
+Admin
+  ↓
+Can view phone number
+
+Other dashboard roles
+  ↓
+Cannot view phone number
+
+Patient
+  ↓
+Cannot view stored phone number
+
+Public API/UI
+  ↓
+Never exposes phone number
+```
+
+The backend must enforce this rule.
+
+Hiding the phone number only in the frontend is **not sufficient**.
+
+---
+
+# 11. Phone Number Storage
+
+Store the normalized phone number rather than arbitrary user input.
+
+Example:
+
+```text
+Input:
+0912 345 678
+
+Normalized:
++251912345678
+```
+
+The exact normalization rules should be finalized based on the clinic's supported country/number formats.
+
+Phone numbers should have appropriate database indexing if they are used for duplicate detection or search.
+
+---
+
+# 12. Feedback Rating
+
+The structured feedback should use a controlled set of values.
+
+Example:
+
+```text
+VERY_SATISFIED
+SATISFIED
+MOSTLY_SATISFIED
+GOOD
+NEUTRAL
+NOT_SATISFIED
+POOR
+VERY_POOR
+```
+
+The final list should be standardized before production.
+
+Do not store arbitrary rating strings entered by clients.
+
+---
+
+# 13. Free-Text Feedback
+
+`comment` stores the patient's original written feedback.
+
+Rules:
+
+* Optional.
+* Must be validated for maximum length.
+* Original text should be preserved.
+* Never modify the original feedback because of AI analysis.
+* AI analysis should be stored separately if persisted.
+
+---
+
+# 14. Feedback → Branch
+
+Each feedback belongs to exactly one branch.
+
+```text
+Branch
+   │
+   └──< Feedback
+```
+
+A branch should not be physically deleted if historical feedback references it.
+
+Prefer:
+
+```text
+isActive = false
+```
+
+This keeps historical analytics intact.
+
+---
+
+# 15. Feedback → Service
+
+Each feedback belongs to the service selected by the patient.
+
+The backend must verify:
+
+```text
+Selected Branch
+       +
+Selected Service
+       ↓
+Valid BranchService relationship
+```
+
+A patient must not be able to submit:
+
+```text
+Branch A + Service only offered at Branch B
+```
+
+---
+
+# 16. Historical Data
+
+Historical feedback must remain analyzable even when configuration changes.
+
+Example:
+
+```text
+2026
+Branch A
+Laboratory
+100 feedback records
+
+↓ Service deactivated
+
+2027
+
+Historical records remain available.
+```
+
+Therefore:
+
+* Prefer deactivation over deletion.
+* Preserve foreign-key relationships.
+* Avoid cascading deletes from Branch/Service into Feedback.
+
+---
+
+# 17. Soft Deletion
+
+For important business records, prefer soft deletion/deactivation.
+
+Potential fields:
+
+```text
+isActive
+deletedAt
+```
+
+Use cases:
+
+### Branch
+
+```text
+isActive = false
+```
+
+### Service
+
+```text
+isActive = false
+```
+
+### User
+
+```text
+isActive = false
+```
+
+### Feedback
+
+Use `deletedAt` if the business requires deletion while retaining an audit trail.
+
+### Data Retention (default policy)
+
+Default retention rules:
+
+```text
+Branch / Service / User    never hard-deleted while historical records
+                           reference them; deactivated with isActive = false
+
+Feedback                   soft-deleted with deletedAt; physical deletion only
+                           after the applicable retention period and
+                           legal/compliance review
+
+AuditLog                   retained for the organization's audit-retention
+                           period
+```
+
+Final legal/compliance retention requirements remain an open product decision
+(`PRD.md` §33 decision 15). The rules above are the technical default and must
+be followed until a formal retention policy is approved. Server Actions such as
+`deleteFeedback` (`API.md` §11) must follow this policy.
+
+---
+
+# 18. AuditLog
+
+Administrative operations must be auditable.
+
+```text
+AuditLog
+├── id
+├── userId
+├── action
+├── entityType
+├── entityId
+├── metadata
+├── createdAt
+└── ipAddress
+```
+
+Examples:
+
+```text
+Admin created branch
+Admin updated service
+Admin deleted feedback
+Admin created user
+Admin changed user role
+```
+
+The exact metadata structure can evolve.
+
+---
+
+# 19. Audit Rules
+
+Audit important mutations, especially:
+
+```text
+User creation
+User disabling
+Role changes
+
+Branch creation
+Branch update
+Branch deletion/deactivation
+
+Service creation
+Service update
+Service deletion/deactivation
+
+Feedback update
+Feedback deletion
+```
+
+Audit logs should not contain unnecessary sensitive patient information.
+
+---
+
+# 20. Database Constraints
+
+Important constraints should be enforced at the database level where practical.
+
+Examples:
+
+```text
+User.email             UNIQUE
+Branch.code            UNIQUE
+BranchService          UNIQUE(branchId, serviceId)
+Role.name              UNIQUE
+Permission.name        UNIQUE
+```
+
+Foreign keys should enforce valid relationships.
+
+---
+
+# 21. Indexing
+
+Indexes should support the application's main queries.
+
+Important candidates:
+
+```text
+Feedback.branchId
+Feedback.serviceId
+Feedback.createdAt
+Feedback.rating
+
+BranchService.branchId
+BranchService.serviceId
+
+User.email
+
+AuditLog.userId
+AuditLog.entityType
+AuditLog.entityId
+AuditLog.createdAt
+```
+
+Composite indexes should be added when query patterns justify them.
+
+Do not add indexes blindly.
+
+---
+
+# 22. Analytics Query Model
+
+The dashboard should query PostgreSQL using aggregation.
+
+Example:
+
+```text
+Feedback
+   ↓
+WHERE branch/date/service filters
+   ↓
+GROUP BY
+   ↓
+COUNT / percentage / trends
+   ↓
+Analytics result
+```
+
+Do not retrieve every feedback record to the browser just to calculate statistics.
+
+---
+
+# 23. Core Analytics Metrics
+
+The database/query layer should support:
+
+### Volume
+
+```text
+Total feedback
+Feedback per day
+Feedback per week
+Feedback per month
+Feedback per year
+```
+
+### Satisfaction
+
+```text
+Rating distribution
+Positive percentage
+Negative percentage
+Satisfaction rate
+```
+
+### Comparison
+
+```text
+Branch performance
+Service performance
+```
+
+### Trends
+
+```text
+Daily trend
+Weekly trend
+Monthly trend
+```
+
+Metric definitions must remain consistent across the dashboard.
+
+---
+
+# 24. Transactions
+
+Use Prisma transactions for operations that require multiple database changes to succeed together.
+
+Example:
+
+```text
+Create Branch
+    +
+Create BranchService relationships
+    +
+Create AuditLog
+```
+
+All should succeed or fail together when atomicity is required.
+
+---
+
+# 25. Prisma Rules
+
+Prisma should be the application's database access layer.
+
+```text
+Server Action
+      ↓
+Domain Service
+      ↓
+Prisma
+      ↓
+PostgreSQL
+```
+
+Do not:
+
+* Use Prisma in Client Components.
+* Expose Prisma to the browser.
+* Put database credentials in client-exposed environment variables.
+* Build raw SQL when Prisma can safely perform the operation.
+
+Raw SQL may be used for specialized analytics queries when necessary, but it must be parameterized and reviewed.
+
+---
+
+# 26. Neon
+
+Neon is the PostgreSQL hosting provider.
+
+Environment configuration should keep database credentials server-only.
+
+Conceptually:
+
+```text
+DATABASE_URL
+```
+
+must never be exposed through a `NEXT_PUBLIC_*` environment variable.
+
+---
+
+# 27. Migration Strategy
+
+Database schema changes must use Prisma migrations.
+
+Development:
+
+```text
+prisma migrate dev
+```
+
+Production:
+
+```text
+prisma migrate deploy
+```
+
+Never modify the production database schema manually when the change should be represented by a migration.
+
+Every schema change should be committed to Git.
+
+---
+
+# 28. Seed Data
+
+Development/staging environments should have seed data for:
+
+* Roles
+* Permissions
+* Initial admin
+* Example branches
+* Example services
+* Branch-service relationships
+* Example feedback where appropriate
+
+Production seed behavior must be handled carefully to avoid creating duplicate or unauthorized users.
+
+---
+
+# 29. Data Integrity Rules
+
+The database must guarantee:
+
+1. Every feedback belongs to a valid branch.
+2. Every feedback belongs to a valid service.
+3. The branch/service relationship is valid.
+4. Ratings use approved values.
+5. User emails are unique.
+6. Roles and permissions are valid.
+7. Historical feedback is not accidentally destroyed.
+8. Administrative mutations can be audited.
+
+---
+
+# 30. Privacy Rules
+
+Patient phone numbers:
+
+* Must be stored server-side.
+* Must never be exposed publicly.
+* Must not be returned to unauthorized dashboard users.
+* Must not appear in unnecessary logs.
+* Must not be sent to AI providers unless explicitly required.
+* Must not be included in analytics responses unless the requesting user has permission.
+
+Free-text feedback may potentially contain personal or sensitive information, so it should receive similar protection.
+
+---
+
+# 31. AI Data Boundary
+
+The database is the source of truth.
+
+```text
+PostgreSQL
+     ↓
+Required feedback data
+     ↓
+AI processing
+     ↓
+Structured insight
+```
+
+Do not send unnecessary information to the AI provider.
+
+For example, the AI generally does not need:
+
+```text
+patient phone number
+```
+
+to determine:
+
+```text
+sentiment
+themes
+summary
+```
+
+Therefore phone numbers should be excluded from AI payloads by default.
+
+---
+
+# 32. Recommended Prisma Domain Model
+
+Conceptually:
+
+```text
+User
+ └── Role
+      └── RolePermission
+            └── Permission
+
+Branch
+ └── BranchService
+      └── Service
+
+Feedback
+ ├── Branch
+ ├── Service
+ └── Rating
+
+User
+ └── AuditLog
+```
+
+The actual Prisma schema should implement these relationships with explicit foreign keys and appropriate indexes.
+
+---
+
+# 33. AI Agent Database Rules
+
+AI coding agents must:
+
+1. Read `PRD.md`.
+2. Read `Architecture.md`.
+3. Read `API.md`.
+4. Read `database.md` before changing the schema.
+5. Use Prisma migrations for schema changes.
+6. Never expose `phoneNumber` to unauthorized roles.
+7. Never delete historical feedback accidentally.
+8. Add indexes based on actual query requirements.
+9. Use transactions for atomic multi-write operations.
+10. Update `database.md` when the schema's intended behavior changes.
+
+---
+
+# 34. Database Source of Truth
+
+```text
+PRD.md
+   ↓
+Business requirements
+
+database.md
+   ↓
+Data model + integrity rules
+
+schema.prisma
+   ↓
+Actual implementation
+
+Prisma migrations
+   ↓
+Database evolution
+```
+
+`schema.prisma` and migrations are the executable database implementation; `database.md` explains the intended design and rules.

@@ -1,309 +1,1000 @@
-# HealSync — API Design
+# API / Server Actions
 
-**Status: Draft — Phase 2 (design; only Better Auth endpoints exist)**
+**Document:** `API.md`
+**Version:** 1.0
+**Status:** Draft
 
-This document specifies the **future API contract**. Nothing here is
-implemented yet except the Better Auth endpoints under `/api/auth/*` (Phase 1
-foundation). Endpoint shapes below are **proposals** and are marked as such;
-they will be locked during the API-finalization phase.
+## 1. API Strategy
 
-Related: [PRD.md](PRD.md) (requirements) · [WORKFLOWS.md](WORKFLOWS.md)
-(workflows the API serves) · [DATABASE.md](DATABASE.md) (data model) ·
-[ARCHITECTURE.md](ARCHITECTURE.md) (route-handler conventions) ·
-[SECURITY.md](SECURITY.md) (protection of these endpoints).
+The application uses **Next.js Server Actions** as the primary server communication layer.
 
----
+We do **not** maintain a separate REST API for internal application communication.
 
-## 1. Current State (Phase 1)
-
-The only mounted routes are Better Auth endpoints:
+The only REST-style endpoints are the authentication endpoints mounted by
+**Better Auth** under `/api/auth/*` (§30). They are provided and managed by the
+auth library and are not part of the Server Action contract.
 
 ```text
-/api/auth/*        GET/POST  mounted by src/app/api/auth/[...all]/route.ts
+Client Component
+      ↓
+Server Action
+      ↓
+Validation
+      ↓
+Authentication
+      ↓
+Authorization
+      ↓
+Business Logic
+      ↓
+PostgreSQL
 ```
 
-All product endpoints below are **planned** and do not exist yet.
+Server Actions are the standard interface between the UI and server-side application logic.
 
 ---
 
-## 2. Endpoint Groups (planned)
+# 2. Server Action Rules
+
+Every Server Action must:
+
+1. Validate its input.
+2. Authenticate when required.
+3. Check authorization when required.
+4. Execute business logic server-side.
+5. Return a predictable result.
+6. Never expose sensitive internal errors.
+7. Never trust client-provided authorization information.
+
+Example:
+
+```ts
+const result = await createBranch(input);
+```
+
+The client should not directly access Prisma or PostgreSQL.
+
+---
+
+# 3. Domain Organization
+
+Server Actions should be organized by domain.
 
 ```text
-/api/auth/*        # Authentication (Better Auth — exists)
-/api/feedback      # Patient feedback submission (public)
-/api/admin/feedback    # Feedback listing & filtering (admin)
-/api/admin/analytics   # Analytics queries (admin)
-/api/admin/clinics     # Clinic management (admin)
-/api/admin/branches    # Branch management (admin)
-/api/admin/services    # Service management (admin)
-/api/admin/staff       # Staff management (admin, if in scope)
+features/
+├── feedback/
+│   └── actions.ts
+├── branches/
+│   └── actions.ts
+├── services/
+│   └── actions.ts
+├── analytics/
+│   └── actions.ts
+├── users/
+│   └── actions.ts
+└── ai-insights/
+    └── actions.ts
 ```
 
-All `/api/admin/*` endpoints require an authenticated administrator session.
+Do not create one large `actions.ts` containing the entire application.
 
 ---
 
-## 3. API Design Principles
+# 4. Naming Convention
 
-Every endpoint must:
+Use clear verb-based names.
 
-1. **Validate input** at the boundary with Zod (`src/lib/validation`).
-2. **Authenticate** where required (Better Auth session).
-3. **Authorize** where required (admin-only; server-side, never trusting the
-   client).
-4. **Delegate business logic to a service** (`src/services`); route handlers
-   stay thin.
-5. **Return predictable responses** — consistent success and error shapes.
-6. **Paginate** list endpoints (see §6) and cap result sizes.
-7. **Never leak internals** — no Prisma errors, connection strings, or stack
-   traces in responses (see [SECURITY.md](SECURITY.md)).
+### Create
+
+```text
+createBranch
+createService
+createUser
+submitFeedback
+```
+
+### Update
+
+```text
+updateBranch
+updateService
+updateUser
+updateFeedback
+```
+
+### Delete / deactivate
+
+```text
+deleteBranch
+deleteService
+deleteFeedback
+deactivateBranch
+deactivateUser
+```
+
+### Read
+
+```text
+getBranch
+getBranches
+getServices
+getFeedback
+getDashboardSummary
+```
+
+### AI
+
+```text
+generateFeedbackInsights
+analyzeFeedbackSentiment
+summarizeFeedback
+```
+
+Names should describe the operation, not the implementation.
 
 ---
 
-## 4. Response & Error Contract (proposed)
+# 5. Input Validation
 
-### 4.1 Success envelope
+All Server Action inputs must be validated on the server.
 
-Simple success responses return the resource directly:
+Use **Zod** schemas.
 
-```json
-{ "data": { ... }, "meta": { "page": 1, "pageSize": 25, "total": 137 } }
+```text
+Client Input
+    ↓
+Zod Validation
+    ↓
+Validated Data
+    ↓
+Business Logic
 ```
 
-- `meta` present on paginated list responses.
-- Write operations return the created/updated resource plus a stable id.
+Example:
 
-### 4.2 Error envelope
+```ts
+const feedbackSchema = z.object({
+  phoneNumber: z.string(),
+  branchId: z.string(),
+  serviceId: z.string(),
+  rating: z.string(),
+  comment: z.string().optional(),
+});
+```
 
-```json
+Never rely only on frontend validation.
+
+---
+
+# 6. Authentication
+
+Actions that access administrative functionality must require an authenticated user.
+
+Example:
+
+```text
+getDashboardSummary()
+    ↓
+requireAuthenticatedUser()
+    ↓
+continue
+```
+
+Patient feedback submission is public and does not require an administrative account.
+
+Authentication uses **Better Auth** sessions (endpoints under `/api/auth/*`, see
+§30); actions must resolve the session server-side rather than trusting client
+claims.
+
+---
+
+# 7. Authorization
+
+Authentication answers:
+
+> Who are you?
+
+Authorization answers:
+
+> Are you allowed to perform this action?
+
+Every protected action must check permissions.
+
+Example:
+
+```text
+deleteFeedback()
+      ↓
+Authenticated?
+      ↓
+Has feedback.delete?
+      ↓
+Delete
+```
+
+Never trust:
+
+* User IDs sent from the browser.
+* Role values sent from the browser.
+* Permission values sent from the browser.
+
+These must come from the authenticated server-side session/database.
+
+---
+
+# 8. Permission Convention
+
+Permissions follow:
+
+```text
+resource.action
+```
+
+Examples:
+
+```text
+feedback.read
+feedback.update
+feedback.delete
+
+branch.read
+branch.create
+branch.update
+branch.delete
+
+service.read
+service.create
+service.update
+service.delete
+
+user.read
+user.create
+user.update
+user.disable
+
+analytics.read
+analytics.ai
+```
+
+---
+
+# 9. Standard Result Format
+
+Server Actions should return predictable results.
+
+### Success
+
+```ts
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "One or more fields are invalid.",
-    "details": [{ "field": "phone", "message": "Invalid phone format" }]
+  success: true,
+  data: ...
+}
+```
+
+### Failure
+
+```ts
+{
+  success: false,
+  error: {
+    code: "VALIDATION_ERROR",
+    message: "Invalid input"
   }
 }
 ```
 
-| Error code         | HTTP | Meaning                                            |
-| ------------------ | ---- | -------------------------------------------------- |
-| `VALIDATION_ERROR` | 400  | Request body/query failed Zod validation           |
-| `UNAUTHENTICATED`  | 401  | Missing or invalid session                         |
-| `FORBIDDEN`        | 403  | Authenticated but not authorized                   |
-| `NOT_FOUND`        | 404  | Resource does not exist                            |
-| `CONFLICT`         | 409  | State conflict (e.g., duplicate unique value)      |
-| `BUSINESS_RULE`    | 422  | Semantically invalid (e.g., service not at branch) |
-| `RATE_LIMITED`     | 429  | Too many requests                                  |
-| `INTERNAL_ERROR`   | 500  | Unexpected server error (generic message only)     |
+Do not return raw database or framework errors to the client.
 
 ---
 
-## 5. Patient API (public)
+# 10. Error Codes
 
-### 5.1 `POST /api/feedback`
+Use consistent application-level error codes.
 
-Public, unauthenticated. Creates a feedback record.
-
-**Proposed request body:**
-
-```json
-{
-  "branchId": "brn_01H...",
-  "serviceId": "srv_01H...",
-  "phone": "+201012345678",
-  "rating": 5,
-  "comment": "Great doctor, short wait.",
-  "categoryId": "cat_reception"
-}
+```text
+VALIDATION_ERROR
+UNAUTHENTICATED
+FORBIDDEN
+NOT_FOUND
+CONFLICT
+RATE_LIMITED
+DATABASE_ERROR
+AI_ERROR
+INTERNAL_ERROR
 ```
 
-| Field        | Required | Validation (proposed)                                                                    |
-| ------------ | -------- | ---------------------------------------------------------------------------------------- |
-| `branchId`   | yes      | Must exist and be active                                                                 |
-| `serviceId`  | yes      | Must belong to the selected branch's catalog (contingent on DATABASE.md open decision A) |
-| `phone`      | proposed | Normalized E.164; see PRD/DATABASE Open Decisions                                        |
-| `rating`     | yes      | Integer 1–5                                                                              |
-| `comment`    | no       | Optional, ≤ 1,000 chars, plain text (no HTML)                                            |
-| `categoryId` | no       | Must exist and be active if provided (MVP acceptance is an open decision)                |
+Example:
 
-**Success (201):**
-
-```json
-{ "data": { "id": "fb_01H...", "createdAt": "2026-08-08T10:00:00Z" } }
-```
-
-**Validation errors (400):** per-field `details` (see §4.2).
-
-**Rate limiting (proposed):** the endpoint is public, so it must be protected
-(see §8 and [SECURITY.md](SECURITY.md) §Public feedback endpoint). Proposed:
-per-IP sliding window (e.g. 10 submissions / 10 minutes) at the application
-layer, platform-level limits at the edge; CAPTCHA is a post-MVP option —
-patients are never forced to authenticate.
-
-**Design notes:**
-
-- `serviceId` must be validated against the branch (server-side) — this
-  prevents mismatched selections and enforces the workflow (FR-PAT-3).
-- No patient identity; the record stands alone. Duplicate-submission control
-  is post-MVP (hash-based, see [DATABASE.md](DATABASE.md) §5).
-
----
-
-## 6. Admin API (proposed)
-
-All endpoints below require an authenticated administrator session
-(`Authorization`/session cookie). They are **design proposals**, not
-implementations.
-
-### 6.1 `GET /api/admin/feedback`
-
-List feedback with filtering, sorting, pagination.
-
-| Query param               | Notes                                                 |
-| ------------------------- | ----------------------------------------------------- |
-| `branchId`                | Filter by branch                                      |
-| `serviceId`               | Filter by service                                     |
-| `categoryId`              | Filter by category                                    |
-| `rating`                  | Filter by exact rating                                |
-| `minRating` / `maxRating` | Range filter                                          |
-| `from` / `to`             | Date range (ISO 8601)                                 |
-| `q`                       | Free-text search on comment (post-MVP: also category) |
-| `sort`                    | `createdAt` / `rating` (default: createdAt desc)      |
-| `cursor` / `limit`        | Cursor pagination (§6.3)                              |
-| `includeMaskedPhone`      | `true` only for authorized access; default masked     |
-
-**Response:** paginated list of feedback DTOs. Phone numbers are **masked by
-default** (PRD FR-ADM-10); raw numbers returned only when explicitly
-requested by an authorized admin, and such access is **logged as an audit
-/ access event** (see [SECURITY.md](SECURITY.md) §5.2 and
-[DATABASE.md](DATABASE.md) §3.7).
-
-### 6.2 `GET /api/admin/feedback/:id`
-
-Single feedback record (masked phone by default).
-
-### 6.3 Pagination
-
-List endpoints must not return unlimited records.
-
-| Strategy              | How                                                           | Chosen for                                                         |
-| --------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Cursor pagination** | Opaque `cursor` + `limit`; stable under inserts; O(1) lookups | High-volume, append-only, date-ordered lists: **feedback**         |
-| **Offset pagination** | `page` + `pageSize` + `total`                                 | Small, stable management lists: clinics, branches, services, staff |
-
-**Rationale:** feedback is the high-volume, append-only collection; cursor
-pagination avoids the offset-skip cost and page-drift problems as new
-feedback arrives during browsing. Management lists are small and rarely
-change shape, so simple offset + total is fine there.
-
-### 6.4 `GET /api/admin/analytics`
-
-Aggregated metrics.
-
-| Query param                             | Notes                            |
-| --------------------------------------- | -------------------------------- |
-| `from` / `to`                           | Required date range (PRD §10.5)  |
-| `branchId` / `serviceId` / `categoryId` | Optional filters                 |
-| `groupBy`                               | `day` / `week` / `month` (trend) |
-
-**Response (proposed):**
-
-```json
+```ts
 {
-  "data": {
-    "range": { "from": "...", "to": "..." },
-    "summary": { "totalFeedback": 137, "averageRating": 4.2,
-                 "satisfactionPercent": 81.0, "dissatisfactionPercent": 9.0,
-                 "ratingDistribution": { "1": 5, "2": 7, "3": 14, "4": 51, "5": 60 } },
-    "byBranch": [ { "branchId": "...", "totalFeedback": 60, "averageRating": 4.4, "satisfactionPercent": 88.0 } ],
-    "byService": [ ... ],
-    "trend": [ { "bucket": "2026-08-01", "totalFeedback": 12, "averageRating": 4.1 } ]
+  success: false,
+  error: {
+    code: "FORBIDDEN",
+    message: "You do not have permission to perform this action."
   }
 }
 ```
 
-Metric definitions (satisfaction %, thresholds) are shared with the analytics
-module and documented in [PRD.md](PRD.md) §11. This endpoint returns
-**aggregates only** — never raw feedback.
+---
 
-### 6.5 Management endpoints
+# 11. Feedback Actions
 
-```text
-GET    /api/admin/clinics            # list (offset pagination)
-POST   /api/admin/clinics            # create
-PATCH  /api/admin/clinics/:id        # update (incl. archive)
-GET    /api/admin/branches           # list (filter by clinicId)
-POST   /api/admin/branches           # create
-PATCH  /api/admin/branches/:id       # update (incl. archive)
-GET    /api/admin/services           # list (filter by branchId)
-POST   /api/admin/services           # create
-PATCH  /api/admin/services/:id       # update (incl. archive)
-GET    /api/admin/staff              # list (if staff in scope)
-POST   /api/admin/staff
-PATCH  /api/admin/staff/:id
+## `submitFeedback`
+
+Public action.
+
+### Input
+
+```ts
+{
+  phoneNumber: string
+  branchId: string
+  serviceId: string
+  rating: FeedbackRating
+  comment?: string
+}
 ```
 
-- **Archive** (soft delete) is the default destructive action; hard DELETE is
-  only allowed when no dependent data exists (see
-  [DATABASE.md](DATABASE.md) §7 and [WORKFLOWS.md](WORKFLOWS.md) §8).
-- All mutations are audited (PRD NFR-9).
+### Rules
+
+* Validate phone number.
+* Validate branch.
+* Validate service.
+* Verify service is available for the selected branch.
+* Validate rating.
+* Sanitize/validate comment.
+* Store submission.
+* Prevent unintended duplicate submissions where applicable.
+* Do not expose other feedback records.
 
 ---
 
-## 7. Authentication Endpoints
+## `getFeedback`
 
-Handled entirely by Better Auth (already mounted):
+Protected action.
+
+Supports:
 
 ```text
-POST /api/auth/sign-in/email     # email + password sign-in
-POST /api/auth/sign-up/email     # (admin provisioning; usage TBD)
-GET  /api/auth/get-session       # current session
-POST /api/auth/sign-out          # sign out
+Branch
+Service
+Rating
+Date range
+Pagination
+Search
 ```
 
-Admin session validation for `/api/admin/*` is done server-side in the route
-handler / guard layer using the Better Auth session API (see
-[ARCHITECTURE.md](ARCHITECTURE.md) §7).
+Only users with `feedback.read` may use it.
+
+Phone numbers are returned **masked by default**. Only Admin may request raw
+phone numbers (`security.md` §8); the backend must not return the raw number
+to other roles.
 
 ---
 
-## 8. Rate Limiting & Abuse Protection (public endpoint)
+## `updateFeedback`
 
-The public `POST /api/feedback` is an open submission channel and must be
-protected without forcing patient accounts (PRD §15):
+Protected action.
 
-| Control              | Proposed approach                                                     | MVP?     |
-| -------------------- | --------------------------------------------------------------------- | -------- |
-| Per-IP rate limiting | Sliding window at application layer (e.g., 10/10min) + edge limits    | Yes      |
-| Input validation     | Zod: types, lengths, formats, allowed values (branch/service catalog) | Yes      |
-| Payload limits       | Body size cap (e.g., 16 KB); comment length cap                       | Yes      |
-| Duplicate control    | Optional phone-hash dedupe window (post-MVP refinement)               | Post-MVP |
-| CAPTCHA              | Only if abuse persists; friction trade-off documented                 | Post-MVP |
-| Abuse detection      | Spike alerts / blocking heuristics                                    | Post-MVP |
+Requires:
 
-Never require patient authentication to mitigate abuse.
+```text
+feedback.update
+```
+
+Changes must be auditable.
 
 ---
 
-## 9. Versioning
+## `deleteFeedback`
 
-No URL versioning (`/api/v1/...`) in the MVP — the API surface is small and
-internal. If a breaking-change need emerges, versioning will be introduced
-deliberately (open decision).
+Protected action.
+
+Requires:
+
+```text
+feedback.delete
+```
+
+Deletion behavior must follow the data-retention rules defined in `database.md`.
 
 ---
 
-## 10. Open Decisions
+# 12. Branch Actions
 
-- Exact request/response schemas for each admin endpoint (locked during
-  API-finalization).
-- Whether `categoryId` is accepted from the public form in MVP (proposed:
-  optional; see [PRD.md](PRD.md) §16).
-- Whether a `Feedback.status` field is adopted — if so,
-  `GET /api/admin/feedback` gains a `status` filter and the DTO exposes it
-  (see [DATABASE.md](DATABASE.md) open decision D).
-- Whether `staffId` appears in `POST /api/feedback` (depends on staff-in-MVP
-  decision; [DATABASE.md](DATABASE.md) §11).
-- Raw phone visibility policy: which roles may request `includeMaskedPhone`.
-- URL versioning approach if ever needed.
-- Whether analytics supports `groupBy` by category in MVP.
+## `getBranches`
+
+Returns active/configured branches according to the caller's context.
+
+---
+
+## `createBranch`
+
+Requires:
+
+```text
+branch.create
+```
+
+Input:
+
+```ts
+{
+  name: string
+  code?: string
+}
+```
+
+---
+
+## `updateBranch`
+
+Requires:
+
+```text
+branch.update
+```
+
+---
+
+## `deleteBranch`
+
+Requires:
+
+```text
+branch.delete
+```
+
+Prefer deactivation when historical feedback references the branch.
+
+---
+
+# 13. Service Actions
+
+## `getServices`
+
+Returns services available to the application.
+
+Can optionally filter by branch.
+
+---
+
+## `createService`
+
+Requires:
+
+```text
+service.create
+```
+
+---
+
+## `updateService`
+
+Requires:
+
+```text
+service.update
+```
+
+---
+
+## `deleteService`
+
+Requires:
+
+```text
+service.delete
+```
+
+Historical feedback must remain valid when a service is deactivated.
+
+---
+
+# 14. User Actions
+
+User-management actions are protected.
+
+## `createUser`
+
+Requires:
+
+```text
+user.create
+```
+
+Input:
+
+```ts
+{
+  email: string
+  password: string
+  roleId: string
+}
+```
+
+Admin-only dashboard user provisioning. Public self-registration is disabled
+at the auth layer (`security.md` §9), so this action is the only path for
+creating dashboard users.
+
+Flow:
+
+```text
+Authenticate (Admin session)
+    ↓
+Check user.create permission
+    ↓
+Validate input (Zod)
+    ↓
+Create the auth user server-side via the auth library's admin API
+(bypasses disableSignUp; the caller must already be an Admin)
+    ↓
+Assign roleId from the fixed role set
+    ↓
+Write an AuditLog record
+    ↓
+Return a safe result
+```
+
+* `roleId` must reference one of the fixed roles (Admin / Manager / Analyst).
+* Never expose or log the raw password; return a predictable result (§9).
+* Disabled users cannot access protected functionality (§14 `disableUser`).
+* The admin API requires the auth library's admin plugin to be enabled with
+  Admin as the admin role (`security.md` §9).
+
+---
+
+## `updateUser`
+
+Requires:
+
+```text
+user.update
+```
+
+---
+
+## `disableUser`
+
+Requires:
+
+```text
+user.disable
+```
+
+A disabled user must not be able to access protected functionality.
+
+---
+
+# 15. Analytics Actions
+
+Analytics actions are read-only from the application's business perspective.
+
+## `getDashboardSummary`
+
+Returns high-level metrics.
+
+Example:
+
+```ts
+{
+  totalFeedback: number
+  satisfactionRate: number
+  negativeRate: number
+  neutralRate: number
+  todayCount: number
+}
+```
+
+`satisfactionRate`, `negativeRate`, and `neutralRate` (Neutral / Other) cover
+the KPI categories of the dashboard overview (`PRD.md` §15); the three rates
+are intended to sum to 100% of rated feedback once the rating-to-category
+mapping is finalized.
+
+---
+
+## `getFeedbackTrends`
+
+Input:
+
+```ts
+{
+  branchId?: string
+  serviceId?: string
+  range?: "today" | "yesterday" | "specific_day" | "this_week" | "previous_week" | "this_month" | "previous_month" | "this_year" | "previous_year" | "custom"
+  date?: Date         // required when range = "specific_day"
+  startDate?: Date    // required when range = "custom" (or when range is omitted)
+  endDate?: Date      // required when range = "custom" (or when range is omitted)
+  interval: "day" | "week" | "month" | "year"
+}
+```
+
+`range` selects a preset period from the filter set in §16. If `range` is
+omitted, `startDate` and `endDate` must be provided explicitly.
+
+---
+
+## `getBranchAnalytics`
+
+Returns metrics grouped by branch.
+
+---
+
+## `getServiceAnalytics`
+
+Returns metrics grouped by service.
+
+---
+
+## `getSatisfactionDistribution`
+
+Returns structured feedback distribution.
+
+---
+
+# 16. Date Filtering
+
+Analytics must use a consistent date model.
+
+Supported filters:
+
+```text
+today
+yesterday
+specific_day     # a specific calendar date
+this_week
+previous_week
+this_month
+previous_month
+this_year
+previous_year
+custom
+```
+
+This is the full filter set from `PRD.md` G4 (Time-based analytics). For
+`specific_day`, the caller supplies the specific date:
+
+```ts
+{
+  date: Date
+}
+```
+
+For custom ranges:
+
+```ts
+{
+  startDate: Date
+  endDate: Date
+}
+```
+
+Date boundaries must be calculated server-side using the application's configured timezone.
+
+---
+
+# 17. Pagination
+
+Large datasets must not be returned in a single response.
+
+Feedback lists should use pagination.
+
+Preferred approach:
+
+```text
+cursor-based pagination
+```
+
+when appropriate.
+
+For simple administrative lists, page-based pagination may also be used.
+
+The implementation should select the simplest approach that meets the actual query requirements.
+
+---
+
+# 18. Filtering
+
+Filters must be explicit and validated.
+
+Example:
+
+```ts
+{
+  branchId?: string
+  serviceId?: string
+  rating?: FeedbackRating
+  startDate?: Date
+  endDate?: Date
+}
+```
+
+Do not construct raw SQL from user-provided filter strings.
+
+---
+
+# 19. Analytics Performance
+
+Analytics actions must calculate metrics on the server/database.
+
+Avoid:
+
+```text
+Database
+   ↓
+10,000 feedback records
+   ↓
+Browser
+   ↓
+JavaScript calculates everything
+```
+
+Prefer:
+
+```text
+Database
+   ↓
+SQL aggregation
+   ↓
+Small analytics result
+   ↓
+Browser
+```
+
+---
+
+# 20. AI Actions
+
+AI actions are protected.
+
+Example:
+
+```text
+generateFeedbackInsights()
+```
+
+The action should:
+
+1. Authenticate user.
+2. Check `analytics.ai`.
+3. Validate requested scope.
+4. Retrieve required feedback/analytics data.
+5. Send only necessary data to the AI provider.
+6. Validate the AI response.
+7. Return structured insights.
+8. Log AI processing errors safely.
+
+---
+
+# 21. AI Response Contract
+
+AI output should use structured data rather than arbitrary text where possible.
+
+Example:
+
+```ts
+{
+  summary: string
+  positiveThemes: string[]
+  negativeThemes: string[]
+  recommendations: string[]
+}
+```
+
+The exact schema belongs to the AI implementation.
+
+AI-generated information must be clearly distinguishable from deterministic analytics.
+
+---
+
+# 22. Database Access
+
+Only server-side code may access Prisma/PostgreSQL.
+
+Allowed:
+
+```text
+Server Action
+   ↓
+Service
+   ↓
+Prisma
+```
+
+Not allowed:
+
+```text
+Client Component
+   ↓
+Prisma
+```
+
+Do not expose database credentials to the browser.
+
+---
+
+# 23. Transactions
+
+Use database transactions when multiple related writes must succeed or fail together.
+
+Example:
+
+```text
+Create branch
++
+Create branch-service relationships
++
+Audit operation
+```
+
+should use a transaction when atomicity is required.
+
+---
+
+# 24. Idempotency
+
+Actions that may be retried because of network conditions should consider idempotency.
+
+This is especially important for:
+
+* Feedback submission
+* User creation
+* Administrative mutations
+
+The implementation should prevent accidental duplicate records where appropriate.
+
+---
+
+# 25. Rate Limiting
+
+Public actions, especially `submitFeedback`, should be protected against abuse.
+
+Potential controls:
+
+```text
+IP-based limits
+Phone-number-based limits
+Request throttling
+Bot protection
+```
+
+Exact limits are defined in `security.md` §14 (default rate-limiting policy).
+
+---
+
+# 26. Logging
+
+Server Actions should log useful operational information without exposing sensitive patient data.
+
+Never unnecessarily log:
+
+```text
+Phone numbers
+Full feedback text
+Passwords
+Session tokens
+Secrets
+```
+
+---
+
+# 27. Action Design Rules
+
+AI agents and developers must follow these rules:
+
+### Rule 1
+
+Do not create a Server Action when existing functionality can be reused.
+
+### Rule 2
+
+Do not put database queries directly in UI components.
+
+### Rule 3
+
+Do not skip server-side validation.
+
+### Rule 4
+
+Do not skip authorization because a button is hidden.
+
+### Rule 5
+
+Do not return raw Prisma/database errors.
+
+### Rule 6
+
+Keep actions small and domain-specific.
+
+### Rule 7
+
+Use transactions for related atomic mutations.
+
+### Rule 8
+
+Update `API.md` when adding a significant new action or changing an existing contract.
+
+---
+
+# 28. API Contract Principle
+
+The API layer should remain:
+
+```text
+Explicit
+Typed
+Validated
+Authorized
+Predictable
+Testable
+```
+
+Server Actions are the transport mechanism.
+
+**Business logic should remain in domain/service modules rather than being embedded entirely inside Server Actions.**
+
+---
+
+# 29. Source-of-Truth Rules
+
+```text
+PRD.md
+    → Product requirements
+
+Architecture.md
+    → System structure
+
+API.md
+    → Server communication contracts
+
+database.md
+    → Data model
+
+security.md
+    → Security requirements
+
+workflow.md
+    → Development process
+```
+
+When documents conflict, the team should resolve the conflict explicitly rather than silently implementing contradictory behavior.
+
+---
+
+# 30. Authentication Endpoints (Better Auth)
+
+Authentication is handled by **Better Auth**, configured in
+`src/lib/auth/index.ts` (email + password with the Prisma adapter). The
+library's Next.js adapter mounts its endpoints under `/api/auth/*` through the
+catch-all route handler in `src/app/api/auth/[...all]/route.ts`.
+
+These are the only REST-style routes in the application; all other client-server
+communication uses Server Actions (§1).
+
+Common endpoints:
+
+```text
+POST /api/auth/sign-up/email      # disabled by default (disableSignUp);
+                                  # provisioning happens via the createUser
+                                  # Server Action (§14)
+POST /api/auth/sign-in/email      # email + password sign-in
+POST /api/auth/sign-out           # sign out
+GET  /api/auth/get-session        # current session
+```
+
+Rules:
+
+* The endpoints are provided and managed by the library — do not reimplement
+  them as Server Actions and do not build custom session logic on top.
+* Resolve sessions server-side through the library; never trust session or role
+  claims sent from the client (`security.md` §9).
+* The route handler is `force-dynamic`; these routes must never be statically
+  prerendered.
+* Configuration uses `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`
+  (`.env.example`); the secret must never be exposed through `NEXT_PUBLIC_*`.
+* Public self-registration is disabled in the auth configuration
+  (`emailAndPassword.disableSignUp = true`, `security.md` §9), so
+  `sign-up/email` is not available to clients. Dashboard users are created
+  only by Admin through the `createUser` Server Action (§14).
+* Patient feedback submission does not use these endpoints; patients do not
+  authenticate.
