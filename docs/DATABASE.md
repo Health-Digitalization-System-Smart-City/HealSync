@@ -63,7 +63,6 @@ Represents an administrative dashboard user.
 User
 ├── id
 ├── email
-├── passwordHash
 ├── roleId
 ├── isActive
 ├── createdAt
@@ -74,7 +73,8 @@ User
 Rules:
 
 * Email must be unique.
-* Passwords must never be stored in plaintext.
+* Passwords must never be stored in plaintext. The password hash is stored in
+  `Account.password` (managed by Better Auth), not on the User record.
 * Disabled users cannot access the dashboard.
 * Users belong to a role.
 * Only authorized administrators can manage users.
