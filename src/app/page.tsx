@@ -1,5 +1,11 @@
-import { Database, HeartPulse, ShieldCheck, Sparkles } from "lucide-react";
-
+import {
+  Building2,
+  Database,
+  HeartPulse,
+  MessageSquareHeart,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -16,16 +22,19 @@ const stack = [
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-24">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-6 py-16 sm:py-24">
       <div className="flex flex-col items-start gap-8">
         <Badge variant="secondary" className="gap-2 px-3 py-1">
           <Sparkles className="size-3.5" aria-hidden />
-          Phase 1 — Foundation
+          HealSync Smart City Digitalization
         </Badge>
 
         <div className="flex flex-col items-start gap-4">
           <h1 className="flex items-center gap-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            <HeartPulse className="text-primary size-10" aria-hidden />
+            <HeartPulse
+              className="size-10 text-emerald-600 dark:text-emerald-400"
+              aria-hidden
+            />
             HealSync
           </h1>
           <p className="text-muted-foreground max-w-xl text-lg leading-8">
@@ -35,12 +44,24 @@ export default function Home() {
           </p>
         </div>
 
-        <Link
-          href="/api/auth/get-session"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          Auth health check
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            href="/feedback"
+            className={
+              buttonVariants({ variant: "default", size: "lg" }) +
+              " gap-2 font-semibold shadow-md"
+            }
+          >
+            <MessageSquareHeart className="size-5" />
+            Open Patient Feedback Page
+          </Link>
+          <Link
+            href="/api/auth/get-session"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Auth health check
+          </Link>
+        </div>
 
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {stack.map((item) => (
@@ -61,8 +82,7 @@ export default function Home() {
 
         <p className="text-muted-foreground flex items-center gap-2 text-sm">
           <ShieldCheck className="size-4 text-emerald-500" aria-hidden />
-          Product features are intentionally not built yet — the repository is
-          prepared for the design and build phases.
+          Patient feedback submission is active and operational.
         </p>
       </div>
     </main>
