@@ -27,14 +27,19 @@ import { auth } from "../src/lib/auth";
 // ---------------------------------------------------------------------------
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error("DATABASE_URL is not set; seed requires a running database.");
+if (!connectionString)
+  throw new Error("DATABASE_URL is not set; seed requires a running database.");
 
 const prisma = new PrismaClient({ adapter: new PrismaPg(connectionString) });
 
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? "admin@healsync.com";
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? (process.env.NODE_ENV === "production"
-  ? (() => { throw new Error("SEED_ADMIN_PASSWORD is required in production"); })()
-  : "Admin@12345");
+const ADMIN_PASSWORD =
+  process.env.SEED_ADMIN_PASSWORD ??
+  (process.env.NODE_ENV === "production"
+    ? (() => {
+        throw new Error("SEED_ADMIN_PASSWORD is required in production");
+      })()
+    : "Admin@12345");
 
 const ADMIN_NAME = process.env.SEED_ADMIN_NAME ?? "System Admin";
 
@@ -50,11 +55,13 @@ interface RoleDef {
 const ROLES: RoleDef[] = [
   {
     name: "Admin",
-    description: "Full system access. Only role that can manage users and access raw patient phone numbers.",
+    description:
+      "Full system access. Only role that can manage users and access raw patient phone numbers.",
   },
   {
     name: "Manager",
-    description: "Operational dashboard access: analytics and permitted feedback. Cannot create users or view phone numbers.",
+    description:
+      "Operational dashboard access: analytics and permitted feedback. Cannot create users or view phone numbers.",
   },
   {
     name: "Analyst",
@@ -100,10 +107,13 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
  * 13 placeholder branches (PRD.md §33 decision 1: "Exact names of the 13
  * branches"). Replace with real names when resolved.
  */
-const BRANCHES: { name: string; code: string }[] = Array.from({ length: 13 }, (_, i) => {
-  const n = String(i + 1).padStart(2, "0");
-  return { name: `Branch ${n}`, code: `BR-${n}` };
-});
+const BRANCHES: { name: string; code: string }[] = Array.from(
+  { length: 13 },
+  (_, i) => {
+    const n = String(i + 1).padStart(2, "0");
+    return { name: `Branch ${n}`, code: `BR-${n}` };
+  },
+);
 
 /**
  * Core services from DATABASE.md §8 example. Extensible via the admin UI.
@@ -177,7 +187,9 @@ async function main(): Promise<void> {
   // ── 4. Admin user ────────────────────────────────────────────────────
 
   console.log(`  • Seeding admin user (${ADMIN_EMAIL})…`);
-  const existingAdmin = await prisma.user.findUnique({ where: { email: ADMIN_EMAIL } });
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: ADMIN_EMAIL },
+  });
 
   if (!existingAdmin) {
     // Use the app's auth flow (single source of truth for password hashing).
@@ -199,7 +211,9 @@ async function main(): Promise<void> {
         },
       });
     } else {
-      throw new Error(`signUpEmail returned unexpected shape: ${JSON.stringify(created)}`);
+      throw new Error(
+        `signUpEmail returned unexpected shape: ${JSON.stringify(created)}`,
+      );
     }
 
     console.log("  ✓ Admin user created");
@@ -232,7 +246,9 @@ async function main(): Promise<void> {
   console.log("  • Seeding services…");
   const serviceRecords: Record<string, string> = {};
   for (const s of SERVICES) {
-    const existingSvc = await prisma.service.findFirst({ where: { name: s.name } });
+    const existingSvc = await prisma.service.findFirst({
+      where: { name: s.name },
+    });
     if (existingSvc) {
       serviceRecords[existingSvc.name] = existingSvc.id;
       await prisma.service.update({
@@ -240,7 +256,9 @@ async function main(): Promise<void> {
         data: { description: s.description, isActive: true },
       });
     } else {
-      const svc = await prisma.service.create({ data: { name: s.name, description: s.description } });
+      const svc = await prisma.service.create({
+        data: { name: s.name, description: s.description },
+      });
       serviceRecords[svc.name] = svc.id;
     }
   }
@@ -268,7 +286,10 @@ async function main(): Promise<void> {
   if (existingFeedbackCount === 0) {
     console.log("  • Seeding sample feedback…");
 
-    const targetBranches = await prisma.branch.findMany({ take: 3, orderBy: { createdAt: "asc" } });
+    const targetBranches = await prisma.branch.findMany({
+      take: 3,
+      orderBy: { createdAt: "asc" },
+    });
     const targetServices = await prisma.branchService.findMany({
       take: 3,
       include: { service: true, branch: true },
@@ -278,7 +299,8 @@ async function main(): Promise<void> {
       {
         phoneNumber: "+251911111111",
         rating: "VERY_SATISFIED" as const,
-        comment: "Excellent service, the staff was very professional and caring.",
+        comment:
+          "Excellent service, the staff was very professional and caring.",
       },
       {
         phoneNumber: "+251922222222",
@@ -303,7 +325,8 @@ async function main(): Promise<void> {
     ];
 
     for (const fb of sampleFeedback) {
-      const branchSvc = targetServices[Math.floor(Math.random() * targetServices.length)];
+      const branchSvc =
+        targetServices[Math.floor(Math.random() * targetServices.length)];
       if (!branchSvc) continue;
 
       await prisma.feedback.create({
@@ -313,14 +336,18 @@ async function main(): Promise<void> {
           serviceId: branchSvc.serviceId,
           rating: fb.rating,
           comment: fb.comment,
-          createdAt: new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000)), // random past 30d
+          createdAt: new Date(
+            Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
+          ), // random past 30d
         },
       });
     }
 
     console.log(`  ✓ Created ${sampleFeedback.length} sample feedback records`);
   } else {
-    console.log(`  • Skipping sample feedback (${existingFeedbackCount} records already exist)`);
+    console.log(
+      `  • Skipping sample feedback (${existingFeedbackCount} records already exist)`,
+    );
   }
 
   console.log("✅ HealSync seed — complete");
