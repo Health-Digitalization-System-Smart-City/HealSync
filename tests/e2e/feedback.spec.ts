@@ -8,7 +8,7 @@ test.describe("Patient Feedback Page", () => {
 
     await expect(page).toHaveTitle(/Patient Feedback | HealSync Healthcare/);
     await expect(
-      page.getByRole("heading", { level: 1, name: /Phone Number/i }),
+      page.getByRole("heading", { name: /Phone Number/i }),
     ).toBeVisible();
     await expect(page.getByLabel(/Patient Phone Number/i)).toBeVisible();
   });

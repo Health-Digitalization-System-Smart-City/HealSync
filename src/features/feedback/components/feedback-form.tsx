@@ -167,7 +167,6 @@ export function PatientFeedbackForm({
   React.useEffect(() => {
     if (initialBranches.length === 0) {
       let isMounted = true;
-      setIsLoadingBranches(true);
       getBranches()
         .then((res) => {
           if (!isMounted) return;
@@ -189,15 +188,9 @@ export function PatientFeedbackForm({
 
   // 2. Fetch Services whenever selectedBranchId changes
   React.useEffect(() => {
-    if (!selectedBranchId) {
-      setServices([]);
-      setSelectedServiceId("");
-      return;
-    }
+    if (!selectedBranchId) return;
 
     let isMounted = true;
-    setIsLoadingServices(true);
-    setErrorMessage(null);
 
     getServices({ branchId: selectedBranchId })
       .then((res) => {
@@ -253,6 +246,11 @@ export function PatientFeedbackForm({
   // Handle Step 2 Validation (Branch)
   const handleBranchSelect = (branchId: string) => {
     setSelectedBranchId(branchId);
+    // Reset the dependent service list and show the loading state now (the
+    // fetch effect below refreshes it for the newly selected branch).
+    setServices([]);
+    setSelectedServiceId("");
+    setIsLoadingServices(true);
     setFieldErrors((prev) => ({ ...prev, branchId: [] }));
     setErrorMessage(null);
     setStep(3);
