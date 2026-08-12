@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { getServicesSchema } from "@/lib/validation";
+import { getServiceByBranchSchema } from "@/lib/validation";
 
 export interface ServiceData {
   id: string;
@@ -22,14 +22,19 @@ export type ActionResponse<T> =
     };
 
 /**
- * Public action: Returns services available to the application (API.md §13).
- * Can optionally filter by branchId.
+ * Public action: Returns active services offered at the given branch
+ * (API.md §13, DATABASE.md §15). Part of the agreed patient-flow contract
+ * (submitFeedback / getBranches / getServiceByBranch).
+ *
+ * Only services linked to the branch via an active BranchService row and
+ * themselves active are returned, so the client can never present an invalid
+ * branch → service combination.
  */
-export async function getServices(input?: {
-  branchId?: string;
+export async function getServiceByBranch(input: {
+  branchId: string;
 }): Promise<ActionResponse<ServiceData[]>> {
   try {
-    const parseResult = getServicesSchema.safeParse(input ?? {});
+    const parseResult = getServiceByBranchSchema.safeParse(input);
     if (!parseResult.success) {
       return {
         success: false,
@@ -43,61 +48,37 @@ export async function getServices(input?: {
 
     const { branchId } = parseResult.data;
 
-    if (branchId) {
-      // Find active services associated with the selected branch via BranchService join
-      const branchServices = await db.branchService.findMany({
-        where: {
-          branchId,
-          isActive: true,
-          service: {
-            isActive: true,
-          },
-        },
-        include: {
-          service: true,
-        },
-        orderBy: {
-          service: {
-            name: "asc",
-          },
-        },
-      });
-
-      const services: ServiceData[] = branchServices.map((bs) => ({
-        id: bs.service.id,
-        name: bs.service.name,
-        description: bs.service.description,
-        isActive: bs.service.isActive,
-      }));
-
-      return {
-        success: true,
-        data: services,
-      };
-    }
-
-    // Default: Return all active services
-    const services = await db.service.findMany({
+    const branchServices = await db.branchService.findMany({
       where: {
+        branchId,
         isActive: true,
+        service: {
+          isActive: true,
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
+      include: {
+        service: true,
       },
       orderBy: {
-        name: "asc",
+        service: {
+          name: "asc",
+        },
       },
     });
+
+    const services: ServiceData[] = branchServices.map((bs) => ({
+      id: bs.service.id,
+      name: bs.service.name,
+      description: bs.service.description,
+      isActive: bs.service.isActive,
+    }));
 
     return {
       success: true,
       data: services,
     };
   } catch (error) {
-    console.error("Failed to fetch services:", error);
+    console.error("Failed to fetch branch services:", error);
     return {
       success: false,
       error: {

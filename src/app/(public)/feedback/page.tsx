@@ -14,8 +14,16 @@ export default async function FeedbackPage() {
   const initialBranches = branchesResult.success ? branchesResult.data : [];
 
   return (
-    <main className="bg-background min-h-screen py-8 sm:py-12">
-      <PatientFeedbackForm initialBranches={initialBranches} />
+    <main className="bg-background min-h-screen py-4 sm:py-8">
+      <a
+        href="#feedback-form"
+        className="bg-primary text-primary-foreground focus:not-sr-only sr-only z-50 mx-auto block w-max rounded-md px-4 py-2 text-sm font-medium"
+      >
+        Skip to feedback form
+      </a>
+      <div id="feedback-form">
+        <PatientFeedbackForm initialBranches={initialBranches} />
+      </div>
     </main>
   );
 }
