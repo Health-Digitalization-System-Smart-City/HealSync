@@ -33,6 +33,113 @@ export function PatientFeedbackForm({
 
   // Announce step changes / confirmation by moving focus to the step heading.
   React.useEffect(() => {
+    if (initialBranches.length === 0) {
+      let isMounted = true;
+      getBranches()
+        .then((res) => {
+          if (!isMounted) return;
+          if (res.success) {
+            setBranches(res.data);
+          } else {
+            setErrorMessage(res.error.message);
+          }
+        })
+
+        .finally(() => {
+          if (isMounted) setIsLoadingBranches(false);
+        });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [initialBranches]);
+
+  // 2. Fetch Services whenever selectedBranchId changes
+  React.useEffect(() => {
+    if (!selectedBranchId) return;
+
+    let isMounted = true;
+
+    getServices({ branchId: selectedBranchId })
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success) {
+          setServices(res.data);
+          // Reset selected service if current service is no longer in the loaded list
+          if (
+            selectedServiceId &&
+            !res.data.some((s) => s.id === selectedServiceId)
+          ) {
+            setSelectedServiceId("");
+          }
+        } else {
+          setServices([]);
+          setErrorMessage(res.error.message);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingServices(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedBranchId]);
+
+  // Handle Step 1 Validation (Phone)
+  const handlePhoneSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    const cleanPhone = phoneNumber.trim();
+    if (!cleanPhone) {
+      setFieldErrors({ phoneNumber: ["Phone number is required."] });
+      return;
+    }
+
+    const phoneRegex = /^(\+251|0)?[79]\d{8}$|^(\+\d{1,3})?\d{8,14}$/;
+    if (!phoneRegex.test(cleanPhone.replace(/[\s-]/g, ""))) {
+      setFieldErrors({
+        phoneNumber: [
+          "Please enter a valid phone number (e.g. 0912345678 or +251912345678).",
+        ],
+      });
+      return;
+    }
+
+    setStep(2);
+  };
+
+  // Handle Step 2 Validation (Branch)
+  const handleBranchSelect = (branchId: string) => {
+    setSelectedBranchId(branchId);
+    // Reset the dependent service list and show the loading state now (the
+    // fetch effect below refreshes it for the newly selected branch).
+    setServices([]);
+    setSelectedServiceId("");
+    setIsLoadingServices(true);
+    setFieldErrors((prev) => ({ ...prev, branchId: [] }));
+    setErrorMessage(null);
+    setStep(3);
+  };
+
+  // Handle Step 3 Validation (Service)
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedServiceId(serviceId);
+    setFieldErrors((prev) => ({ ...prev, serviceId: [] }));
+    setErrorMessage(null);
+    setStep(4);
+  };
+
+  // Final Form Submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    if (!rating) {
+      setFieldErrors({ rating: ["Please select a rating option."] });
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;

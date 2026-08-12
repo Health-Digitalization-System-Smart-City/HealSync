@@ -974,12 +974,16 @@ communication uses Server Actions (§1).
 Common endpoints:
 
 ```text
-POST /api/auth/sign-up/email      # disabled by default (disableSignUp);
+POST /api/auth/sign-up/email      # disabled (disableSignUp = true);
                                   # provisioning happens via the createUser
                                   # Server Action (§14)
 POST /api/auth/sign-in/email      # email + password sign-in
 POST /api/auth/sign-out           # sign out
 GET  /api/auth/get-session        # current session
+POST /api/auth/request-password-reset   # request a reset link (email + redirectTo)
+GET  /api/auth/reset-password/:token    # validates the token, redirects to the
+                                        # reset page with ?token=...
+POST /api/auth/reset-password           # set a new password (newPassword + token)
 ```
 
 Rules:
@@ -995,6 +999,18 @@ Rules:
 * Public self-registration is disabled in the auth configuration
   (`emailAndPassword.disableSignUp = true`, `security.md` §9), so
   `sign-up/email` is not available to clients. Dashboard users are created
-  only by Admin through the `createUser` Server Action (§14).
+  only by Admin through the `createUser` Server Action (§14). Note that
+  `auth.api.signUpEmail` honors `disableSignUp` server-side as well; the
+  initial Admin is bootstrapped by the seed with Better Auth's own password
+  hashing (`better-auth/crypto`), and subsequent users via the admin plugin
+  (`adminRoles: ["Admin"]`).
+* Password reset uses Better Auth's endpoints above; the reset URL is emailed
+  by the application's email service (Resend when `RESEND_API_KEY` is set,
+  server-console preview otherwise). Tokens expire after 1 hour.
+* `/api/auth/*` endpoints are rate-limited per IP by Better Auth
+  (`src/lib/auth/index.ts`): 100 requests/minute globally, and a built-in
+  special rule caps sign-in at 3 attempts per 10 seconds (brute-force
+  protection, `security.md` §9). `BETTER_AUTH_RATE_LIMIT_RELAXED=true` widens
+  the sign-in budget for test environments only.
 * Patient feedback submission does not use these endpoints; patients do not
   authenticate.

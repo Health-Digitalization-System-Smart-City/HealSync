@@ -60,13 +60,13 @@ Tests    Automated test coverage
 
 ```text
 [x]  DB schema (prisma/schema.prisma) — all 11 models + FeedbackRating enum
-[ ]  Initial Prisma migration (prisma/migrations/) — NOT created
-[ ]  Database migrated + seeded — blocked on local PostgreSQL
+[x]  Initial Prisma migration (prisma/migrations/20260811122340_init)
+[x]  Database migrated + seeded (roles, permissions, admin, branches, services, feedback)
 [x]  Better Auth foundation — mounted at /api/auth/*, email+password enabled
-[ ]  Better Auth target config — disableSignUp + admin plugin NOT configured
+[x]  Better Auth target config — disableSignUp + admin plugin + session hooks configured
 [x]  Landing page + button/badge UI components
-[ ]  Server Actions, validation schemas, permission checks, analytics, AI
-[x]  Unit + e2e smoke tests only
+[/]  Server Actions, validation schemas, permission checks — auth/user done; analytics, AI pending
+[x]  Unit + e2e tests — smoke, feedback, auth/RBAC
 ```
 
 ---
@@ -77,10 +77,10 @@ Tests    Automated test coverage
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 0.1 | `[ ]` Create `.env` from `.env.example` (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) | DevOps | — |
-| 0.2 | `[ ]` Start local PostgreSQL and create the `healsync` database | DevOps | 0.1 |
-| 0.3 | `[ ]` Run `prisma migrate dev --name init` to create + apply the initial migration | DevOps | 0.2 |
-| 0.4 | `[ ]` Run `prisma db seed` (roles, 18 permissions, matrix, admin, 13 branches, 3 services, sample feedback) | DevOps | 0.3 |
+| 0.1 | `[x]` Create `.env` from `.env.example` (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) | DevOps | — |
+| 0.2 | `[x]` Start local PostgreSQL and create the `healsync` database | DevOps | 0.1 |
+| 0.3 | `[x]` Run `prisma migrate dev --name init` to create + apply the initial migration | DevOps | 0.2 |
+| 0.4 | `[x]` Run `prisma db seed` (roles, 17 permissions, matrix, admin, 13 branches, 3 services, sample feedback) | DevOps | 0.3 |
 
 Notes: `prisma migrate deploy` for production (database.md §27). Seed is
 idempotent; production requires `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`
@@ -95,13 +95,13 @@ its quality job (workflow.md §14).
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 1.1 | `[ ]` Enable auth-lib target config in `src/lib/auth/index.ts`: `emailAndPassword.disableSignUp = true` + **admin plugin** with `adminRoles: ["Admin"]` (security.md §9, API.md §30) | Server | 0 |
-| 1.2 | `[ ]` `requireUser()` helper — resolve Better Auth session server-side; reject with `UNAUTHENTICATED` (API.md §6, §10) | Server | 1.1 |
-| 1.3 | `[ ]` `requirePermission("resource.action")` helper — user → role → permissions from DB; never trust client claims (API.md §7, security.md §10) | Server | 1.1 |
-| 1.4 | `[ ]` Login page UI (`(auth)/login`) — email/password form → `/api/auth/sign-in/email`, error states, redirect to dashboard | UI | 1.2 |
-| 1.5 | `[ ]` Dashboard route guard — server-side layout check: unauthenticated → login; disabled users blocked (`isActive`) | Server+UI | 1.2, 1.4 |
-| 1.6 | `[ ]` Sign-out control in the dashboard shell | UI | 1.4 |
-| 1.7 | `[ ]` Enable password reset + session-expiry handling via Better Auth (email/verification mechanism is a small open decision) — responsibility per Architecture.md §5 | Server | 1.1 |
+| 1.1 | `[x]` Enable auth-lib target config in `src/lib/auth/index.ts`: `emailAndPassword.disableSignUp = true` + **admin plugin** with `adminRoles: ["Admin"]` (security.md §9, API.md §30) | Server | 0 |
+| 1.2 | `[x]` `requireUser()` helper — resolve Better Auth session server-side; reject with `UNAUTHENTICATED` (API.md §6, §10) | Server | 1.1 |
+| 1.3 | `[x]` `requirePermission("resource.action")` helper — user → role → permissions from DB; never trust client claims (API.md §7, security.md §10) | Server | 1.1 |
+| 1.4 | `[x]` Login page UI (`(auth)/login`) — email/password form → `/api/auth/sign-in/email`, error states, redirect to dashboard | UI | 1.2 |
+| 1.5 | `[x]` Dashboard route guard — server-side layout check: unauthenticated → login; disabled users blocked (`isActive`) | Server+UI | 1.2, 1.4 |
+| 1.6 | `[x]` Sign-out control in the dashboard shell | UI | 1.4 |
+| 1.7 | `[x]` Enable password reset + session-expiry handling via Better Auth (Resend for email delivery, console preview in dev) — responsibility per Architecture.md §5 | Server | 1.1 |
 
 Acceptance: no public self-registration path; disabled users cannot reach the
 dashboard; Manager/Analyst roles can sign in but only see permitted areas.
@@ -114,11 +114,11 @@ dashboard; Manager/Analyst roles can sign in but only see permitted areas.
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 2.1 | `[ ]` `getUsers` / `getUser` actions — requires `user.read`; never expose passwords. (API.md §14 does not yet contract user read actions — add them there as part of this task, contract-first per API.md §27 Rule 8) | Server | 1.3 |
-| 2.2 | `[ ]` `createUser` action — full flow per API.md §14: Admin session → `user.create` → Zod → auth-lib admin API (bypasses `disableSignUp`) → fixed role → AuditLog → safe result | Server | 1.3 |
-| 2.3 | `[ ]` `updateUser` / `disableUser` actions — `user.update` / `user.disable`; disable sets `isActive = false` + audit (API.md §14) | Server | 1.3 |
-| 2.4 | `[ ]` Shared `writeAuditLog()` helper for all sensitive mutations (database.md §18–19) | Server | 0 |
-| 2.5 | `[ ]` Users management page (admin) — list, create form (email/password/role), disable, change role; hidden for non-Admins via permissions, not UI state alone | UI | 2.1–2.3 |
+| 2.1 | `[x]` `getUsers` action — requires `user.read`; never expose passwords. (API.md §14 does not yet contract user read actions — add them there as part of this task, contract-first per API.md §27 Rule 8) | Server | 1.3 |
+| 2.2 | `[x]` `createUser` action — full flow per API.md §14: Admin session → `user.create` → Zod → auth-lib admin API (bypasses `disableSignUp`) → fixed role → AuditLog → safe result | Server | 1.3 |
+| 2.3 | `[x]` `updateUser` / `disableUser` actions — `user.update` / `user.disable`; disable sets `isActive = false`, revokes sessions + audit (API.md §14) | Server | 1.3 |
+| 2.4 | `[x]` Shared `writeAudit()` helper for all sensitive mutations (database.md §18–19) | Server | 0 |
+| 2.5 | `[x]` Users management page (admin) — list, create form (email/password/role), disable, change role; permission-gated server-side | UI | 2.1–2.3 |
 
 ---
 
@@ -128,11 +128,11 @@ dashboard; Manager/Analyst roles can sign in but only see permitted areas.
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 3.1 | `[ ]` Zod schemas — `src/lib/validation/feedback.ts` + phone normalization to E.164 (`0912 345 678` → `+251912345678`), rating enum, comment ≤ 1,000 chars (security.md §14, database.md §11) | Server | 0 |
-| 3.2 | `[ ]` `submitFeedback` action — validate phone/branch/service/rating → **verify BranchService relationship** → store with `phoneNumberHash` → rate limiting (10/10 min per IP, 16 KB payload cap) (API.md §11, security.md §14) | Server | 3.1 |
-| 3.3 | `[ ]` Public `getBranches` / `getServices` — only active branches; services filtered by selected branch (API.md §12–13, PRD §9) | Server | 0 |
-| 3.4 | `[ ]` Mobile-first feedback form — multi-step: phone → branch → service → rating → optional comment → submit (PRD G1, FR-P001–P006) | UI | 3.1–3.3 |
-| 3.5 | `[ ]` Confirmation screen + duplicate-submit guard (disable button while pending) (PRD §13, FR-P007) | UI | 3.4 |
+| 3.1 | `[x]` Zod schemas — `src/lib/validation/feedback.ts` + phone normalization to E.164 (`0912 345 678` → `+251912345678`), rating enum, comment ≤ 1,000 chars (security.md §14, database.md §11) | Server | 0 |
+| 3.2 | `[/]` `submitFeedback` action — validate phone/branch/service/rating → **verify BranchService relationship** → store with `phoneNumberHash` → rate limiting (10/10 min per IP, 16 KB payload cap) **pending (task 8.3)** (API.md §11, security.md §14) | Server | 3.1 |
+| 3.3 | `[x]` Public `getBranches` / `getServices` — only active branches; services filtered by selected branch (API.md §12–13, PRD §9) | Server | 0 |
+| 3.4 | `[x]` Mobile-first feedback form — multi-step: phone → branch → service → rating → optional comment → submit (PRD G1, FR-P001–P006) | UI | 3.1–3.3 |
+| 3.5 | `[x]` Confirmation screen + duplicate-submit guard (disable button while pending) (PRD §13, FR-P007) | UI | 3.4 |
 
 Acceptance (workflow.md §13): patient can complete the flow end-to-end on a
 mobile viewport; invalid branch/service pair rejected by the backend.
@@ -204,13 +204,13 @@ browser to compute statistics (API.md §19, Architecture.md §9).
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
 | 8.1 | `[ ]` Shared UI components — shadcn additions: `input`, `label`, `card`, `select`, `table`, `dialog`, `dropdown-menu`, `tabs`, `skeleton`, toast (button/badge already exist) | UI | — |
-| 8.2 | `[ ]` Result/error envelope utility — `{success, data}` / `{success: false, error: {code, message}}` + the 9 error codes (API.md §9–10) | Server | — |
+| 8.2 | `[x]` Result/error envelope utility — `src/lib/actions.ts`: `{success, data}` / `{success: false, error: {code, message}}` + the 9 error codes (API.md §9–10) | Server | — |
 | 8.3 | `[ ]` Rate-limit implementation — per-IP sliding window for `submitFeedback` (security.md §14) | Server | — |
 | 8.4 | `[ ]` Logging/observability — structured logs with request IDs; never log phone numbers, comments, passwords, tokens (API.md §26, security.md §23) | Server | — |
 | 8.5 | `[ ]` Security headers — CSP, X-Content-Type-Options, Referrer-Policy, HSTS (security.md §24) | DevOps | — |
-| 8.6 | `[ ]` Unit tests — phone normalization, permission checks, rating→bucket mapping, analytics calculations (workflow.md §12) | Tests | 3.1, 1.3 |
+| 8.6 | `[/]` Unit tests — permission checks done; phone normalization, rating→bucket mapping, analytics calculations pending (workflow.md §12) | Tests | 3.1, 1.3 |
 | 8.7 | `[ ]` Integration tests — Server Action → service → DB, including negative auth tests: `Manager → phone ❌`, `Analyst → delete ❌`, `Anonymous → self-register ❌` (security.md §26) | Tests | 1.x, 3.x |
-| 8.8 | `[ ]` E2E tests — patient flow, admin login → dashboard → users, role restrictions (workflow.md §13) | Tests | 3.x, 1.x |
+| 8.8 | `[/]` E2E tests — patient flow ✓, admin login → dashboard → users ✓; role-restriction negative tests pending (workflow.md §13) | Tests | 3.x, 1.x |
 | 8.9 | `[ ]` CI — uncomment the e2e job, add integration-test step to `.github/workflows/ci.yml` | DevOps | 8.7, 8.8 |
 | 8.10 | `[ ]` Update the specs when implementation changes a documented contract (workflow.md §19) — e.g. new Server Actions → API.md, schema changes → database.md; fold into each task's PR rather than a separate task | Docs | — |
 

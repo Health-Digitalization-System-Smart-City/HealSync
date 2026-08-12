@@ -4,10 +4,10 @@
 // docs/DATABASE.md §28:
 //
 //   Roles (3 fixed — Admin / Manager / Analyst)
-//   Permissions (18 — full set from API.md §8 / security.md §3)
+//   Permissions (17 — full set from API.md §8 / security.md §3)
 //   Role→permission grants (the precise matrix, interpreted from the docs)
-//   Initial admin user (created via the same Better Auth path used by
-//     the createUser Server Action in production; security.md §9)
+//   Initial admin user (bootstrapped with Better Auth's own password hashing;
+//     security.md §9 "Dashboard user provisioning")
 //   13 placeholder branches (configurable; PRD.md §33 decision 1)
 //   3 services (Laboratory, Pharmacy, Reception)
 //   Branch→service links
@@ -19,8 +19,9 @@
 
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "better-auth/crypto";
+
 import { PrismaClient } from "../src/generated/prisma/client";
-import { auth } from "../src/lib/auth";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -69,7 +70,7 @@ const ROLES: RoleDef[] = [
   },
 ];
 
-/** All 18 permissions defined in API.md §8 / security.md §3. */
+/** All 17 permissions defined in API.md §8 / security.md §3. */
 const PERMISSIONS: string[] = [
   "analytics.read",
   "analytics.ai",
@@ -192,29 +193,37 @@ async function main(): Promise<void> {
   });
 
   if (!existingAdmin) {
-    // Use the app's auth flow (single source of truth for password hashing).
-    // signUpEmail works server-side regardless of disableSignUp (security.md §9).
-    const created = await auth.api.signUpEmail({
-      body: {
+    // Public self-registration is disabled in the auth config (disableSignUp),
+    // and auth.api.signUpEmail honors that flag server-side. The bootstrap
+    // admin is therefore created directly through Prisma, mirroring Better
+    // Auth's sign-up: a user row plus a "credential" account whose password
+    // is hashed with the library's own hasher (better-auth/crypto) — the same
+    // algorithm used to verify passwords at sign-in (security.md §9).
+    const adminRoleId = roleRecords["Admin"];
+    if (!adminRoleId) throw new Error('Role "Admin" not found');
+
+    const adminUser = await prisma.user.create({
+      data: {
+        // Better Auth generates user ids itself (no DB default in the schema).
+        id: crypto.randomUUID(),
         email: ADMIN_EMAIL,
-        password: ADMIN_PASSWORD,
         name: ADMIN_NAME,
+        role: "Admin",
+        roleId: adminRoleId,
+        isActive: true,
+        emailVerified: true,
       },
     });
 
-    if ("user" in created) {
-      await prisma.user.update({
-        where: { id: created.user.id },
-        data: {
-          role: "Admin",
-          roleId: roleRecords["Admin"],
-        },
-      });
-    } else {
-      throw new Error(
-        `signUpEmail returned unexpected shape: ${JSON.stringify(created)}`,
-      );
-    }
+    await prisma.account.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: adminUser.id,
+        accountId: adminUser.id,
+        providerId: "credential",
+        password: await hashPassword(ADMIN_PASSWORD),
+      },
+    });
 
     console.log("  ✓ Admin user created");
   } else {
