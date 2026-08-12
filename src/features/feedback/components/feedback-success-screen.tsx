@@ -65,7 +65,7 @@ export function FeedbackSuccessScreen({
         <div className="text-muted-foreground flex items-center justify-between gap-4 border-b pb-2">
           <span>Reference ID</span>
           <span className="text-foreground font-mono text-xs font-medium break-all">
-            {submissionId ? submissionId.slice(0, 12) : "N/A"}
+            {submissionId ? submissionId.slice(0, 13) : "N/A"}
           </span>
         </div>
         <div className="text-muted-foreground flex items-center justify-between gap-4">

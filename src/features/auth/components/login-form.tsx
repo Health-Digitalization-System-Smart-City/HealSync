@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  AlertCircle,
   HeartPulse,
   Loader2,
   Lock,
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -96,16 +95,9 @@ export function LoginForm() {
       </CardHeader>
 
       <CardContent>
-        {errorMessage && (
-          <Alert
-            variant="destructive"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Sign-in failed</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {errorMessage ? (
+          <FormAlert messages={errorMessage} className="mb-4" />
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

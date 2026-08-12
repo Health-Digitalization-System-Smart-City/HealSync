@@ -74,6 +74,8 @@ async function advanceToRating(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default happy-path responses; individual tests override these.
+  mocks.getBranches.mockResolvedValue(okBranches());
   mocks.getServiceByBranch.mockResolvedValue(okServices());
   mocks.submitFeedback.mockResolvedValue({
     success: true,
@@ -221,7 +223,20 @@ describe("PatientFeedbackForm — validation feedback", () => {
 describe("PatientFeedbackForm — loading, error and empty states", () => {
   it("shows a loading state while branches are being fetched", async () => {
     mocks.getBranches.mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
     const { unmount } = renderForm({ initialBranches: [] });
+
+    // Branches preload in the background; the loading state is rendered on
+    // the branch selection step once the patient reaches it.
+    await user.type(
+      screen.getByLabelText(/Patient Phone Number/i),
+      "0912345678",
+    );
+    await user.click(
+      screen.getByRole("button", { name: /Continue to Branch Selection/i }),
+    );
+    await screen.findByRole("heading", { name: /Select Branch/i });
+
     expect(
       await screen.findByRole("status", { name: /Loading clinic branches/i }),
     ).toBeVisible();
@@ -239,6 +254,15 @@ describe("PatientFeedbackForm — loading, error and empty states", () => {
     const user = userEvent.setup();
     const { unmount } = renderForm({ initialBranches: [] });
 
+    await user.type(
+      screen.getByLabelText(/Patient Phone Number/i),
+      "0912345678",
+    );
+    await user.click(
+      screen.getByRole("button", { name: /Continue to Branch Selection/i }),
+    );
+    await screen.findByRole("heading", { name: /Select Branch/i });
+
     expect(
       await screen.findByRole("alert", { name: /Couldn't load branches/i }),
     ).toBeVisible();
@@ -253,8 +277,18 @@ describe("PatientFeedbackForm — loading, error and empty states", () => {
 
   it("shows an empty state when no branches are configured", async () => {
     mocks.getBranches.mockResolvedValue(okBranches([]));
-    // const user = userEvent.setup();
+    const user = userEvent.setup();
     const { unmount } = renderForm({ initialBranches: [] });
+
+    await user.type(
+      screen.getByLabelText(/Patient Phone Number/i),
+      "0912345678",
+    );
+    await user.click(
+      screen.getByRole("button", { name: /Continue to Branch Selection/i }),
+    );
+    await screen.findByRole("heading", { name: /Select Branch/i });
+
     expect(await screen.findByText(/No branches available/i)).toBeVisible();
     unmount();
   });
@@ -365,7 +399,7 @@ describe("PatientFeedbackForm — invalid branch-service combination", () => {
     const user = userEvent.setup();
     renderForm();
     await advanceToRating(user);
-    await user.click(screen.getByRole("radio", { name: /Good/i }));
+    await user.click(screen.getByRole("radio", { name: /^Good/i }));
     await user.click(screen.getByRole("button", { name: /Submit Feedback/i }));
 
     expect(

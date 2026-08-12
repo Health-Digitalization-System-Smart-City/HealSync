@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { FormAlert } from "@/components/form-alert";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +56,9 @@ export function FormField({
 
   const control = React.cloneElement<Partial<FormControlProps>>(children, {
     id,
-    "aria-invalid": hasErrors ? true : undefined,
+    // Always set aria-invalid (never remove it) so assistive tech sees an
+    // explicit valid/invalid state rather than a missing attribute.
+    "aria-invalid": hasErrors ? true : false,
     "aria-describedby": describedBy || undefined,
   });
 
@@ -96,16 +99,7 @@ export function FormField({
         </p>
       ) : null}
 
-      {hasErrors ? (
-        <ul
-          id={`${id}-error`}
-          className="text-destructive space-y-1 text-xs font-medium"
-        >
-          {errors.map((message) => (
-            <li key={message}>{message}</li>
-          ))}
-        </ul>
-      ) : null}
+      <FormAlert messages={errors} compact id={`${id}-error`} />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,16 +101,9 @@ export function ForgotPasswordForm() {
       </CardHeader>
 
       <CardContent>
-        {errorMessage && (
-          <Alert
-            variant="destructive"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <Mail className="h-4 w-4" />
-            <AlertTitle>Request failed</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {errorMessage ? (
+          <FormAlert messages={errorMessage} className="mb-4" />
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

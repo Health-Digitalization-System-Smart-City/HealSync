@@ -2,9 +2,8 @@
 
 import * as React from "react";
 
-import { AlertCircle, HeartPulse } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { HeartPulse } from "lucide-react";
+import { FormAlert } from "@/components/form-alert";
 import type { BranchData } from "@/features/branches/actions";
 import { useFeedbackFlow } from "@/features/feedback/components/use-feedback-flow";
 import { StepIndicator } from "@/features/feedback/components/form/step-indicator";
@@ -75,14 +74,7 @@ export function PatientFeedbackForm({
       </div>
 
       {state.topError ? (
-        <Alert
-          variant="destructive"
-          className="animate-in fade-in mb-6 duration-200"
-        >
-          <AlertCircle className="h-4 w-4" aria-hidden="true" />
-          <AlertTitle>Something went wrong</AlertTitle>
-          <AlertDescription>{state.topError}</AlertDescription>
-        </Alert>
+        <FormAlert messages={state.topError} className="mb-6" />
       ) : null}
 
       <div className="border-border/80 bg-card rounded-xl border shadow-lg">

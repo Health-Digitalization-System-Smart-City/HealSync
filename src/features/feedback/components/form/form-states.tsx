@@ -2,13 +2,16 @@
 
 import * as React from "react";
 
+import { Inbox, LoaderCircle, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
  * Shared async UI states for the feedback flow: loading, error and empty.
  * Each announces itself to assistive technology (status / alert) so the
- * flow never silently hangs.
+ * flow never silently hangs. The states share a common visual language:
+ * a centered icon tile, a title, an optional supporting message, and an
+ * optional action button.
  */
 
 export function LoadingState({
@@ -23,21 +26,30 @@ export function LoadingState({
   return (
     <div
       role="status"
+      aria-label={label}
       className={cn(
-        "flex flex-col items-center justify-center space-y-3 py-12 text-center",
+        "animate-in fade-in flex flex-col items-center justify-center gap-4 px-6 py-12 text-center duration-300",
         className,
       )}
     >
-      <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
-        <div
-          className="text-primary h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+      <div className="relative flex h-14 w-14 items-center justify-center">
+        <span
           aria-hidden="true"
+          className="absolute inset-0 animate-ping rounded-full bg-emerald-500/15 motion-reduce:animate-none"
         />
+        <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-500/20">
+          <LoaderCircle
+            className="h-6 w-6 animate-spin text-emerald-600 motion-reduce:animate-none dark:text-emerald-400"
+            aria-hidden="true"
+          />
+        </span>
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <p className="text-sm font-medium">{label}</p>
         {hint ? (
-          <p className="text-muted-foreground max-w-xs text-xs">{hint}</p>
+          <p className="text-muted-foreground mx-auto max-w-xs text-xs leading-relaxed">
+            {hint}
+          </p>
         ) : null}
       </div>
     </div>
@@ -60,33 +72,32 @@ export function ErrorState({
   return (
     <div
       role="alert"
+      aria-label={`${title}${message ? `: ${message}` : ""}`}
       className={cn(
-        "flex flex-col items-center justify-center space-y-3 py-10 text-center",
+        "animate-in fade-in border-destructive/20 bg-destructive/5 flex flex-col items-center gap-4 rounded-xl border px-6 py-12 text-center duration-300",
         className,
       )}
     >
-      <div className="bg-destructive/10 text-destructive flex h-12 w-12 items-center justify-center rounded-full">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
+      <span className="bg-destructive/10 ring-destructive/20 flex h-12 w-12 items-center justify-center rounded-full ring-1">
+        <TriangleAlert
+          className="text-destructive h-6 w-6"
           aria-hidden="true"
-        >
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
-          <path d="M12 9v4" />
-          <path d="M12 17h.01" />
-        </svg>
-      </div>
+        />
+      </span>
       <div className="space-y-1">
         <p className="text-sm font-semibold">{title}</p>
-        <p className="text-muted-foreground max-w-xs text-xs">{message}</p>
+        <p className="text-muted-foreground mx-auto max-w-xs text-xs leading-relaxed">
+          {message}
+        </p>
       </div>
       {onRetry ? (
-        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
           {retryLabel}
         </Button>
       ) : null}
@@ -110,30 +121,18 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center space-y-3 py-10 text-center",
+        "animate-in fade-in border-border bg-muted/40 flex flex-col items-center gap-4 rounded-xl border border-dashed px-6 py-12 text-center duration-300",
         className,
       )}
     >
-      <div className="bg-muted text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-          aria-hidden="true"
-        >
-          <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-          <path d="M6 16h.01" />
-          <path d="M10 16h.01" />
-        </svg>
-      </div>
+      <span className="bg-background ring-border text-muted-foreground flex h-12 w-12 items-center justify-center rounded-full shadow-sm ring-1">
+        <Inbox className="h-6 w-6" aria-hidden="true" />
+      </span>
       <div className="space-y-1">
         <p className="text-sm font-semibold">{title}</p>
-        <p className="text-muted-foreground max-w-xs text-xs">{message}</p>
+        <p className="text-muted-foreground mx-auto max-w-xs text-xs leading-relaxed">
+          {message}
+        </p>
       </div>
       {actionLabel && onAction ? (
         <Button type="button" variant="outline" size="sm" onClick={onAction}>

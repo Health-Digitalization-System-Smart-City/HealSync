@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircle, Loader2, ShieldBan, UserX } from "lucide-react";
+import { Loader2, ShieldBan, UserX } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FormAlert } from "@/components/form-alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,16 +89,9 @@ export function UsersTable({ users, roles, currentUserId }: UsersTableProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {errorMessage && (
-          <Alert
-            variant="destructive"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Action failed</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {errorMessage ? (
+          <FormAlert messages={errorMessage} className="mb-4" />
+        ) : null}
 
         {users.length === 0 ? (
           <p className="text-muted-foreground py-8 text-center text-sm">

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  AlertCircle,
   CheckCircle2,
   HeartPulse,
   KeyRound,
@@ -12,7 +11,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -133,16 +132,9 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
       </CardHeader>
 
       <CardContent>
-        {errorMessage && (
-          <Alert
-            variant="destructive"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Reset failed</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {errorMessage ? (
+          <FormAlert messages={errorMessage} className="mb-4" />
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

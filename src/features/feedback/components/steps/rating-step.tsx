@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 import type { FeedbackRating } from "@/lib/validation";
 import { FEEDBACK_COMMENT_MAX_LENGTH } from "@/lib/validation/feedback";
+import { FormAlert } from "@/components/form-alert";
 import { FormField } from "@/features/feedback/components/form/form-field";
 import { SelectionCard } from "@/features/feedback/components/form/selection-card";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
@@ -203,17 +204,11 @@ export function RatingStep({
               );
             })}
           </div>
-          {hasRatingErrors ? (
-            <ul
-              id="rating-error"
-              role="alert"
-              className="text-destructive mt-2 space-y-1 text-xs font-medium"
-            >
-              {ratingErrors.map((message) => (
-                <li key={message}>{message}</li>
-              ))}
-            </ul>
-          ) : null}
+          <FormAlert
+            messages={ratingErrors}
+            id="rating-error"
+            className="mt-3"
+          />
         </fieldset>
 
         <FormField
