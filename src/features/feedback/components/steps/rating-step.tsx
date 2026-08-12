@@ -18,9 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import type { FeedbackRating } from "@/lib/validation";
-import {
-  FEEDBACK_COMMENT_MAX_LENGTH,
-} from "@/lib/validation/feedback";
+import { FEEDBACK_COMMENT_MAX_LENGTH } from "@/lib/validation/feedback";
 import { FormField } from "@/features/feedback/components/form/form-field";
 import { SelectionCard } from "@/features/feedback/components/form/selection-card";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
@@ -257,7 +255,7 @@ export function RatingStep({
           size="lg"
           disabled={isSubmitting}
           aria-busy={isSubmitting}
-          className="w-full gap-2 font-semibold sm:min-w-[160px] sm:w-auto"
+          className="w-full gap-2 font-semibold sm:w-auto sm:min-w-[160px]"
         >
           {isSubmitting ? (
             <>

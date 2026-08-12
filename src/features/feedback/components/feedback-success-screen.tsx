@@ -6,11 +6,7 @@ import Link from "next/link";
 import { RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
 
 export function FeedbackSuccessScreen({
   headingRef,
@@ -28,7 +24,7 @@ export function FeedbackSuccessScreen({
   return (
     <div
       role="status"
-      className="border-emerald-500/20 from-card mx-auto w-full max-w-lg rounded-xl border bg-gradient-to-b to-emerald-500/5 shadow-xl"
+      className="from-card mx-auto w-full max-w-lg rounded-xl border border-emerald-500/20 bg-gradient-to-b to-emerald-500/5 shadow-xl"
     >
       <CardHeader className="pt-8 pb-4 text-center">
         <div className="animate-in zoom-in-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 duration-300 dark:text-emerald-400">
@@ -48,7 +44,7 @@ export function FeedbackSuccessScreen({
         </div>
         <Badge
           variant="outline"
-          className="border-emerald-500/30 bg-emerald-500/10 mx-auto mb-2 gap-1 px-3 py-1 text-emerald-600 dark:text-emerald-400"
+          className="mx-auto mb-2 gap-1 border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-600 dark:text-emerald-400"
         >
           Feedback Submitted
         </Badge>
@@ -60,8 +56,8 @@ export function FeedbackSuccessScreen({
           Thank You for Your Feedback!
         </h2>
         <CardDescription className="mx-auto mt-2 max-w-md text-base">
-          Your response helps us continuously improve the quality of care
-          across our clinic branches.
+          Your response helps us continuously improve the quality of care across
+          our clinic branches.
         </CardDescription>
       </CardHeader>
 
@@ -74,13 +70,13 @@ export function FeedbackSuccessScreen({
         </div>
         <div className="text-muted-foreground flex items-center justify-between gap-4">
           <span>Branch</span>
-          <span className="text-foreground font-medium text-right">
+          <span className="text-foreground text-right font-medium">
             {branchName}
           </span>
         </div>
         <div className="text-muted-foreground flex items-center justify-between gap-4">
           <span>Service</span>
-          <span className="text-foreground font-medium text-right">
+          <span className="text-foreground text-right font-medium">
             {serviceName}
           </span>
         </div>

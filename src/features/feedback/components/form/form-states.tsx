@@ -28,7 +28,7 @@ export function LoadingState({
         className,
       )}
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+      <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
         <div
           className="text-primary h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
           aria-hidden="true"

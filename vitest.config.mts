@@ -19,6 +19,9 @@ export default defineConfig({
       "tests/component/**/*.{test,spec}.{ts,tsx}",
     ],
     environment: "node",
+    // Enable global afterEach so @testing-library/react can auto-cleanup the
+    // DOM between component tests.
+    globals: true,
     setupFiles: ["./tests/setup.ts"],
   },
 });

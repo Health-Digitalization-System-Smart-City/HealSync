@@ -129,9 +129,9 @@ const SERVICES: { name: string; description: string }[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-function delay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
+// function delay(ms: number): Promise<void> {
+//   return new Promise((r) => setTimeout(r, ms));
+// }
 
 // ---------------------------------------------------------------------------
 // Main
@@ -295,10 +295,10 @@ async function main(): Promise<void> {
   if (existingFeedbackCount === 0) {
     console.log("  • Seeding sample feedback…");
 
-    const targetBranches = await prisma.branch.findMany({
-      take: 3,
-      orderBy: { createdAt: "asc" },
-    });
+    // const targetBranches = await prisma.branch.findMany({
+    //   take: 3,
+    //   orderBy: { createdAt: "asc" },
+    // });
     const targetServices = await prisma.branchService.findMany({
       take: 3,
       include: { service: true, branch: true },

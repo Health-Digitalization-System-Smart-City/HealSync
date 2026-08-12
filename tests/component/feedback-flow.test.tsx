@@ -1,13 +1,8 @@
 // @vitest-environment jsdom
 
 import * as React from "react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  within,
-} from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { PatientFeedbackForm } from "@/features/feedback/components/feedback-form";
@@ -59,17 +54,12 @@ function okServices(data: typeof SERVICES = SERVICES) {
 function renderForm(options: { initialBranches?: typeof BRANCHES } = {}) {
   const initialBranches =
     options.initialBranches === undefined ? BRANCHES : options.initialBranches;
-  return render(
-    <PatientFeedbackForm initialBranches={initialBranches} />,
-  );
+  return render(<PatientFeedbackForm initialBranches={initialBranches} />);
 }
 
 /** Advances the form through steps 1–3 (phone → branch → service). */
 async function advanceToRating(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(
-    screen.getByLabelText(/Patient Phone Number/i),
-    "0912345678",
-  );
+  await user.type(screen.getByLabelText(/Patient Phone Number/i), "0912345678");
   await user.click(
     screen.getByRole("button", { name: /Continue to Branch Selection/i }),
   );
@@ -97,9 +87,7 @@ describe("PatientFeedbackForm — complete flow", () => {
     renderForm();
     await advanceToRating(user);
 
-    await user.click(
-      screen.getByRole("radio", { name: /Very Satisfied/i }),
-    );
+    await user.click(screen.getByRole("radio", { name: /Very Satisfied/i }));
     await user.type(
       screen.getByLabelText(/Written Feedback/i),
       "The staff was excellent.",
@@ -146,9 +134,7 @@ describe("PatientFeedbackForm — complete flow", () => {
       const user = userEvent.setup();
       const { unmount } = renderForm();
       await advanceToRating(user);
-      await user.click(
-        screen.getByRole("radio", { name: /Neutral/i }),
-      );
+      await user.click(screen.getByRole("radio", { name: /Neutral/i }));
       await user.click(
         screen.getByRole("button", { name: /Submit Feedback/i }),
       );
@@ -179,7 +165,9 @@ describe("PatientFeedbackForm — validation feedback", () => {
     const error = await screen.findByText(/Please enter a valid phone number/i);
     expect(error).toBeVisible();
     expect(phoneInput).toHaveAttribute("aria-invalid", "true");
-    expect(phoneInput).toHaveAccessibleDescription(/Please enter a valid phone/i);
+    expect(phoneInput).toHaveAccessibleDescription(
+      /Please enter a valid phone/i,
+    );
 
     // Correcting the input clears the field error.
     await user.clear(phoneInput);
@@ -265,11 +253,9 @@ describe("PatientFeedbackForm — loading, error and empty states", () => {
 
   it("shows an empty state when no branches are configured", async () => {
     mocks.getBranches.mockResolvedValue(okBranches([]));
-    const user = userEvent.setup();
+    // const user = userEvent.setup();
     const { unmount } = renderForm({ initialBranches: [] });
-    expect(
-      await screen.findByText(/No branches available/i),
-    ).toBeVisible();
+    expect(await screen.findByText(/No branches available/i)).toBeVisible();
     unmount();
   });
 
@@ -338,15 +324,14 @@ describe("PatientFeedbackForm — invalid branch-service combination", () => {
     const user = userEvent.setup();
     renderForm();
     await advanceToRating(user);
-    await user.click(
-      screen.getByRole("radio", { name: /Very Satisfied/i }),
-    );
+    await user.click(screen.getByRole("radio", { name: /Very Satisfied/i }));
 
     mocks.submitFeedback.mockResolvedValue({
       success: false,
       error: {
         code: "INVALID_BRANCH_SERVICE",
-        message: "The selected service is not currently offered at this branch.",
+        message:
+          "The selected service is not currently offered at this branch.",
         fieldErrors: {
           serviceId: ["Service is not offered at the selected branch."],
         },
@@ -380,9 +365,7 @@ describe("PatientFeedbackForm — invalid branch-service combination", () => {
     const user = userEvent.setup();
     renderForm();
     await advanceToRating(user);
-    await user.click(
-      screen.getByRole("radio", { name: /Good/i }),
-    );
+    await user.click(screen.getByRole("radio", { name: /Good/i }));
     await user.click(screen.getByRole("button", { name: /Submit Feedback/i }));
 
     expect(

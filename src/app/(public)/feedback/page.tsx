@@ -17,7 +17,7 @@ export default async function FeedbackPage() {
     <main className="bg-background min-h-screen py-4 sm:py-8">
       <a
         href="#feedback-form"
-        className="bg-primary text-primary-foreground focus:not-sr-only sr-only z-50 mx-auto block w-max rounded-md px-4 py-2 text-sm font-medium"
+        className="bg-primary text-primary-foreground sr-only z-50 mx-auto block w-max rounded-md px-4 py-2 text-sm font-medium focus:not-sr-only"
       >
         Skip to feedback form
       </a>

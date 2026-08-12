@@ -91,10 +91,7 @@ export function FormField({
       {control}
 
       {hint ? (
-        <p
-          id={`${id}-hint`}
-          className="text-muted-foreground text-xs"
-        >
+        <p id={`${id}-hint`} className="text-muted-foreground text-xs">
           {hint}
         </p>
       ) : null}

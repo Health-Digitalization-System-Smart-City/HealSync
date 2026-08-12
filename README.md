@@ -105,7 +105,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The home page is a
-minimal foundation status page.
+patient-facing landing page that guides visitors straight to the feedback
+flow (`/feedback`).
 
 ## Quality checks
 

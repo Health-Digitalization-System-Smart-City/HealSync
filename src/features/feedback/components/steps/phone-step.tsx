@@ -61,7 +61,7 @@ export function PhoneStep({
           />
         </FormField>
       </div>
-      <CardFooter className="px-6 pb-6 pt-0">
+      <CardFooter className="px-6 pt-0 pb-6">
         <Button type="submit" size="lg" className="w-full gap-2 sm:w-auto">
           Continue to Branch Selection
           <svg

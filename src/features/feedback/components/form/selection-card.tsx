@@ -13,8 +13,10 @@ import { cn } from "@/lib/utils";
  * focus ring via the `has-[:focus-visible]` variant, so keyboard users get
  * clear focus feedback without a second tab stop.
  */
-export interface SelectionCardProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface SelectionCardProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   /** Radio group name (must match sibling cards). */
   name: string;
   selected?: boolean;
@@ -41,7 +43,8 @@ export function SelectionCard({
         "has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-1",
         "disabled:cursor-not-allowed disabled:opacity-60",
         selected
-          ? selectedClass ?? "border-primary bg-primary/10 ring-primary/20 ring-2"
+          ? (selectedClass ??
+              "border-primary bg-primary/10 ring-primary/20 ring-2")
           : "border-border bg-card hover:border-primary/50 hover:bg-accent/50",
         className,
       )}
@@ -54,7 +57,7 @@ export function SelectionCard({
         onChange={inputProps.onChange}
         disabled={disabled}
         {...inputProps}
-        className="sr-only peer"
+        className="peer sr-only"
       />
       {children}
     </label>
