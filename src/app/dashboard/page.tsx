@@ -1,4 +1,5 @@
 import { BarChart3, HeartPulse, ShieldCheck, Users } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,11 @@ import {
 
 import { can } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
+
+export const metadata: Metadata = {
+  title: "Dashboard | HealSync",
+  description: "Administrative dashboard for HealSync healthcare clinics.",
+};
 
 export default async function DashboardPage() {
   const authResult = await requireUser();
@@ -89,19 +95,5 @@ export default async function DashboardPage() {
         Authentication &amp; role-based access control are active.
       </p>
     </div>
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Dashboard | HealSync",
-  description: "Administrative dashboard for HealSync healthcare clinics.",
-};
-
-export default function DashboardPage() {
-  return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <p className="text-muted-foreground text-sm">
-        Dashboard is under construction.
-      </p>
-    </main>
   );
 }

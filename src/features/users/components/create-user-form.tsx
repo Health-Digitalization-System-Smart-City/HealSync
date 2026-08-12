@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircle, CheckCircle2, Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -82,29 +82,17 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {created && (
-          <Alert
+        {created ? (
+          <FormAlert
             variant="success"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertTitle>User created</AlertTitle>
-            <AlertDescription>
-              The dashboard user was provisioned successfully.
-            </AlertDescription>
-          </Alert>
-        )}
+            messages="The dashboard user was provisioned successfully."
+            className="mb-4"
+          />
+        ) : null}
 
-        {errorMessage && (
-          <Alert
-            variant="destructive"
-            className="animate-in fade-in mb-4 duration-200"
-          >
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Could not create user</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+        {errorMessage ? (
+          <FormAlert messages={errorMessage} className="mb-4" />
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -117,18 +105,18 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               error={Boolean(fieldErrors.name?.length)}
+              aria-describedby={
+                fieldErrors.name?.length ? "new-user-name-error" : undefined
+              }
               className="h-10"
               autoComplete="off"
               required
             />
-            {fieldErrors.name?.map((err, idx) => (
-              <p
-                key={idx}
-                className="text-destructive mt-1 text-xs font-medium"
-              >
-                {err}
-              </p>
-            ))}
+            <FormAlert
+              messages={fieldErrors.name}
+              compact
+              id="new-user-name-error"
+            />
           </div>
 
           <div className="space-y-2">
@@ -142,18 +130,18 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={Boolean(fieldErrors.email?.length)}
+              aria-describedby={
+                fieldErrors.email?.length ? "new-user-email-error" : undefined
+              }
               className="h-10"
               autoComplete="off"
               required
             />
-            {fieldErrors.email?.map((err, idx) => (
-              <p
-                key={idx}
-                className="text-destructive mt-1 text-xs font-medium"
-              >
-                {err}
-              </p>
-            ))}
+            <FormAlert
+              messages={fieldErrors.email}
+              compact
+              id="new-user-email-error"
+            />
           </div>
 
           <div className="space-y-2">
@@ -167,19 +155,21 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={Boolean(fieldErrors.password?.length)}
+              aria-describedby={
+                fieldErrors.password?.length
+                  ? "new-user-password-error"
+                  : undefined
+              }
               className="h-10"
               autoComplete="new-password"
               minLength={8}
               required
             />
-            {fieldErrors.password?.map((err, idx) => (
-              <p
-                key={idx}
-                className="text-destructive mt-1 text-xs font-medium"
-              >
-                {err}
-              </p>
-            ))}
+            <FormAlert
+              messages={fieldErrors.password}
+              compact
+              id="new-user-password-error"
+            />
           </div>
 
           <div className="space-y-2">
@@ -190,6 +180,9 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
               id="new-user-role"
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
+              aria-describedby={
+                fieldErrors.roleId?.length ? "new-user-role-error" : undefined
+              }
               className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               required
             >
@@ -200,14 +193,11 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
                 </option>
               ))}
             </select>
-            {fieldErrors.roleId?.map((err, idx) => (
-              <p
-                key={idx}
-                className="text-destructive mt-1 text-xs font-medium"
-              >
-                {err}
-              </p>
-            ))}
+            <FormAlert
+              messages={fieldErrors.roleId}
+              compact
+              id="new-user-role-error"
+            />
           </div>
 
           <Button

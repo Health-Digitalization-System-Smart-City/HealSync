@@ -18,9 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 import type { FeedbackRating } from "@/lib/validation";
-import {
-  FEEDBACK_COMMENT_MAX_LENGTH,
-} from "@/lib/validation/feedback";
+import { FEEDBACK_COMMENT_MAX_LENGTH } from "@/lib/validation/feedback";
+import { FormAlert } from "@/components/form-alert";
 import { FormField } from "@/features/feedback/components/form/form-field";
 import { SelectionCard } from "@/features/feedback/components/form/selection-card";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
@@ -205,17 +204,11 @@ export function RatingStep({
               );
             })}
           </div>
-          {hasRatingErrors ? (
-            <ul
-              id="rating-error"
-              role="alert"
-              className="text-destructive mt-2 space-y-1 text-xs font-medium"
-            >
-              {ratingErrors.map((message) => (
-                <li key={message}>{message}</li>
-              ))}
-            </ul>
-          ) : null}
+          <FormAlert
+            messages={ratingErrors}
+            id="rating-error"
+            className="mt-3"
+          />
         </fieldset>
 
         <FormField
@@ -257,7 +250,7 @@ export function RatingStep({
           size="lg"
           disabled={isSubmitting}
           aria-busy={isSubmitting}
-          className="w-full gap-2 font-semibold sm:min-w-[160px] sm:w-auto"
+          className="w-full gap-2 font-semibold sm:w-auto sm:min-w-[160px]"
         >
           {isSubmitting ? (
             <>

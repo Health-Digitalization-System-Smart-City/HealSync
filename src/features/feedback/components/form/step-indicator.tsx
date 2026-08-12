@@ -43,12 +43,13 @@ export function StepIndicator({
                 }`}
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition-all",
-                  "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                  "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
                   isCurrent &&
                     "bg-primary text-primary-foreground ring-primary/20 ring-4",
                   isDone &&
                     "cursor-pointer bg-emerald-500 text-white hover:bg-emerald-600",
-                  isFuture && "bg-muted text-muted-foreground cursor-not-allowed",
+                  isFuture &&
+                    "bg-muted text-muted-foreground cursor-not-allowed",
                 )}
               >
                 {isDone ? (

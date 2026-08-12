@@ -2,7 +2,10 @@ import * as React from "react";
 
 import { getBranches, type BranchData } from "@/features/branches/actions";
 import { submitFeedback } from "@/features/feedback/actions";
-import { getServiceByBranch, type ServiceData } from "@/features/services/actions";
+import {
+  getServiceByBranch,
+  type ServiceData,
+} from "@/features/services/actions";
 import {
   phoneNumberSchema,
   submitFeedbackSchema,
@@ -170,7 +173,11 @@ function feedbackFlowReducer(
         servicesError: null,
       };
     case "SERVICES_LOAD_ERROR":
-      return { ...state, servicesStatus: "error", servicesError: action.message };
+      return {
+        ...state,
+        servicesStatus: "error",
+        servicesError: action.message,
+      };
     case "SUBMIT_START":
       return { ...state, isSubmitting: true, topError: null };
     case "SUBMIT_SUCCESS":
@@ -180,8 +187,7 @@ function feedbackFlowReducer(
       // service selection and route the patient back to service selection so
       // they can pick one that is actually offered (API.md §11,
       // DATABASE.md §15).
-      const isInvalidBranchService =
-        action.code === "INVALID_BRANCH_SERVICE";
+      const isInvalidBranchService = action.code === "INVALID_BRANCH_SERVICE";
       return {
         ...state,
         isSubmitting: false,
@@ -221,9 +227,10 @@ export interface FeedbackFlowActions {
   resetFlow: () => void;
 }
 
-export function useFeedbackFlow(
-  initialBranches: BranchData[] = [],
-): { state: FeedbackFlowState; actions: FeedbackFlowActions } {
+export function useFeedbackFlow(initialBranches: BranchData[] = []): {
+  state: FeedbackFlowState;
+  actions: FeedbackFlowActions;
+} {
   const [state, dispatch] = React.useReducer(
     feedbackFlowReducer,
     initialBranches,
@@ -247,8 +254,7 @@ export function useFeedbackFlow(
         if (!cancelled) {
           dispatch({
             type: "BRANCHES_LOAD_ERROR",
-            message:
-              "Unable to retrieve branch list. Please try again later.",
+            message: "Unable to retrieve branch list. Please try again later.",
           });
         }
       });
@@ -275,8 +281,7 @@ export function useFeedbackFlow(
         if (!cancelled) {
           dispatch({
             type: "SERVICES_LOAD_ERROR",
-            message:
-              "Unable to retrieve service list. Please try again later.",
+            message: "Unable to retrieve service list. Please try again later.",
           });
         }
       });
@@ -315,14 +320,14 @@ export function useFeedbackFlow(
         }
         dispatch({ type: "SET_STEP", step: 2 });
       },
-      selectBranch: (branchId) => dispatch({ type: "BRANCH_SELECTED", branchId }),
+      selectBranch: (branchId) =>
+        dispatch({ type: "BRANCH_SELECTED", branchId }),
       retryLoadBranches: () => dispatch({ type: "BRANCHES_LOAD_START" }),
       changeSearch: (value) => dispatch({ type: "SEARCH_CHANGED", value }),
       selectService: (serviceId) =>
         dispatch({ type: "SERVICE_SELECTED", serviceId }),
       retryLoadServices: () => dispatch({ type: "SERVICES_LOAD_START" }),
-      chooseDifferentBranch: () =>
-        dispatch({ type: "SET_STEP", step: 2 }),
+      chooseDifferentBranch: () => dispatch({ type: "SET_STEP", step: 2 }),
       selectRating: (rating) => dispatch({ type: "RATING_SELECTED", rating }),
       changeComment: (value) => dispatch({ type: "COMMENT_CHANGED", value }),
       submitRating: async () => {

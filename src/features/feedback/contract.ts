@@ -20,7 +20,4 @@ export type {
   SubmitFeedbackResult,
   ActionResponse,
 } from "@/features/feedback/actions";
-export type {
-  FeedbackRating,
-  SubmitFeedbackInput,
-} from "@/lib/validation";
+export type { FeedbackRating, SubmitFeedbackInput } from "@/lib/validation";
