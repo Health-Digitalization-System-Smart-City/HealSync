@@ -3,16 +3,19 @@ import { z } from "zod";
 /**
  * Supported Feedback Ratings enum values matching Prisma schema (DATABASE.md §12).
  */
-export const FeedbackRatingEnum = z.enum([
-  "VERY_SATISFIED",
-  "SATISFIED",
-  "MOSTLY_SATISFIED",
-  "GOOD",
-  "NEUTRAL",
-  "NOT_SATISFIED",
-  "POOR",
-  "VERY_POOR",
-]);
+export const FeedbackRatingEnum = z.enum(
+  [
+    "VERY_SATISFIED",
+    "SATISFIED",
+    "MOSTLY_SATISFIED",
+    "GOOD",
+    "NEUTRAL",
+    "NOT_SATISFIED",
+    "POOR",
+    "VERY_POOR",
+  ],
+  { message: "Please select a rating option." },
+);
 
 export type FeedbackRating = z.infer<typeof FeedbackRatingEnum>;
 
@@ -57,8 +60,8 @@ export const submitFeedbackSchema = z.object({
 
 export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;
 
-export const getServicesSchema = z.object({
-  branchId: z.string().optional(),
+export const getServiceByBranchSchema = z.object({
+  branchId: z.string().min(1, "branchId is required"),
 });
 
-export type GetServicesInput = z.infer<typeof getServicesSchema>;
+export type GetServiceByBranchInput = z.infer<typeof getServiceByBranchSchema>;
