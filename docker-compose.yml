@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: healsync-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecret
+      POSTGRES_DB: healsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - healsync_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  healsync_postgres_data:
