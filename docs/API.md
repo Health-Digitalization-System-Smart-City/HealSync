@@ -11,8 +11,9 @@ The application uses **Next.js Server Actions** as the primary server communicat
 We do **not** maintain a separate REST API for internal application communication.
 
 The only REST-style endpoints are the authentication endpoints mounted by
-**Better Auth** under `/api/auth/*` (§30). They are provided and managed by the
-auth library and are not part of the Server Action contract.
+**Better Auth** under `/api/auth/*` (§30) plus the analytics and feedback
+route handlers under `/api/analytics/*` and `/api/feedback/*` (§11b). They are
+provided and managed by the library and are not part of the Server Action contract.
 
 ```text
 Client Component
@@ -397,6 +398,143 @@ feedback.delete
 ```
 
 Deletion behavior must follow the data-retention rules defined in `database.md`.
+
+---
+
+# 11b. Feedback REST Endpoints (implemented)
+
+> **Deviation note:** The feedback dashboard is served through REST route
+> handlers under `/api/feedback/*` (mirroring the existing `/api/analytics/*`
+> pattern) rather than Server Actions. The read path must enforce phone-number
+> masking server-side before the response leaves the server, which is simpler
+> and safer to centralize in a route-handler boundary. Domain logic lives in
+> `src/lib/feedback/service.ts`; route handlers only parse/validate input,
+> resolve the viewer, and delegate.
+>
+> This is currently the only client-server contract in the app besides
+> `/api/auth/*` and `/api/analytics/*`. When feedback submission is built, the
+> public `submitFeedback` action (§11) should still be a Server Action.
+
+All feedback endpoints require an authenticated dashboard session with
+`feedback.read`. Update requires `feedback.update`; delete requires
+`feedback.delete` (Admin only, per the permission matrix in `security.md`).
+
+### `GET /api/feedback`
+
+List feedback with filters and pagination.
+
+Query parameters (all optional):
+
+```text
+branchId?    branch to filter by
+serviceId?   service to filter by
+rating?      feedback rating to filter by (0..7)
+range?       all | today | yesterday | last_7_days | this_month |
+             last_30_days | this_year | custom     (default: all)
+startDate?   required when range=custom  (YYYY-MM-DD)
+endDate?     required when range=custom  (YYYY-MM-DD)
+page?        page number (default: 1, clamped to totalPages)
+pageSize?    page size (default: 10, 1..100)
+```
+
+Success response:
+
+```json
+{
+  "items": [
+    {
+      "id": "fb_1",
+      "branchId": "br_1",
+      "branchName": "Downtown",
+      "serviceId": "sv_1",
+      "serviceName": "Consultation",
+      "customerName": "Ada Lovelace",
+      "phoneNumber": "•••• 4871",
+      "rating": 7,
+      "ratingLabel": "Very satisfied",
+      "ratingScore": 100,
+      "comment": "Great visit",
+      "createdAt": "2026-08-14T09:00:00.000Z",
+      "source": "kiosk"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "pageSize": 10,
+  "totalPages": 1,
+  "summary": { "total": 5, "positive": 3, "neutral": 1, "needsAttention": 1 },
+  "viewer": {
+    "role": "Admin",
+    "canSeePhone": true,
+    "canUpdate": true,
+    "canDelete": true
+  }
+}
+```
+
+Phone masking rules:
+
+* `phoneNumber` is returned masked as `•••• <last4>` for every role except
+  Admin. The raw number is never sent to the browser for Manager/Analyst.
+* The `viewer` object tells the client which capabilities the current session
+  has so the UI can render the phone column, edit button, and delete button
+  accordingly. The client must not rely on it for authorization — PATCH/DELETE
+  are enforced server-side.
+
+The `summary` mirrors the dashboard KPI categories (total / positive / neutral
+/ needs-attention), matching the rating mapping in §11 and `security.md`.
+
+### `GET /api/feedback/meta`
+
+Returns filter options for the dashboard:
+
+```json
+{
+  "branches": [{ "id": "br_1", "name": "Downtown" }],
+  "services": [{ "id": "sv_1", "name": "Consultation" }],
+  "ratings": [{ "value": 7, "label": "Very satisfied" }]
+}
+```
+
+### `GET /api/feedback/:id`
+
+Returns a single `FeedbackView` (same shape as a list item, phone masked per
+the viewer). Returns `404 NOT_FOUND` when the record does not exist.
+
+### `PATCH /api/feedback/:id`
+
+Updates a feedback record. Requires `feedback.update`.
+
+Body:
+
+```ts
+{
+  rating?: FeedbackRating   // 0..7
+  comment?: string          // sanitized, max length enforced
+}
+```
+
+Returns the updated `FeedbackView`. At least one field is required; empty
+requests return `VALIDATION_ERROR`. Changes must be auditable (§11).
+
+### `DELETE /api/feedback/:id`
+
+Deletes a feedback record. Requires `feedback.delete`. Returns `204 No
+Content` on success and `404 NOT_FOUND` when the record does not exist.
+Deletion behavior follows the data-retention rules defined in `database.md`.
+
+### Error envelope
+
+Non-2xx responses use the standard envelope:
+
+```json
+{
+  "error": { "code": "FORBIDDEN", "message": "You do not have permission to perform this action." }
+}
+```
+
+Codes: `VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`,
+`INTERNAL_ERROR`.
 
 ---
 
@@ -968,8 +1106,10 @@ Authentication is handled by **Better Auth**, configured in
 library's Next.js adapter mounts its endpoints under `/api/auth/*` through the
 catch-all route handler in `src/app/api/auth/[...all]/route.ts`.
 
-These are the only REST-style routes in the application; all other client-server
-communication uses Server Actions (§1).
+These are the only REST-style routes in the application apart from the
+analytics and feedback route handlers under `/api/analytics/*` and
+`/api/feedback/*` (§11b); all other client-server communication uses Server
+Actions (§1).
 
 Common endpoints:
 
