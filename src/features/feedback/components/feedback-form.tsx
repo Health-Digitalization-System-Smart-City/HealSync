@@ -2,7 +2,15 @@
 
 import * as React from "react";
 
-import { HeartPulse } from "lucide-react";
+import {
+  CheckCircle2,
+  HeartPulse,
+  MessageSquareHeart,
+  ShieldCheck,
+  Sparkles,
+  Star,
+} from "lucide-react";
+
 import { FormAlert } from "@/components/form-alert";
 import type { BranchData } from "@/features/branches/actions";
 import { useFeedbackFlow } from "@/features/feedback/components/use-feedback-flow";
@@ -17,6 +25,12 @@ interface FeedbackFormProps {
   initialBranches?: BranchData[];
 }
 
+const assuranceItems = [
+  "Quick 4-step survey",
+  "No account required",
+  "Private and secure",
+];
+
 export function PatientFeedbackForm({
   initialBranches = [],
 }: FeedbackFormProps) {
@@ -26,7 +40,6 @@ export function PatientFeedbackForm({
   const successHeadingRef = React.useRef<HTMLHeadingElement>(null);
   const isFirstRender = React.useRef(true);
 
-  // Announce step changes / confirmation by moving focus to the step heading.
   React.useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -46,101 +59,188 @@ export function PatientFeedbackForm({
       state.services.find((service) => service.id === state.serviceId)?.name ??
       "";
     return (
-      <FeedbackSuccessScreen
-        headingRef={successHeadingRef}
-        submissionId={state.submissionId}
-        branchName={branchName}
-        serviceName={serviceName}
-        onReset={actions.resetFlow}
-      />
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-8">
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-8">
+          <FeedbackSuccessScreen
+            headingRef={successHeadingRef}
+            submissionId={state.submissionId}
+            branchName={branchName}
+            serviceName={serviceName}
+            onReset={actions.resetFlow}
+          />
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-8">
-      <div className="mb-6 space-y-3 text-center sm:mb-8">
-        <h1 className="inline-flex items-center justify-center gap-2 text-xl font-semibold">
-          <HeartPulse
-            className="h-7 w-7 text-emerald-600 dark:text-emerald-400"
-            aria-hidden="true"
-          />
-          HealSync Patient Care
-        </h1>
-        <p className="text-muted-foreground mx-auto max-w-md text-sm">
-          We value your health and experience. Please share your feedback to
-          help us serve you better.
-        </p>
-        <StepIndicator currentStep={state.step} onSelect={actions.goToStep} />
-      </div>
+    <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:py-8">
+      <div className="grid gap-4 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:gap-6">
+        <aside className="surface-card rounded-[1.5rem] p-4 sm:p-6 lg:sticky lg:top-24 lg:rounded-[2rem] lg:p-8">
+          <div className="flex items-center gap-2.5 lg:mb-6">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
+              <HeartPulse className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
+                Patient experience
+              </p>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                HealSync feedback
+              </h1>
+            </div>
+            <span className="ml-auto rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 lg:hidden">
+              About 1 minute
+            </span>
+          </div>
 
-      {state.topError ? (
-        <FormAlert messages={state.topError} className="mb-6" />
-      ) : null}
+          <div className="mt-4 rounded-2xl border border-teal-100 bg-teal-50/70 p-3.5 lg:p-4">
+            <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+              <MessageSquareHeart className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+              Share your visit experience so we can improve care, access, and
+              communication across our clinics.
+            </p>
+          </div>
 
-      <div className="border-border/80 bg-card rounded-xl border shadow-lg">
-        {state.step === 1 ? (
-          <PhoneStep
-            headingRef={stepHeadingRef}
-            value={state.phoneNumber}
-            errors={state.fieldErrors.phoneNumber ?? []}
-            onChange={actions.changePhone}
-            onBlur={actions.validatePhoneOnBlur}
-            onSubmit={actions.submitPhone}
-          />
-        ) : null}
-        {state.step === 2 ? (
-          <BranchStep
-            headingRef={stepHeadingRef}
-            branches={state.branches}
-            status={state.branchesStatus}
-            error={state.branchesError}
-            selectedBranchId={state.branchId}
-            search={state.branchSearch}
-            onSearchChange={actions.changeSearch}
-            onSelect={actions.selectBranch}
-            onRetry={actions.retryLoadBranches}
-            onBack={() => actions.goToStep(1)}
-          />
-        ) : null}
-        {state.step === 3 ? (
-          <ServiceStep
-            headingRef={stepHeadingRef}
-            services={state.services}
-            status={state.servicesStatus}
-            error={state.servicesError}
-            selectedServiceId={state.serviceId}
-            branchName={
-              state.branches.find((branch) => branch.id === state.branchId)
-                ?.name ?? ""
-            }
-            onSelect={actions.selectService}
-            onRetry={actions.retryLoadServices}
-            onChooseDifferentBranch={actions.chooseDifferentBranch}
-            onBack={() => actions.goToStep(2)}
-          />
-        ) : null}
-        {state.step === 4 ? (
-          <RatingStep
-            headingRef={stepHeadingRef}
-            rating={state.rating}
-            comment={state.comment}
-            ratingErrors={state.fieldErrors.rating ?? []}
-            commentErrors={state.fieldErrors.comment ?? []}
-            branchName={
-              state.branches.find((branch) => branch.id === state.branchId)
-                ?.name ?? ""
-            }
-            serviceName={
-              state.services.find((service) => service.id === state.serviceId)
-                ?.name ?? ""
-            }
-            isSubmitting={state.isSubmitting}
-            onRatingSelect={actions.selectRating}
-            onCommentChange={actions.changeComment}
-            onBack={() => actions.goToStep(3)}
-            onSubmit={actions.submitRating}
-          />
-        ) : null}
+          <div className="mt-6 hidden space-y-4 lg:block">
+            {[
+              {
+                icon: Sparkles,
+                title: "Fast and clear",
+                text: "Complete a brief, guided survey in a few taps.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Private by design",
+                text: "Only the details needed to improve care are collected.",
+              },
+              {
+                icon: Star,
+                title: "Your perspective matters",
+                text: "Feedback helps us improve the patient journey.",
+              },
+            ].map(({ icon: Icon, title, text }) => (
+              <div
+                key={title}
+                className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+              >
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                  <Icon className="h-4 w-4" aria-hidden />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {title}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {text}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 lg:mt-6">
+            {assuranceItems.map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600"
+              >
+                <CheckCircle2
+                  className="h-3.5 w-3.5 text-teal-700"
+                  aria-hidden
+                />
+                {item}
+              </span>
+            ))}
+          </div>
+        </aside>
+
+        <div className="surface-card rounded-[1.5rem] p-4 sm:rounded-[2rem] sm:p-6 lg:p-8">
+          <div className="mb-6 space-y-4 text-center sm:mb-8">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              Your care experience matters
+            </h2>
+            <p className="mx-auto max-w-xl text-sm leading-6 text-slate-600">
+              We value your health and experience. Please share your feedback to
+              help us serve you better.
+            </p>
+            <StepIndicator
+              currentStep={state.step}
+              onSelect={actions.goToStep}
+            />
+          </div>
+
+          {state.topError ? (
+            <FormAlert messages={state.topError} className="mb-6" />
+          ) : null}
+
+          <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-[#F8FAFC]">
+            {state.step === 1 ? (
+              <PhoneStep
+                headingRef={stepHeadingRef}
+                value={state.phoneNumber}
+                errors={state.fieldErrors.phoneNumber ?? []}
+                onChange={actions.changePhone}
+                onBlur={actions.validatePhoneOnBlur}
+                onSubmit={actions.submitPhone}
+              />
+            ) : null}
+            {state.step === 2 ? (
+              <BranchStep
+                headingRef={stepHeadingRef}
+                branches={state.branches}
+                status={state.branchesStatus}
+                error={state.branchesError}
+                selectedBranchId={state.branchId}
+                search={state.branchSearch}
+                onSearchChange={actions.changeSearch}
+                onSelect={actions.selectBranch}
+                onRetry={actions.retryLoadBranches}
+                onBack={() => actions.goToStep(1)}
+              />
+            ) : null}
+            {state.step === 3 ? (
+              <ServiceStep
+                headingRef={stepHeadingRef}
+                services={state.services}
+                status={state.servicesStatus}
+                error={state.servicesError}
+                selectedServiceId={state.serviceId}
+                branchName={
+                  state.branches.find((branch) => branch.id === state.branchId)
+                    ?.name ?? ""
+                }
+                onSelect={actions.selectService}
+                onRetry={actions.retryLoadServices}
+                onChooseDifferentBranch={actions.chooseDifferentBranch}
+                onBack={() => actions.goToStep(2)}
+              />
+            ) : null}
+            {state.step === 4 ? (
+              <RatingStep
+                headingRef={stepHeadingRef}
+                rating={state.rating}
+                comment={state.comment}
+                ratingErrors={state.fieldErrors.rating ?? []}
+                commentErrors={state.fieldErrors.comment ?? []}
+                branchName={
+                  state.branches.find((branch) => branch.id === state.branchId)
+                    ?.name ?? ""
+                }
+                serviceName={
+                  state.services.find(
+                    (service) => service.id === state.serviceId,
+                  )?.name ?? ""
+                }
+                isSubmitting={state.isSubmitting}
+                onRatingSelect={actions.selectRating}
+                onCommentChange={actions.changeComment}
+                onBack={() => actions.goToStep(3)}
+                onSubmit={actions.submitRating}
+              />
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );

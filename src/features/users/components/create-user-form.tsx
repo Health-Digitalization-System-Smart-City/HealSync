@@ -55,8 +55,8 @@ export function CreateUserForm({ roles }: CreateUserFormProps) {
     try {
       const res = await createUser({ name, email, password, roleId });
       if (res.success) {
-        setCreated(true);
         reset();
+        setCreated(true);
         router.refresh();
       } else {
         setErrorMessage(res.error.message);

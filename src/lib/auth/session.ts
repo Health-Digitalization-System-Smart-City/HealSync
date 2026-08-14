@@ -6,6 +6,7 @@
 // access protected functionality, even with a pre-existing session
 // (security.md §9, API.md §14 disableUser).
 import { headers } from "next/headers";
+import { cache } from "react";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -51,13 +52,26 @@ export interface SessionUserSummary {
 }
 
 /** The session user from the auth library, or null when unauthenticated. */
-export async function getSessionUser(): Promise<SessionUserSummary | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return null;
+export const getSessionUser = cache(async (): Promise<SessionUserSummary | null> => {
+  try {
+    // Convert Next's Headers to a plain object — some adapters expect a simple
+    // record rather than the Headers instance returned by `next/headers`.
+    const nextHeaders = await headers();
+    const headerObj = Object.fromEntries(nextHeaders.entries());
 
-  const u = session.user;
-  return { id: u.id, name: u.name, email: u.email, role: u.role ?? null };
-}
+    const session = await auth.api.getSession({ headers: headerObj });
+    if (!session?.user) return null;
+
+    const u = session.user;
+    return { id: u.id, name: u.name, email: u.email, role: u.role ?? null };
+  } catch (err) {
+    // Surface a concise error for server logs and treat as unauthenticated
+    // to avoid crashing page layouts that guard with `requireUser()`.
+    // eslint-disable-next-line no-console
+    console.error("getSessionUser error:", err);
+    return null;
+  }
+});
 
 /**
  * Requires an authenticated, active dashboard user.
