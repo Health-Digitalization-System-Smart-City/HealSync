@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "prisma": "prisma",
-    "db:setup": "prisma migrate deploy && prisma db seed"
+    "db:setup": "prisma migrate deploy && prisma generate && prisma db seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

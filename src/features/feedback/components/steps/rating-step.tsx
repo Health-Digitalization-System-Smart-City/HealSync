@@ -142,7 +142,7 @@ export function RatingStep({
       }}
       noValidate
     >
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-5 sm:p-6">
         <StepHeader
           headingRef={headingRef}
           icon={MessageSquare}
@@ -184,7 +184,7 @@ export function RatingStep({
                   selected={isSelected}
                   onChange={() => onRatingSelect(option.value)}
                   selectedClass={option.selectedBgClass}
-                  className="flex-col p-3 text-center"
+                  className="min-h-28 flex-col justify-center p-3 text-center"
                 >
                   <span
                     className={cn(
@@ -235,7 +235,7 @@ export function RatingStep({
             : ""}
         </p>
       </div>
-      <CardFooter className="flex flex-col gap-3 border-t px-6 pt-4 pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <CardFooter className="flex flex-col gap-3 border-t px-5 pt-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-6">
         <Button
           type="button"
           variant="outline"

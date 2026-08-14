@@ -39,13 +39,13 @@ export function SelectionCard({
   return (
     <label
       className={cn(
-        "relative flex cursor-pointer items-start gap-3 rounded-lg border p-4 text-left transition-all",
+        "relative flex min-h-12 cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-[border-color,background-color,box-shadow,transform]",
         "has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-offset-1",
         "disabled:cursor-not-allowed disabled:opacity-60",
         selected
           ? (selectedClass ??
               "border-primary bg-primary/10 ring-primary/20 ring-2")
-          : "border-border bg-card hover:border-primary/50 hover:bg-accent/50",
+          : "border-border bg-card hover:border-primary/50 hover:bg-accent/50 hover:shadow-sm",
         className,
       )}
     >

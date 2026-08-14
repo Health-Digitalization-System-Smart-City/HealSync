@@ -145,11 +145,19 @@ async function main(): Promise<void> {
   console.log("  • Seeding roles…");
   const roleRecords: Record<string, string> = {}; // name → id
   for (const r of ROLES) {
-    const role = await prisma.role.upsert({
+    const existingRole = await prisma.role.findUnique({
       where: { name: r.name },
-      update: { description: r.description },
-      create: { name: r.name, description: r.description },
+      select: { id: true },
     });
+
+    const role = existingRole
+      ? await prisma.role.update({
+          where: { id: existingRole.id },
+          data: { description: r.description },
+        })
+      : await prisma.role.create({
+          data: { name: r.name, description: r.description },
+        });
     roleRecords[role.name] = role.id;
   }
 
@@ -158,11 +166,18 @@ async function main(): Promise<void> {
   console.log("  • Seeding permissions…");
   const permissionRecords: Record<string, string> = {}; // name → id
   for (const name of PERMISSIONS) {
-    const perm = await prisma.permission.upsert({
+    const existingPermission = await prisma.permission.findUnique({
       where: { name },
-      update: {},
-      create: { name },
+      select: { id: true },
     });
+
+    const perm = existingPermission
+      ? await prisma.permission.findUnique({
+          where: { id: existingPermission.id },
+        })
+      : await prisma.permission.create({ data: { name } });
+
+    if (!perm) throw new Error(`Permission "${name}" not found after seed`);
     permissionRecords[perm.name] = perm.id;
   }
 
@@ -177,11 +192,16 @@ async function main(): Promise<void> {
       const permissionId = permissionRecords[permName];
       if (!permissionId) throw new Error(`Permission "${permName}" not found`);
 
-      await prisma.rolePermission.upsert({
+      const existingGrant = await prisma.rolePermission.findUnique({
         where: { roleId_permissionId: { roleId, permissionId } },
-        update: {},
-        create: { roleId, permissionId },
+        select: { roleId: true, permissionId: true },
       });
+
+      if (!existingGrant) {
+        await prisma.rolePermission.create({
+          data: { roleId, permissionId },
+        });
+      }
     }
   }
 
@@ -243,11 +263,21 @@ async function main(): Promise<void> {
 
   console.log("  • Seeding branches…");
   for (const b of BRANCHES) {
-    await prisma.branch.upsert({
+    const existingBranch = await prisma.branch.findUnique({
       where: { code: b.code },
-      update: { name: b.name, isActive: true },
-      create: { name: b.name, code: b.code },
+      select: { id: true },
     });
+
+    if (existingBranch) {
+      await prisma.branch.update({
+        where: { id: existingBranch.id },
+        data: { name: b.name, isActive: true },
+      });
+    } else {
+      await prisma.branch.create({
+        data: { name: b.name, code: b.code },
+      });
+    }
   }
 
   // ── 6. Services ──────────────────────────────────────────────────────
@@ -281,11 +311,21 @@ async function main(): Promise<void> {
       const serviceId = serviceRecords[svc.name];
       if (!serviceId) continue;
 
-      await prisma.branchService.upsert({
+      const existingLink = await prisma.branchService.findUnique({
         where: { branchId_serviceId: { branchId: branch.id, serviceId } },
-        update: { isActive: true },
-        create: { branchId: branch.id, serviceId },
+        select: { branchId: true, serviceId: true },
       });
+
+      if (existingLink) {
+        await prisma.branchService.update({
+          where: { branchId_serviceId: { branchId: branch.id, serviceId } },
+          data: { isActive: true },
+        });
+      } else {
+        await prisma.branchService.create({
+          data: { branchId: branch.id, serviceId },
+        });
+      }
     }
   }
 

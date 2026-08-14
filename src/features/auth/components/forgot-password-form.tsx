@@ -8,20 +8,16 @@ import {
   Loader2,
   Mail,
   Send,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
 import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+import { AuthSupportPanel } from "@/features/auth/components/auth-support-panel";
 
 import { authClient } from "@/lib/auth/client";
 
@@ -58,60 +54,100 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <Card className="border-border/80 w-full max-w-md shadow-xl">
-        <CardHeader className="pt-8 pb-4 text-center">
-          <div className="animate-in zoom-in-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 duration-300 dark:text-emerald-400">
-            <CheckCircle2 className="h-10 w-10" />
+      <div className="relative grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="surface-card rounded-[1.5rem] p-6 sm:rounded-[2rem] sm:p-8">
+          <div className="mb-6 flex items-center gap-2.5">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
+              <HeartPulse className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
+                Password reset
+              </p>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                Check your email
+              </h1>
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Check your email
-          </CardTitle>
-          <CardDescription className="mx-auto mt-2 max-w-sm text-base">
-            If an account exists for <strong>{email.trim()}</strong>, we&apos;ve
-            sent a password-reset link. It expires in 1 hour.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/login">
-              <ArrowLeft className="h-4 w-4" />
-              Back to sign in
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+
+          <div className="rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
+            <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+              If an account exists for{" "}
+              <strong className="font-semibold">{email.trim()}</strong>,
+              we&apos;ve sent a password reset link. It expires in 1 hour.
+            </p>
+          </div>
+
+          <div className="mt-6 space-y-3 text-sm text-slate-600">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <CheckCircle2 className="h-5 w-5 text-teal-700" aria-hidden />
+              Check the inbox tied to your clinic account.
+            </div>
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <ArrowLeft className="h-5 w-5 text-teal-700" aria-hidden />
+              Use the link to return to the secure reset screen.
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <Button asChild className="h-12 w-full rounded-full">
+              <Link href="/login">
+                <ArrowLeft className="h-4 w-4" />
+                Back to sign in
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <AuthSupportPanel
+          eyebrow="What happens next"
+          title="Reset links stay short, clear, and secure."
+          description="Keep the recovery flow simple so staff can regain access without a confusing support process."
+        />
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/80 w-full max-w-md shadow-xl">
-      <CardHeader className="space-y-3 pt-8 text-center">
-        <div className="text-primary mx-auto inline-flex items-center gap-2 text-xl font-semibold">
-          <HeartPulse className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
-          <span>HealSync</span>
+    <div className="relative grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div className="surface-card rounded-[1.5rem] p-6 sm:rounded-[2rem] sm:p-8">
+        <div className="mb-6 flex items-center gap-2.5">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
+            <HeartPulse className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
+              Account recovery
+            </p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              Reset your password
+            </h1>
+          </div>
         </div>
-        <div className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Reset your password
-          </CardTitle>
-          <CardDescription>
-            Enter your account email and we&apos;ll send you a reset link.
-          </CardDescription>
-        </div>
-      </CardHeader>
 
-      <CardContent>
+        <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
+          <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+            Enter the email tied to your clinic account and we&apos;ll send a
+            secure reset link.
+          </p>
+        </div>
+
         {errorMessage ? (
           <FormAlert messages={errorMessage} className="mb-4" />
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-slate-800"
+            >
               Email <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <Mail className="text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3" />
+              <Mail className="pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3 text-slate-400" />
               <Input
                 id="email"
                 type="email"
@@ -122,7 +158,7 @@ export function ForgotPasswordForm() {
                   setEmail(e.target.value);
                   setErrorMessage(null);
                 }}
-                className="h-11 pl-10"
+                className="h-12 pl-10"
                 autoFocus
                 required
               />
@@ -133,7 +169,7 @@ export function ForgotPasswordForm() {
             type="submit"
             size="lg"
             disabled={isSubmitting}
-            className="w-full gap-2 font-semibold shadow-md"
+            className="h-12 w-full rounded-full"
           >
             {isSubmitting ? (
               <>
@@ -149,15 +185,26 @@ export function ForgotPasswordForm() {
           </Button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
           <Link
             href="/login"
-            className="text-primary hover:text-primary/80 text-sm font-medium underline-offset-4 hover:underline"
+            className="text-sm font-medium text-teal-700 underline-offset-4 hover:text-teal-800 hover:underline"
           >
             Back to sign in
           </Link>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <AuthSupportPanel
+        eyebrow="Recovery flow"
+        title="Clear instructions, minimal friction."
+        description="Password recovery should feel calm and predictable, not like a support ticket."
+        items={[
+          "We never reveal whether an email exists",
+          "Reset links expire quickly",
+          "You can return to sign in at any time",
+        ]}
+      />
+    </div>
   );
 }
