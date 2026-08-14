@@ -1,31 +1,42 @@
-// Analytics API client (consumes backend analytics contracts)
-export type Summary = {
-  activePatients: number;
-  appointmentsToday: number;
-  avgResponseMinutes: number;
-};
+import type {
+  AnalyticsDashboardData,
+  AnalyticsQuery,
+} from "@/lib/analytics/types";
 
-export type ActivityItem = {
-  id: string;
-  type: string;
-  message: string;
-  timestamp: string;
-};
+const API = "/api/analytics";
 
-export async function fetchSummary(): Promise<Summary> {
-  const res = await fetch("/api/analytics/summary");
-  if (!res.ok) throw new Error("Failed to fetch analytics summary");
-  return res.json();
-}
+export async function fetchAnalyticsDashboard(
+  query: AnalyticsQuery = {},
+): Promise<AnalyticsDashboardData> {
+  const search = new URLSearchParams();
 
-export async function fetchActivity(): Promise<ActivityItem[]> {
-  const res = await fetch("/api/analytics/activity?limit=20");
-  if (!res.ok) throw new Error("Failed to fetch activity");
-  return res.json();
-}
+  if (query.range && query.range !== "all") {
+    search.set("range", query.range);
+    if (query.range === "custom") {
+      if (query.startDate) search.set("startDate", query.startDate);
+      if (query.endDate) search.set("endDate", query.endDate);
+    }
+  }
 
-export async function fetchTrend(): Promise<{ date: string; value: number }[]> {
-  const res = await fetch("/api/analytics/trend?days=30");
-  if (!res.ok) throw new Error("Failed to fetch trend");
-  return res.json();
+  if (query.branchId) search.set("branchId", query.branchId);
+  if (query.serviceId) search.set("serviceId", query.serviceId);
+  if (query.interval) search.set("interval", query.interval);
+
+  const url = search.toString() ? `${API}?${search.toString()}` : API;
+  const response = await fetch(url, {
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    let message = "Failed to load analytics dashboard data.";
+    try {
+      const payload = await response.json();
+      if (payload?.error?.message) message = payload.error.message;
+    } catch {
+      // Non-JSON error body
+    }
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<AnalyticsDashboardData>;
 }

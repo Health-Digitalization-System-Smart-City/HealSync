@@ -20,6 +20,7 @@ export type FeedbackRange =
   | "all"
   | "today"
   | "yesterday"
+  | "this_week"
   | "last_7_days"
   | "this_month"
   | "last_30_days"

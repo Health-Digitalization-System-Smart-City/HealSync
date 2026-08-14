@@ -12,6 +12,7 @@ export const RANGE_VALUES = [
   "all",
   "today",
   "yesterday",
+  "this_week",
   "last_7_days",
   "this_month",
   "last_30_days",
@@ -26,6 +27,7 @@ export const RANGE_OPTIONS: ReadonlyArray<{
   { value: "all", label: "All time" },
   { value: "today", label: "Today" },
   { value: "yesterday", label: "Yesterday" },
+  { value: "this_week", label: "This week" },
   { value: "last_7_days", label: "Last 7 days" },
   { value: "this_month", label: "This month" },
   { value: "last_30_days", label: "Last 30 days" },
@@ -83,6 +85,11 @@ export function resolveDateRange(
     case "yesterday": {
       const day = addDays(now, -1);
       return { start: startOfDay(day), end: endOfDay(day) };
+    }
+    case "this_week": {
+      const dayOfWeek = (now.getDay() + 6) % 7; // 0 for Monday, 6 for Sunday
+      const startOfWeek = addDays(startOfDay(now), -dayOfWeek);
+      return { start: startOfWeek, end: endOfDay(now) };
     }
     case "last_7_days":
       return { start: startOfDay(addDays(now, -7)), end: endOfDay(now) };
