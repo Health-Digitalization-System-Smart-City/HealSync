@@ -38,10 +38,17 @@ function isFixedRole(name: string): boolean {
 
 // The admin plugin types `role` as its known-role union; the fixed roles
 // (Admin / Manager / Analyst) are stored as plain strings on the user model.
-type AdminPluginRole = "user" | "admin" | ("user" | "admin")[];
+type AdminPluginRole =
+  | "user"
+  | (typeof FIXED_ROLE_NAMES)[number]
+  | ("user" | (typeof FIXED_ROLE_NAMES)[number])[];
 
 function asPluginRole(name: string): AdminPluginRole {
   return name as AdminPluginRole;
+}
+
+async function getAuthHeaders() {
+  return Object.fromEntries((await headers()).entries());
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +96,7 @@ export async function getRoles(): Promise<ActionResponse<RoleData[]>> {
 
   try {
     const roles = await db.role.findMany({
+      where: { name: { in: [...FIXED_ROLE_NAMES] } },
       select: { id: true, name: true, description: true },
       orderBy: { name: "asc" },
     });
@@ -126,8 +134,12 @@ export async function createUser(
     });
   }
 
-  const { email, password, roleId } = parsed.data;
+  // Better Auth canonicalizes email addresses to lowercase. Do the same here
+  // so the audit metadata and derived fallback name match the stored user.
+  const email = parsed.data.email.toLowerCase();
+  const { password, roleId } = parsed.data;
   const name = parsed.data.name?.trim() || email.split("@")[0] || "User";
+  let createdUserId: string | null = null;
 
   try {
     // roleId must reference one of the fixed roles (API.md §14).
@@ -141,8 +153,9 @@ export async function createUser(
     // (security.md §9, API.md §30).
     const created = await auth.api.createUser({
       body: { email, password, name, role: asPluginRole(role.name) },
-      headers: await headers(),
+      headers: await getAuthHeaders(),
     });
+    createdUserId = created.user.id;
 
     // Assign the roleId and write the audit record atomically.
     await db.$transaction([
@@ -165,10 +178,26 @@ export async function createUser(
     revalidatePath("/dashboard/users");
     return ok({ id: created.user.id });
   } catch (error) {
+    // Better Auth creates the user and credential before the application role
+    // and audit transaction below. Remove that fresh user if the follow-up
+    // transaction fails so it cannot remain as an unassigned (or privileged)
+    // account. This deletion only applies to a user created by this attempt.
+    if (createdUserId) {
+      try {
+        await db.user.delete({ where: { id: createdUserId } });
+      } catch (cleanupError) {
+        console.error(
+          "Failed to roll back partially created user:",
+          cleanupError,
+        );
+      }
+    }
+
     console.error("Failed to create user:", error);
     if (
       isUniqueConstraintError(error) ||
-      isBetterAuthCode(error, "USER_ALREADY_EXISTS")
+      isBetterAuthCode(error, "USER_ALREADY_EXISTS") ||
+      isBetterAuthCode(error, "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL")
     ) {
       return fail("CONFLICT", "A user with this email already exists.");
     }
@@ -221,7 +250,7 @@ export async function updateUser(
       // Sync the auth-lib role (used by the admin plugin) and the roleId FK.
       await auth.api.setRole({
         body: { userId, role: asPluginRole(role.name) },
-        headers: await headers(),
+        headers: await getAuthHeaders(),
       });
       await db.user.update({ where: { id: userId }, data: { roleId } });
       metadata.role = role.name;

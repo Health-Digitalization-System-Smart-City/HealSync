@@ -49,7 +49,7 @@ export function BranchStep({
 
   return (
     <div>
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-5 sm:p-6">
         <StepHeader
           headingRef={headingRef}
           icon={Building2}
@@ -103,7 +103,7 @@ export function BranchStep({
                 message={`No branches match “${search}”. Try a different search term.`}
               />
             ) : (
-              <div className="grid max-h-[360px] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
+              <div className="grid max-h-[min(52vh,420px)] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
                 {filteredBranches.map((branch) => {
                   const isSelected = selectedBranchId === branch.id;
                   return (

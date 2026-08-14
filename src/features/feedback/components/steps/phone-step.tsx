@@ -33,7 +33,7 @@ export function PhoneStep({
       }}
       noValidate
     >
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-5 sm:p-6">
         <StepHeader
           headingRef={headingRef}
           icon={Phone}
@@ -61,7 +61,7 @@ export function PhoneStep({
           />
         </FormField>
       </div>
-      <CardFooter className="px-6 pt-0 pb-6">
+      <CardFooter className="px-5 pt-0 pb-5 sm:px-6 sm:pb-6">
         <Button type="submit" size="lg" className="w-full gap-2 sm:w-auto">
           Continue to Branch Selection
           <svg

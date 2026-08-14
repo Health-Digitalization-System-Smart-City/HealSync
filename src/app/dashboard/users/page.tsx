@@ -1,6 +1,7 @@
 import { Lock, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { PageIntro } from "@/components/page-intro";
 import {
   Card,
   CardDescription,
@@ -49,19 +50,16 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <Badge variant="secondary" className="w-fit gap-2 px-3 py-1">
-          <Users className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
-          Administration
-        </Badge>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          User management
-        </h1>
-        <p className="text-muted-foreground max-w-2xl leading-relaxed">
-          Create dashboard accounts, assign the fixed roles (Admin, Manager,
-          Analyst), and revoke access. Every action is audited.
-        </p>
-      </div>
+      <PageIntro
+        eyebrow={
+          <Badge variant="secondary" className="w-fit gap-2 px-3 py-1">
+            <Users className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
+            Administration
+          </Badge>
+        }
+        title="User management"
+        description="Create dashboard accounts, assign the fixed roles (Admin, Manager, Analyst), and revoke access. Every action is audited."
+      />
 
       {!usersResult.success && (
         <Card>

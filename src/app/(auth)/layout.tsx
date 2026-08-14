@@ -15,8 +15,18 @@ export default async function AuthLayout({
   if (authResult.success) redirect("/dashboard");
 
   return (
-    <main className="bg-background flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">{children}</div>
+    <main className="bg-background relative flex min-h-screen flex-col overflow-hidden px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-teal-100/70 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-slate-100/80 blur-3xl"
+      />
+      <div className="relative mx-auto flex w-full max-w-5xl flex-1 items-center justify-center py-4 sm:py-0">
+        <div className="w-full">{children}</div>
+      </div>
     </main>
   );
 }

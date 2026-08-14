@@ -40,7 +40,7 @@ export function ServiceStep({
 }) {
   return (
     <div>
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 p-5 sm:p-6">
         <StepHeader
           headingRef={headingRef}
           icon={Stethoscope}

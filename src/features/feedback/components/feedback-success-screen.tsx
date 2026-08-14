@@ -24,7 +24,7 @@ export function FeedbackSuccessScreen({
   return (
     <div
       role="status"
-      className="from-card mx-auto w-full max-w-lg rounded-xl border border-emerald-500/20 bg-gradient-to-b to-emerald-500/5 shadow-xl"
+      className="from-card mx-auto w-full max-w-lg rounded-xl border border-emerald-500/20 bg-linear-to-b to-emerald-500/5 shadow-xl"
     >
       <CardHeader className="pt-8 pb-4 text-center">
         <div className="animate-in zoom-in-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 duration-300 dark:text-emerald-400">

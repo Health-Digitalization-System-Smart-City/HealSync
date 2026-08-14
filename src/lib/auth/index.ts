@@ -15,10 +15,52 @@
 //   delivered by the email service (features/auth/email).
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin } from "better-auth/plugins";
+import { admin, createAccessControl } from "better-auth/plugins";
 
 import { db } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/features/auth/email";
+
+// Better Auth authorizes its admin endpoints against this role map, which is
+// separate from the application's Role/Permission tables. The stored role
+// names must match exactly: using only Better Auth's default lowercase
+// "admin" role would reject sessions whose role is "Admin".
+const adminAccessControl = createAccessControl({
+  user: [
+    "create",
+    "list",
+    "set-role",
+    "ban",
+    "impersonate",
+    "impersonate-admins",
+    "delete",
+    "set-password",
+    "set-email",
+    "get",
+    "update",
+  ],
+  session: ["list", "revoke", "delete"],
+} as const);
+
+const betterAuthRoles = {
+  Admin: adminAccessControl.newRole({
+    user: [
+      "create",
+      "list",
+      "set-role",
+      "ban",
+      "impersonate",
+      "delete",
+      "set-password",
+      "set-email",
+      "get",
+      "update",
+    ],
+    session: ["list", "revoke", "delete"],
+  }),
+  Manager: adminAccessControl.newRole({ user: [], session: [] }),
+  Analyst: adminAccessControl.newRole({ user: [], session: [] }),
+  user: adminAccessControl.newRole({ user: [], session: [] }),
+} as const;
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -46,6 +88,7 @@ export const auth = betterAuth({
       // gates its /admin/* endpoints on user.role ∈ adminRoles.
       adminRoles: ["Admin"],
       defaultRole: "user",
+      roles: betterAuthRoles,
     }),
   ],
 

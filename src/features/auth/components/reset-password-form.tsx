@@ -2,26 +2,23 @@
 
 import * as React from "react";
 import {
+  ArrowLeft,
   CheckCircle2,
   HeartPulse,
   KeyRound,
   Loader2,
   Lock,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { FormAlert } from "@/components/form-alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+import { AuthSupportPanel } from "@/features/auth/components/auth-support-panel";
 
 import { authClient } from "@/lib/auth/client";
 
@@ -92,57 +89,88 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
 
   if (reset) {
     return (
-      <Card className="border-border/80 w-full max-w-md shadow-xl">
-        <CardHeader className="pt-8 pb-4 text-center">
-          <div className="animate-in zoom-in-50 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 duration-300 dark:text-emerald-400">
-            <CheckCircle2 className="h-10 w-10" />
+      <div className="relative grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="surface-card rounded-[1.5rem] p-6 sm:rounded-[2rem] sm:p-8">
+          <div className="mb-6 flex items-center gap-2.5">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
+              <HeartPulse className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
+                Password reset
+              </p>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900">
+                Password updated
+              </h1>
+            </div>
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Password updated
-          </CardTitle>
-          <CardDescription className="mx-auto mt-2 max-w-sm text-base">
-            Your password has been reset. You can now sign in with your new
-            password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild size="lg" className="w-full font-semibold shadow-md">
-            <Link href="/login">Go to sign in</Link>
-          </Button>
-        </CardContent>
-      </Card>
+
+          <div className="rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
+            <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+              Your password has been reset successfully. You can now sign in
+              with your new credentials.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <Button asChild className="h-12 w-full rounded-full">
+              <Link href="/login">
+                <ArrowLeft className="h-4 w-4" />
+                Back to sign in
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <AuthSupportPanel
+          eyebrow="Secure access"
+          title="Your account is protected and ready to use."
+          description="Start using your new password to sign in to the HealSync dashboard and continue patient care workflows safely."
+        />
+      </div>
     );
   }
 
   return (
-    <Card className="border-border/80 w-full max-w-md shadow-xl">
-      <CardHeader className="space-y-3 pt-8 text-center">
-        <div className="text-primary mx-auto inline-flex items-center gap-2 text-xl font-semibold">
-          <HeartPulse className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
-          <span>HealSync</span>
+    <div className="relative grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div className="surface-card rounded-[1.5rem] p-6 sm:rounded-[2rem] sm:p-8">
+        <div className="mb-6 flex items-center gap-2.5">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
+            <HeartPulse className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
+              Account recovery
+            </p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+              Choose a new password
+            </h1>
+          </div>
         </div>
-        <div className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Choose a new password
-          </CardTitle>
-          <CardDescription>
-            Enter a new password for your account.
-          </CardDescription>
-        </div>
-      </CardHeader>
 
-      <CardContent>
+        <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
+          <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+            Create a strong password to protect your HealSync account and
+            continue with secure access.
+          </p>
+        </div>
+
         {errorMessage ? (
           <FormAlert messages={errorMessage} className="mb-4" />
         ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-slate-800"
+            >
               New password <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <Lock className="text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3" />
+              <Lock className="pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3 text-slate-400" />
               <Input
                 id="password"
                 type="password"
@@ -153,22 +181,26 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
                   setPassword(e.target.value);
                   setErrorMessage(null);
                 }}
-                className="h-11 pl-10"
+                className="h-12 pl-10"
                 minLength={MIN_PASSWORD_LENGTH}
+                autoFocus
                 required
               />
             </div>
-            <p className="text-muted-foreground text-xs">
-              At least {MIN_PASSWORD_LENGTH} characters.
+            <p className="text-xs text-slate-500">
+              Use at least {MIN_PASSWORD_LENGTH} characters.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm new password <span className="text-destructive">*</span>
+            <Label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-slate-800"
+            >
+              Confirm password <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <KeyRound className="text-muted-foreground pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3" />
+              <KeyRound className="pointer-events-none absolute inset-y-0 left-0 flex h-full items-center pl-3 text-slate-400" />
               <Input
                 id="confirmPassword"
                 type="password"
@@ -179,7 +211,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
                   setConfirmPassword(e.target.value);
                   setErrorMessage(null);
                 }}
-                className="h-11 pl-10"
+                className="h-12 pl-10"
                 required
               />
             </div>
@@ -189,7 +221,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
             type="submit"
             size="lg"
             disabled={isSubmitting}
-            className="w-full gap-2 font-semibold shadow-md"
+            className="h-12 w-full rounded-full"
           >
             {isSubmitting ? (
               <>
@@ -204,7 +236,27 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
             )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/login"
+            className="text-sm font-medium text-teal-700 underline-offset-4 hover:text-teal-800 hover:underline"
+          >
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+
+      <AuthSupportPanel
+        eyebrow="Security notice"
+        title="Keep access safe, private, and fast."
+        description="Choose a password that is unique to your clinic account and easy to remember without compromising security."
+        items={[
+          "Use a unique password for your clinic account",
+          "Avoid reusing passwords from previous systems",
+          "Reset links expire quickly to protect your access",
+        ]}
+      />
+    </div>
   );
 }
