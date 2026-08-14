@@ -122,10 +122,10 @@ export default function DashboardPage() {
             className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:shadow"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
                 {stat.title}
               </p>
-              <span className="flex size-8 items-center justify-center rounded-lg bg-slate-50 border border-slate-100">
+              <span className="flex size-8 items-center justify-center rounded-lg border border-slate-100 bg-slate-50">
                 {stat.icon}
               </span>
             </div>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
               {stat.value}
             </h2>
             <p
-              className={`mt-2 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold border ${stat.deltaClass}`}
+              className={`mt-2 inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-semibold ${stat.deltaClass}`}
             >
               {stat.delta}
             </p>
@@ -144,9 +144,9 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Feedback Feed */}
-        <div className="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
               <MessageSquare className="size-4 text-blue-600" />
               Recent Patient Feedback
             </h2>
@@ -181,9 +181,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
               <Sparkles className="size-4 text-emerald-600" />
               Quick Navigation
             </h2>
@@ -194,16 +194,16 @@ export default function DashboardPage() {
               <Link
                 key={action.href}
                 href={action.href}
-                className="group flex flex-col justify-between rounded-xl border border-slate-200/80 bg-slate-50/40 p-4 transition hover:bg-white hover:border-blue-300 hover:shadow-sm"
+                className="group flex flex-col justify-between rounded-xl border border-slate-200/80 bg-slate-50/40 p-4 transition hover:border-blue-300 hover:bg-white hover:shadow-sm"
               >
                 <div>
-                  <span className="mb-2.5 flex size-9 items-center justify-center rounded-lg bg-white shadow-xs border border-slate-200 group-hover:border-blue-200">
+                  <span className="mb-2.5 flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-xs group-hover:border-blue-200">
                     {action.icon}
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition">
+                  <h3 className="text-sm font-bold text-slate-900 transition group-hover:text-blue-600">
                     {action.name}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">
                     {action.description}
                   </p>
                 </div>

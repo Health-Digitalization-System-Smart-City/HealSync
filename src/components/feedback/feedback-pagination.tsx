@@ -60,20 +60,26 @@ export function FeedbackPagination({
 
   return (
     <div className="flex flex-col items-start justify-between gap-3 border-t border-slate-200 bg-slate-50/50 px-4.5 py-3 sm:flex-row sm:items-center">
-      <p className="text-xs text-slate-500 font-medium">
-        Showing <span className="font-semibold text-slate-800">{start}–{end}</span>{" "}
-        of <span className="font-semibold text-slate-800">{total.toLocaleString()}</span>{" "}
+      <p className="text-xs font-medium text-slate-500">
+        Showing{" "}
+        <span className="font-semibold text-slate-800">
+          {start}–{end}
+        </span>{" "}
+        of{" "}
+        <span className="font-semibold text-slate-800">
+          {total.toLocaleString()}
+        </span>{" "}
         records
       </p>
 
       <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
-        <label className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
           <span>Rows per page:</span>
           <select
             value={pageSize}
             onChange={(event) => onPageSizeChange(Number(event.target.value))}
             disabled={disabled}
-            className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-xs focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60"
+            className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-xs focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-hidden disabled:opacity-60"
           >
             {PAGE_SIZE_OPTIONS.map((size) => (
               <option key={size} value={size}>

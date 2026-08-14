@@ -10,7 +10,7 @@ import {
 
 export function AnalyticsSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div className="animate-pulse space-y-6">
       {/* KPI Cards Skeletons */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -100,7 +100,7 @@ export function AnalyticsEmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-xs">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 shadow-xs">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-blue-600 shadow-xs">
         {hasFilters ? (
           <CalendarX2 className="size-7" />
         ) : (
@@ -114,7 +114,7 @@ export function AnalyticsEmptyState({
           : "No analytics data recorded"}
       </h3>
 
-      <p className="mt-1.5 max-w-md text-sm text-slate-500 leading-relaxed">
+      <p className="mt-1.5 max-w-md text-sm leading-relaxed text-slate-500">
         {hasFilters
           ? "No feedback submissions match the selected date timeframe, branch, or clinical service. Try adjusting your filter parameters."
           : "There are currently no patient feedback records in the system to generate analytics and trends."}
@@ -143,7 +143,7 @@ export function AnalyticsErrorState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-red-200 bg-red-50/40 px-6 py-16 text-center shadow-xs">
-      <div className="flex size-14 items-center justify-center rounded-2xl bg-red-100 text-red-600 border border-red-200 shadow-xs">
+      <div className="flex size-14 items-center justify-center rounded-2xl border border-red-200 bg-red-100 text-red-600 shadow-xs">
         <AlertCircle className="size-7" />
       </div>
 
@@ -151,8 +151,9 @@ export function AnalyticsErrorState({
         Failed to load analytics
       </h3>
 
-      <p className="mt-1.5 max-w-md text-sm text-red-700 leading-relaxed">
-        {message || "An unexpected error occurred while computing analytics metrics."}
+      <p className="mt-1.5 max-w-md text-sm leading-relaxed text-red-700">
+        {message ||
+          "An unexpected error occurred while computing analytics metrics."}
       </p>
 
       <button

@@ -69,10 +69,18 @@ describe("listFeedback", () => {
     const store = freshStore();
 
     const admin = listFeedback(store, {}, adminViewer).viewer;
-    expect(admin).toMatchObject({ canSeePhone: true, canUpdate: true, canDelete: true });
+    expect(admin).toMatchObject({
+      canSeePhone: true,
+      canUpdate: true,
+      canDelete: true,
+    });
 
     const manager = listFeedback(store, {}, managerViewer).viewer;
-    expect(manager).toMatchObject({ canSeePhone: false, canUpdate: false, canDelete: false });
+    expect(manager).toMatchObject({
+      canSeePhone: false,
+      canUpdate: false,
+      canDelete: false,
+    });
   });
 
   it("filters by branch", () => {
@@ -106,7 +114,9 @@ describe("listFeedback", () => {
     );
 
     expect(result.total).toBe(expected);
-    expect(result.items.every((item) => item.serviceId === serviceId)).toBe(true);
+    expect(result.items.every((item) => item.serviceId === serviceId)).toBe(
+      true,
+    );
   });
 
   it("filters by rating", () => {
@@ -124,7 +134,11 @@ describe("listFeedback", () => {
 
   it("filters by today / yesterday ranges", () => {
     const store = freshStore();
-    const today = listFeedback(store, { range: "today", pageSize: 100 }, adminViewer);
+    const today = listFeedback(
+      store,
+      { range: "today", pageSize: 100 },
+      adminViewer,
+    );
     const yesterday = listFeedback(
       store,
       { range: "yesterday", pageSize: 100 },
@@ -317,9 +331,9 @@ describe("deleteFeedback", () => {
   it("forbids Manager and Analyst from deleting", () => {
     for (const viewer of [managerViewer, analystViewer]) {
       const store = freshStore();
-      expect(() => deleteFeedback(store, store.records[0].id, viewer)).toThrowError(
-        /permission/i,
-      );
+      expect(() =>
+        deleteFeedback(store, store.records[0].id, viewer),
+      ).toThrowError(/permission/i);
     }
   });
 

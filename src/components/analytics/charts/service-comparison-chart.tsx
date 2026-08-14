@@ -19,13 +19,21 @@ export function ServiceComparisonChart({
   onSelectService?: (serviceId: string) => void;
   selectedServiceId?: string;
 }) {
-  const [sortBy, setSortBy] = useState<"satisfaction" | "volume">("satisfaction");
+  const [sortBy, setSortBy] = useState<"satisfaction" | "volume">(
+    "satisfaction",
+  );
 
   const sortedServices = [...services].sort((a, b) => {
     if (sortBy === "satisfaction") {
-      return b.satisfactionRate - a.satisfactionRate || b.totalFeedback - a.totalFeedback;
+      return (
+        b.satisfactionRate - a.satisfactionRate ||
+        b.totalFeedback - a.totalFeedback
+      );
     }
-    return b.totalFeedback - a.totalFeedback || b.satisfactionRate - a.satisfactionRate;
+    return (
+      b.totalFeedback - a.totalFeedback ||
+      b.satisfactionRate - a.satisfactionRate
+    );
   });
 
   return (
@@ -33,7 +41,7 @@ export function ServiceComparisonChart({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
             <Stethoscope className="size-4 text-emerald-600" />
             Clinical Service Performance
           </h3>
@@ -81,36 +89,41 @@ export function ServiceComparisonChart({
           return (
             <div
               key={service.serviceId}
-              onClick={() => onSelectService && onSelectService(service.serviceId)}
+              onClick={() =>
+                onSelectService && onSelectService(service.serviceId)
+              }
               className={cn(
-                "group rounded-xl border p-3.5 transition cursor-pointer flex flex-col justify-between gap-2.5",
+                "group flex cursor-pointer flex-col justify-between gap-2.5 rounded-xl border p-3.5 transition",
                 isSelected
-                  ? "bg-blue-50/80 border-blue-300 shadow-xs"
-                  : "bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xs",
+                  ? "border-blue-300 bg-blue-50/80 shadow-xs"
+                  : "border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-xs",
               )}
             >
               {/* Title & Badge */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-bold text-slate-800 text-sm truncate">
+                  <p className="truncate text-sm font-bold text-slate-800">
                     {service.serviceName}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {service.totalFeedback} submissions · Avg {service.avgScore}/7
+                  <p className="mt-0.5 text-xs text-slate-400">
+                    {service.totalFeedback} submissions · Avg {service.avgScore}
+                    /7
                   </p>
                 </div>
 
                 <span
                   className={cn(
-                    "font-mono font-bold text-xs rounded px-2 py-0.5 border shrink-0",
+                    "shrink-0 rounded border px-2 py-0.5 font-mono text-xs font-bold",
                     service.satisfactionRate >= 75
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                       : service.satisfactionRate >= 50
-                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200",
+                        ? "border-blue-200 bg-blue-50 text-blue-700"
+                        : "border-amber-200 bg-amber-50 text-amber-700",
                   )}
                 >
-                  {service.totalFeedback > 0 ? `${service.satisfactionRate}%` : "No data"}
+                  {service.totalFeedback > 0
+                    ? `${service.satisfactionRate}%`
+                    : "No data"}
                 </span>
               </div>
 
@@ -131,11 +144,11 @@ export function ServiceComparisonChart({
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span className="text-emerald-700 font-medium">
+                  <span className="font-medium text-emerald-700">
                     {service.positiveCount} positive
                   </span>
                   {service.negativeCount > 0 && (
-                    <span className="text-amber-700 font-medium flex items-center gap-0.5">
+                    <span className="flex items-center gap-0.5 font-medium text-amber-700">
                       <TrendingDown className="size-2.5" />
                       {service.negativeCount} needs attention
                     </span>

@@ -35,16 +35,19 @@ export function SatisfactionDistributionChart({
     .filter((d) => d.tone === "needsAttention")
     .reduce((sum, d) => sum + d.count, 0);
 
-  const positivePercent = totalCount > 0 ? Math.round((positiveTotal / totalCount) * 100) : 0;
-  const neutralPercent = totalCount > 0 ? Math.round((neutralTotal / totalCount) * 100) : 0;
-  const negativePercent = totalCount > 0 ? Math.round((negativeTotal / totalCount) * 100) : 0;
+  const positivePercent =
+    totalCount > 0 ? Math.round((positiveTotal / totalCount) * 100) : 0;
+  const neutralPercent =
+    totalCount > 0 ? Math.round((neutralTotal / totalCount) * 100) : 0;
+  const negativePercent =
+    totalCount > 0 ? Math.round((negativeTotal / totalCount) * 100) : 0;
 
   return (
     <div className="flex flex-col rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
       {/* Header */}
       <div className="border-b border-slate-100 pb-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
             <PieChart className="size-4 text-emerald-600" />
             Satisfaction Distribution
           </h3>
@@ -61,7 +64,7 @@ export function SatisfactionDistributionChart({
       <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
         <div className="flex items-center justify-between text-xs font-semibold">
           <span className="text-slate-600">Overall Sentiment Balance</span>
-          <span className="text-slate-800 font-bold">{totalCount} total</span>
+          <span className="font-bold text-slate-800">{totalCount} total</span>
         </div>
 
         {/* Multi-segment Progress Bar */}
@@ -85,17 +88,23 @@ export function SatisfactionDistributionChart({
 
         {/* Proportions Breakdown */}
         <div className="mt-2.5 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+          <div className="flex items-center gap-1.5 font-semibold text-emerald-700">
             <span className="size-2 rounded-full bg-emerald-500" />
-            <span>Positive: {positivePercent}% ({positiveTotal})</span>
+            <span>
+              Positive: {positivePercent}% ({positiveTotal})
+            </span>
           </div>
-          <div className="flex items-center gap-1.5 text-slate-700 font-semibold">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-700">
             <span className="size-2 rounded-full bg-slate-400" />
-            <span>Neutral: {neutralPercent}% ({neutralTotal})</span>
+            <span>
+              Neutral: {neutralPercent}% ({neutralTotal})
+            </span>
           </div>
-          <div className="flex items-center gap-1.5 text-amber-700 font-semibold">
+          <div className="flex items-center gap-1.5 font-semibold text-amber-700">
             <span className="size-2 rounded-full bg-amber-500" />
-            <span>Needs Attention: {negativePercent}% ({negativeTotal})</span>
+            <span>
+              Needs Attention: {negativePercent}% ({negativeTotal})
+            </span>
           </div>
         </div>
       </div>
@@ -111,7 +120,7 @@ export function SatisfactionDistributionChart({
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-800">{item.label}</span>
-                  <span className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.2 text-[10px] font-mono font-medium text-slate-500 bg-slate-100">
+                  <span className="py-0.2 inline-flex items-center gap-0.5 rounded bg-slate-100 px-1.5 font-mono text-[10px] font-medium text-slate-500">
                     <Star className="size-2.5 fill-amber-400 text-amber-400" />
                     {item.score}/7
                   </span>
@@ -123,7 +132,7 @@ export function SatisfactionDistributionChart({
                   </span>
                   <span
                     className={cn(
-                      "w-12 text-right rounded px-1.5 py-0.5 text-[11px] font-bold border",
+                      "w-12 rounded border px-1.5 py-0.5 text-right text-[11px] font-bold",
                       badgeStyle,
                     )}
                   >
@@ -136,7 +145,10 @@ export function SatisfactionDistributionChart({
               <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
                   style={{ width: `${item.percentage}%` }}
-                  className={cn("h-full rounded-full transition-all duration-300", barColor)}
+                  className={cn(
+                    "h-full rounded-full transition-all duration-300",
+                    barColor,
+                  )}
                 />
               </div>
             </div>

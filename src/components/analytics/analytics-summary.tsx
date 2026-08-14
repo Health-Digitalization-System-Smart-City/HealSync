@@ -33,7 +33,7 @@ function MetricCard({
   return (
     <div className="relative overflow-hidden rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
           {label}
         </p>
         <span
@@ -48,7 +48,9 @@ function MetricCard({
           <div className="h-8 w-20 animate-pulse rounded-md bg-slate-200" />
         ) : (
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-            {typeof value === "number" ? value.toLocaleString() : value ?? "—"}
+            {typeof value === "number"
+              ? value.toLocaleString()
+              : (value ?? "—")}
           </h2>
         )}
 
@@ -84,7 +86,7 @@ export function AnalyticsSummary({
         subtitle="Total patient submissions in timeframe"
         pill={
           summary && (
-            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+            <span className="inline-flex items-center rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">
               Avg score: {summary.avgRatingScore}/7
             </span>
           )
@@ -100,8 +102,8 @@ export function AnalyticsSummary({
         iconBg="bg-purple-50 text-purple-600 border border-purple-100"
         subtitle="New submissions logged today"
         pill={
-          <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700 border border-purple-200">
-            <span className="size-1.5 rounded-full bg-purple-600 animate-pulse" />
+          <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700">
+            <span className="size-1.5 animate-pulse rounded-full bg-purple-600" />
             Live Feed
           </span>
         }
@@ -119,10 +121,10 @@ export function AnalyticsSummary({
           summary && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold border",
+                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-bold",
                 isHighSatisfaction
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-blue-50 text-blue-700 border-blue-200",
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-blue-200 bg-blue-50 text-blue-700",
               )}
             >
               {isHighSatisfaction ? (
@@ -148,10 +150,10 @@ export function AnalyticsSummary({
           summary && (
             <span
               className={cn(
-                "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold border",
+                "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-bold",
                 summary.negativeFeedback === 0
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-amber-50 text-amber-700 border-amber-200",
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-amber-200 bg-amber-50 text-amber-700",
               )}
             >
               {summary.negativeRate}% rate

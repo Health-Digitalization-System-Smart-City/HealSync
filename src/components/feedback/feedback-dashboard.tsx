@@ -204,7 +204,8 @@ export default function FeedbackDashboard() {
             Feedback Management
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Monitor, filter, and respond to patient experience feedback across clinical branches.
+            Monitor, filter, and respond to patient experience feedback across
+            clinical branches.
           </p>
         </div>
 
@@ -267,7 +268,7 @@ export default function FeedbackDashboard() {
                 </span>
               </div>
 
-              <span className="text-xs text-slate-500 font-medium">
+              <span className="text-xs font-medium text-slate-500">
                 Page {listData.page} of {listData.totalPages}
               </span>
             </div>

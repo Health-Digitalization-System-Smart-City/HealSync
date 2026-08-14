@@ -25,23 +25,21 @@ function getSentimentTone(score: number): SentimentTone {
   return "needsAttention";
 }
 
-const TONE_BADGES: Record<
-  SentimentTone,
-  { label: string; className: string }
-> = {
-  positive: {
-    label: "Positive",
-    className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  },
-  neutral: {
-    label: "Neutral",
-    className: "bg-slate-100 text-slate-700 border border-slate-200",
-  },
-  needsAttention: {
-    label: "Needs attention",
-    className: "bg-amber-50 text-amber-700 border border-amber-200",
-  },
-};
+const TONE_BADGES: Record<SentimentTone, { label: string; className: string }> =
+  {
+    positive: {
+      label: "Positive",
+      className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    },
+    neutral: {
+      label: "Neutral",
+      className: "bg-slate-100 text-slate-700 border border-slate-200",
+    },
+    needsAttention: {
+      label: "Needs attention",
+      className: "bg-amber-50 text-amber-700 border border-amber-200",
+    },
+  };
 
 export function FeedbackTable({
   items,
@@ -67,7 +65,7 @@ export function FeedbackTable({
     >
       <table className="w-full min-w-[950px] text-left">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
             <th className="px-4.5 py-3.5">Patient Contact</th>
             <th className="px-4.5 py-3.5">Branch</th>
             <th className="px-4.5 py-3.5">Service</th>
@@ -95,8 +93,8 @@ export function FeedbackTable({
                       className={cn(
                         "flex size-8 shrink-0 items-center justify-center rounded-full",
                         capabilities.canSeePhone
-                          ? "bg-blue-50 text-blue-600 border border-blue-100"
-                          : "bg-slate-100 text-slate-500 border border-slate-200",
+                          ? "border border-blue-100 bg-blue-50 text-blue-600"
+                          : "border border-slate-200 bg-slate-100 text-slate-500",
                       )}
                     >
                       <Phone className="size-3.5" />
@@ -106,12 +104,12 @@ export function FeedbackTable({
                         {item.phoneNumber || "No phone"}
                       </p>
                       {!capabilities.canSeePhone ? (
-                        <p className="flex items-center gap-1 text-[11px] text-slate-400 font-sans">
+                        <p className="flex items-center gap-1 font-sans text-[11px] text-slate-400">
                           <Lock className="size-3 text-slate-400" />
                           Masked ({capabilities.role})
                         </p>
                       ) : (
-                        <p className="text-[11px] text-blue-600/80 font-sans font-medium">
+                        <p className="font-sans text-[11px] font-medium text-blue-600/80">
                           Verified Patient
                         </p>
                       )}
@@ -146,7 +144,7 @@ export function FeedbackTable({
                     </div>
                     <span
                       className={cn(
-                        "inline-block rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-none",
+                        "inline-block rounded-md px-1.5 py-0.5 text-[11px] leading-none font-medium",
                         badge.className,
                       )}
                     >
@@ -159,25 +157,25 @@ export function FeedbackTable({
                 <td className="px-4.5 py-3.5">
                   {item.comment ? (
                     <p
-                      className="max-w-[260px] truncate text-slate-600 text-sm"
+                      className="max-w-[260px] truncate text-sm text-slate-600"
                       title={item.comment}
                     >
                       {item.comment}
                     </p>
                   ) : (
-                    <span className="text-xs italic text-slate-400">
+                    <span className="text-xs text-slate-400 italic">
                       No written feedback
                     </span>
                   )}
                 </td>
 
                 {/* Submitted */}
-                <td className="whitespace-nowrap px-4.5 py-3.5 text-xs text-slate-500 font-medium">
+                <td className="px-4.5 py-3.5 text-xs font-medium whitespace-nowrap text-slate-500">
                   {formatDate(item.createdAt)}
                 </td>
 
                 {/* Actions */}
-                <td className="whitespace-nowrap px-4.5 py-3.5 text-right">
+                <td className="px-4.5 py-3.5 text-right whitespace-nowrap">
                   <div className="flex items-center justify-end gap-1">
                     {/* View details */}
                     <button

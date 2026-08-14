@@ -1,13 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import {
-  Calendar,
-  Layers,
-  LineChart,
-  Smile,
-  TrendingUp,
-} from "lucide-react";
+import { Calendar, Layers, LineChart, Smile, TrendingUp } from "lucide-react";
 import type { FeedbackTrendPoint } from "@/lib/analytics/types";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +22,12 @@ export function FeedbackTrendChart({
     return (
       <div className="flex h-72 flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-6 text-center shadow-xs">
         <TrendingUp className="size-8 text-slate-300" />
-        <p className="mt-2 text-sm font-semibold text-slate-700">No trend data available</p>
-        <p className="text-xs text-slate-400">There are no feedback records in the chosen timeframe.</p>
+        <p className="mt-2 text-sm font-semibold text-slate-700">
+          No trend data available
+        </p>
+        <p className="text-xs text-slate-400">
+          There are no feedback records in the chosen timeframe.
+        </p>
       </div>
     );
   }
@@ -69,7 +67,7 @@ export function FeedbackTrendChart({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-base font-bold text-slate-900">
             <TrendingUp className="size-4 text-blue-600" />
             {title}
           </h3>
@@ -125,7 +123,8 @@ export function FeedbackTrendChart({
 
               {/* Horizontal Grid lines */}
               {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-                const y = chartHeight - paddingY - ratio * (chartHeight - paddingY * 2);
+                const y =
+                  chartHeight - paddingY - ratio * (chartHeight - paddingY * 2);
                 const val = Math.round(ratio * maxTotal);
                 return (
                   <g key={ratio}>
@@ -206,7 +205,7 @@ export function FeedbackTrendChart({
                       fontSize="10"
                       fill={isActive ? "#1e293b" : "#64748b"}
                       fontWeight={isActive ? "700" : "500"}
-                      className="select-none transition-colors"
+                      className="transition-colors select-none"
                     >
                       {p.label}
                     </text>
@@ -216,12 +215,18 @@ export function FeedbackTrendChart({
             </svg>
           ) : (
             /* Stacked Bar Chart Mode */
-            <div className="flex h-56 items-end gap-3 px-8 pb-8 pt-4">
+            <div className="flex h-56 items-end gap-3 px-8 pt-4 pb-8">
               {data.map((d, index) => {
-                const heightPercent = Math.max(8, Math.round((d.total / maxTotal) * 100));
-                const posPercent = d.total > 0 ? (d.positive / d.total) * 100 : 0;
-                const neuPercent = d.total > 0 ? (d.neutral / d.total) * 100 : 0;
-                const negPercent = d.total > 0 ? (d.negative / d.total) * 100 : 0;
+                const heightPercent = Math.max(
+                  8,
+                  Math.round((d.total / maxTotal) * 100),
+                );
+                const posPercent =
+                  d.total > 0 ? (d.positive / d.total) * 100 : 0;
+                const neuPercent =
+                  d.total > 0 ? (d.neutral / d.total) * 100 : 0;
+                const negPercent =
+                  d.total > 0 ? (d.negative / d.total) * 100 : 0;
                 const isActive = activeIdx === index;
 
                 return (
@@ -229,17 +234,19 @@ export function FeedbackTrendChart({
                     key={d.date}
                     onMouseEnter={() => setActiveIdx(index)}
                     onMouseLeave={() => setActiveIdx(null)}
-                    className="flex flex-1 flex-col items-center gap-2 cursor-pointer group"
+                    className="group flex flex-1 cursor-pointer flex-col items-center gap-2"
                   >
-                    <span className="text-[10px] font-mono font-bold text-slate-500 group-hover:text-blue-600">
+                    <span className="font-mono text-[10px] font-bold text-slate-500 group-hover:text-blue-600">
                       {d.total}
                     </span>
 
                     <div
                       style={{ height: `${heightPercent}%` }}
                       className={cn(
-                        "w-full max-w-[36px] flex flex-col justify-end overflow-hidden rounded-t-md border border-slate-200 transition-all",
-                        isActive ? "ring-2 ring-blue-500 ring-offset-1" : "group-hover:opacity-90",
+                        "flex w-full max-w-[36px] flex-col justify-end overflow-hidden rounded-t-md border border-slate-200 transition-all",
+                        isActive
+                          ? "ring-2 ring-blue-500 ring-offset-1"
+                          : "group-hover:opacity-90",
                       )}
                     >
                       {/* Positive slice */}
@@ -264,8 +271,10 @@ export function FeedbackTrendChart({
 
                     <span
                       className={cn(
-                        "text-[10px] font-medium transition-colors whitespace-nowrap",
-                        isActive ? "font-bold text-slate-900" : "text-slate-500",
+                        "text-[10px] font-medium whitespace-nowrap transition-colors",
+                        isActive
+                          ? "font-bold text-slate-900"
+                          : "text-slate-500",
                       )}
                     >
                       {d.label}
@@ -280,33 +289,42 @@ export function FeedbackTrendChart({
 
       {/* Interactive Tooltip Card */}
       {activePoint && (
-        <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-slate-800 animate-in fade-in duration-150">
+        <div className="animate-in fade-in mt-3 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-slate-800 duration-150">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-200/50 pb-2">
-            <span className="font-bold text-blue-950 flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 font-bold text-blue-950">
               <Calendar className="size-3.5 text-blue-600" />
               {activePoint.date} ({activePoint.label})
             </span>
             <span className="font-semibold text-slate-700">
-              Total Submissions: <strong className="text-slate-900">{activePoint.total}</strong>
+              Total Submissions:{" "}
+              <strong className="text-slate-900">{activePoint.total}</strong>
             </span>
           </div>
 
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <div className="flex items-center gap-1.5 text-emerald-700">
               <span className="size-2 rounded-full bg-emerald-500" />
-              <span>Positive: <strong>{activePoint.positive}</strong></span>
+              <span>
+                Positive: <strong>{activePoint.positive}</strong>
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-700">
               <span className="size-2 rounded-full bg-slate-400" />
-              <span>Neutral: <strong>{activePoint.neutral}</strong></span>
+              <span>
+                Neutral: <strong>{activePoint.neutral}</strong>
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-amber-700">
               <span className="size-2 rounded-full bg-amber-500" />
-              <span>Needs Attention: <strong>{activePoint.negative}</strong></span>
+              <span>
+                Needs Attention: <strong>{activePoint.negative}</strong>
+              </span>
             </div>
-            <div className="flex items-center gap-1.5 text-blue-700 font-semibold">
+            <div className="flex items-center gap-1.5 font-semibold text-blue-700">
               <Smile className="size-3.5" />
-              <span>Satisfaction: <strong>{activePoint.satisfactionRate}%</strong></span>
+              <span>
+                Satisfaction: <strong>{activePoint.satisfactionRate}%</strong>
+              </span>
             </div>
           </div>
         </div>
@@ -328,7 +346,9 @@ export function FeedbackTrendChart({
             <span>Needs Attention</span>
           </div>
         </div>
-        <span className="text-[11px] text-slate-400">Hover data points to inspect breakdowns</span>
+        <span className="text-[11px] text-slate-400">
+          Hover data points to inspect breakdowns
+        </span>
       </div>
     </div>
   );

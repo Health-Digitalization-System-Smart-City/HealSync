@@ -30,10 +30,27 @@ export function computeAnalyticsDashboard(
   query: AnalyticsQuery = {},
   now: Date = new Date(),
 ): AnalyticsDashboardData {
-  const range = resolveDateRange(query.range, query.startDate, query.endDate, now);
+  const range = resolveDateRange(
+    query.range,
+    query.startDate,
+    query.endDate,
+    now,
+  );
 
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  const todayEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999,
+  ).getTime();
 
   // All active records
   const allActiveRecords = store.records.filter((r) => r.deletedAt === null);
@@ -82,7 +99,8 @@ export function computeAnalyticsDashboard(
   const positiveRate = total > 0 ? Math.round((positive / total) * 100) : 0;
   const neutralRate = total > 0 ? Math.round((neutral / total) * 100) : 0;
   const negativeRate = total > 0 ? Math.round((negative / total) * 100) : 0;
-  const avgRatingScore = total > 0 ? Math.round((totalScore / total) * 10) / 10 : 0;
+  const avgRatingScore =
+    total > 0 ? Math.round((totalScore / total) * 10) / 10 : 0;
 
   const summary: DashboardSummaryMetrics = {
     totalFeedback: total,
@@ -101,82 +119,98 @@ export function computeAnalyticsDashboard(
   const trends = computeTrends(records);
 
   // 3. Compute Satisfaction Distribution
-  const distribution: SatisfactionDistributionItem[] = RATING_OPTIONS.map((option) => {
-    const count = records.filter((r) => r.rating === option.value).length;
-    const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-    const tone: "positive" | "neutral" | "needsAttention" = isPositiveRating(option.value)
-      ? "positive"
-      : isNeutralRating(option.value)
-        ? "neutral"
-        : "needsAttention";
+  const distribution: SatisfactionDistributionItem[] = RATING_OPTIONS.map(
+    (option) => {
+      const count = records.filter((r) => r.rating === option.value).length;
+      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+      const tone: "positive" | "neutral" | "needsAttention" = isPositiveRating(
+        option.value,
+      )
+        ? "positive"
+        : isNeutralRating(option.value)
+          ? "neutral"
+          : "needsAttention";
 
-    return {
-      rating: option.value,
-      label: option.label,
-      score: option.score,
-      count,
-      percentage,
-      tone,
-    };
-  });
+      return {
+        rating: option.value,
+        label: option.label,
+        score: option.score,
+        count,
+        percentage,
+        tone,
+      };
+    },
+  );
 
   // 4. Compute Branch Comparison
-  const branchComparison: BranchComparisonItem[] = store.branches.map((branch) => {
-    const branchRecords = records.filter((r) => r.branchId === branch.id);
-    const bTotal = branchRecords.length;
-    let bPos = 0;
-    let bNeu = 0;
-    let bNeg = 0;
-    let bScore = 0;
+  const branchComparison: BranchComparisonItem[] = store.branches
+    .map((branch) => {
+      const branchRecords = records.filter((r) => r.branchId === branch.id);
+      const bTotal = branchRecords.length;
+      let bPos = 0;
+      let bNeu = 0;
+      let bNeg = 0;
+      let bScore = 0;
 
-    for (const r of branchRecords) {
-      const score = getRatingScore(r.rating);
-      bScore += score;
-      if (isPositiveRating(r.rating)) bPos += 1;
-      else if (isNeutralRating(r.rating)) bNeu += 1;
-      else if (isNeedsAttentionRating(r.rating)) bNeg += 1;
-    }
+      for (const r of branchRecords) {
+        const score = getRatingScore(r.rating);
+        bScore += score;
+        if (isPositiveRating(r.rating)) bPos += 1;
+        else if (isNeutralRating(r.rating)) bNeu += 1;
+        else if (isNeedsAttentionRating(r.rating)) bNeg += 1;
+      }
 
-    return {
-      branchId: branch.id,
-      branchName: branch.name,
-      totalFeedback: bTotal,
-      satisfactionRate: bTotal > 0 ? Math.round((bPos / bTotal) * 100) : 0,
-      avgScore: bTotal > 0 ? Math.round((bScore / bTotal) * 10) / 10 : 0,
-      positiveCount: bPos,
-      neutralCount: bNeu,
-      negativeCount: bNeg,
-    };
-  }).sort((a, b) => b.totalFeedback - a.totalFeedback || b.satisfactionRate - a.satisfactionRate);
+      return {
+        branchId: branch.id,
+        branchName: branch.name,
+        totalFeedback: bTotal,
+        satisfactionRate: bTotal > 0 ? Math.round((bPos / bTotal) * 100) : 0,
+        avgScore: bTotal > 0 ? Math.round((bScore / bTotal) * 10) / 10 : 0,
+        positiveCount: bPos,
+        neutralCount: bNeu,
+        negativeCount: bNeg,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.totalFeedback - a.totalFeedback ||
+        b.satisfactionRate - a.satisfactionRate,
+    );
 
   // 5. Compute Service Comparison
-  const serviceComparison: ServiceComparisonItem[] = store.services.map((service) => {
-    const serviceRecords = records.filter((r) => r.serviceId === service.id);
-    const sTotal = serviceRecords.length;
-    let sPos = 0;
-    let sNeu = 0;
-    let sNeg = 0;
-    let sScore = 0;
+  const serviceComparison: ServiceComparisonItem[] = store.services
+    .map((service) => {
+      const serviceRecords = records.filter((r) => r.serviceId === service.id);
+      const sTotal = serviceRecords.length;
+      let sPos = 0;
+      let sNeu = 0;
+      let sNeg = 0;
+      let sScore = 0;
 
-    for (const r of serviceRecords) {
-      const score = getRatingScore(r.rating);
-      sScore += score;
-      if (isPositiveRating(r.rating)) sPos += 1;
-      else if (isNeutralRating(r.rating)) sNeu += 1;
-      else if (isNeedsAttentionRating(r.rating)) sNeg += 1;
-    }
+      for (const r of serviceRecords) {
+        const score = getRatingScore(r.rating);
+        sScore += score;
+        if (isPositiveRating(r.rating)) sPos += 1;
+        else if (isNeutralRating(r.rating)) sNeu += 1;
+        else if (isNeedsAttentionRating(r.rating)) sNeg += 1;
+      }
 
-    return {
-      serviceId: service.id,
-      serviceName: service.name,
-      totalFeedback: sTotal,
-      satisfactionRate: sTotal > 0 ? Math.round((sPos / sTotal) * 100) : 0,
-      avgScore: sTotal > 0 ? Math.round((sScore / sTotal) * 10) / 10 : 0,
-      positiveCount: sPos,
-      neutralCount: sNeu,
-      negativeCount: sNeg,
-    };
-  }).sort((a, b) => b.totalFeedback - a.totalFeedback || b.satisfactionRate - a.satisfactionRate);
+      return {
+        serviceId: service.id,
+        serviceName: service.name,
+        totalFeedback: sTotal,
+        satisfactionRate: sTotal > 0 ? Math.round((sPos / sTotal) * 100) : 0,
+        avgScore: sTotal > 0 ? Math.round((sScore / sTotal) * 10) / 10 : 0,
+        positiveCount: sPos,
+        neutralCount: sNeu,
+        negativeCount: sNeg,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.totalFeedback - a.totalFeedback ||
+        b.satisfactionRate - a.satisfactionRate,
+    );
 
   return {
     summary,
@@ -194,15 +228,16 @@ export function computeAnalyticsDashboard(
   };
 }
 
-function computeTrends(
-  records: FeedbackRecord[],
-): FeedbackTrendPoint[] {
+function computeTrends(records: FeedbackRecord[]): FeedbackTrendPoint[] {
   if (records.length === 0) {
     return [];
   }
 
   // Group records by YYYY-MM-DD
-  const dateMap = new Map<string, { total: number; pos: number; neu: number; neg: number }>();
+  const dateMap = new Map<
+    string,
+    { total: number; pos: number; neu: number; neg: number }
+  >();
 
   for (const r of records) {
     const d = new Date(r.createdAt);
@@ -221,7 +256,8 @@ function computeTrends(
   return sortedDates.map((dateStr) => {
     const item = dateMap.get(dateStr)!;
     const dateObj = new Date(dateStr);
-    const satRate = item.total > 0 ? Math.round((item.pos / item.total) * 100) : 0;
+    const satRate =
+      item.total > 0 ? Math.round((item.pos / item.total) * 100) : 0;
 
     return {
       date: dateStr,

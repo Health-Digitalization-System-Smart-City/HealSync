@@ -41,13 +41,15 @@ export const ANALYTICS_RANGE_OPTIONS: Array<{
   { value: "custom", label: "Custom Range" },
 ];
 
-export function isAnalyticsFilterActive(values: AnalyticsFilterValues): boolean {
+export function isAnalyticsFilterActive(
+  values: AnalyticsFilterValues,
+): boolean {
   return Boolean(
     values.range !== "all" ||
-      values.branchId ||
-      values.serviceId ||
-      values.customStart ||
-      values.customEnd,
+    values.branchId ||
+    values.serviceId ||
+    values.customStart ||
+    values.customEnd,
   );
 }
 
@@ -94,7 +96,9 @@ export function AnalyticsFilters({
   const hasActive = isAnalyticsFilterActive(values);
   const selectedBranch = branches.find((b) => b.id === values.branchId);
   const selectedService = services.find((s) => s.id === values.serviceId);
-  const selectedRange = ANALYTICS_RANGE_OPTIONS.find((r) => r.value === values.range);
+  const selectedRange = ANALYTICS_RANGE_OPTIONS.find(
+    (r) => r.value === values.range,
+  );
 
   return (
     <div className="rounded-xl border border-slate-200/90 bg-white p-4.5 shadow-sm">
@@ -104,7 +108,7 @@ export function AnalyticsFilters({
           <SlidersHorizontal className="size-4 text-slate-500" />
           <span>Analytics Timeframe & Scope</span>
           {hasActive && (
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">
               Filtered View
             </span>
           )}
@@ -124,7 +128,10 @@ export function AnalyticsFilters({
       {/* Main Filter Grid */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* Time Period Range */}
-        <FilterField label="Time Period" icon={<CalendarDays className="size-3.5" />}>
+        <FilterField
+          label="Time Period"
+          icon={<CalendarDays className="size-3.5" />}
+        >
           <select
             value={values.range}
             onChange={(e) =>
@@ -142,7 +149,10 @@ export function AnalyticsFilters({
         </FilterField>
 
         {/* Branch Filter */}
-        <FilterField label="Branch Scope" icon={<Building2 className="size-3.5" />}>
+        <FilterField
+          label="Branch Scope"
+          icon={<Building2 className="size-3.5" />}
+        >
           <select
             value={values.branchId}
             onChange={(e) => onChange({ branchId: e.target.value })}
@@ -159,7 +169,10 @@ export function AnalyticsFilters({
         </FilterField>
 
         {/* Service Filter */}
-        <FilterField label="Clinical Service" icon={<Stethoscope className="size-3.5" />}>
+        <FilterField
+          label="Clinical Service"
+          icon={<Stethoscope className="size-3.5" />}
+        >
           <select
             value={values.serviceId}
             onChange={(e) => onChange({ serviceId: e.target.value })}
@@ -183,7 +196,10 @@ export function AnalyticsFilters({
             Specify Custom Analytics Date Range (Inclusive)
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-md">
-            <FilterField label="From (Start Date)" icon={<CalendarDays className="size-3.5" />}>
+            <FilterField
+              label="From (Start Date)"
+              icon={<CalendarDays className="size-3.5" />}
+            >
               <input
                 type="date"
                 value={values.customStart}
@@ -192,7 +208,10 @@ export function AnalyticsFilters({
                 className={selectClass}
               />
             </FilterField>
-            <FilterField label="To (End Date)" icon={<CalendarDays className="size-3.5" />}>
+            <FilterField
+              label="To (End Date)"
+              icon={<CalendarDays className="size-3.5" />}
+            >
               <input
                 type="date"
                 value={values.customEnd}
@@ -208,16 +227,20 @@ export function AnalyticsFilters({
       {/* Active Filter Chips */}
       {hasActive && (
         <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-          <span className="text-xs font-medium text-slate-400">Active Scope:</span>
+          <span className="text-xs font-medium text-slate-400">
+            Active Scope:
+          </span>
 
           {values.range !== "all" && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 border border-purple-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700">
               Period: {selectedRange?.label || values.range}
-              {values.range === "custom" && values.customStart && values.customEnd && (
-                <span className="text-[11px] text-purple-600">
-                  ({values.customStart} → {values.customEnd})
-                </span>
-              )}
+              {values.range === "custom" &&
+                values.customStart &&
+                values.customEnd && (
+                  <span className="text-[11px] text-purple-600">
+                    ({values.customStart} → {values.customEnd})
+                  </span>
+                )}
               <button
                 type="button"
                 onClick={() =>
@@ -231,7 +254,7 @@ export function AnalyticsFilters({
           )}
 
           {selectedBranch && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
               Branch: {selectedBranch.name}
               <button
                 type="button"
@@ -244,7 +267,7 @@ export function AnalyticsFilters({
           )}
 
           {selectedService && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
               Service: {selectedService.name}
               <button
                 type="button"

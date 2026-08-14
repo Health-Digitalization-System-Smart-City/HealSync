@@ -76,7 +76,7 @@ function DetailRow({
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
           {label}
         </p>
         <div className="mt-1 text-sm text-slate-800">{children}</div>
@@ -100,7 +100,9 @@ export function FeedbackDetails({
   onSave: (input: UpdateFeedbackInput) => Promise<FeedbackView>;
   onDelete: (id: string) => Promise<void>;
 }) {
-  const [editing, setEditing] = useState(initialEditing && capabilities.canUpdate);
+  const [editing, setEditing] = useState(
+    initialEditing && capabilities.canUpdate,
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -183,9 +185,9 @@ export function FeedbackDetails({
       />
 
       {/* Slide-over Container */}
-      <div className="relative flex h-full w-full max-w-lg flex-col bg-white shadow-2xl transition-transform animate-in slide-in-from-right duration-200">
+      <div className="animate-in slide-in-from-right relative flex h-full w-full max-w-lg flex-col bg-white shadow-2xl transition-transform duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4.5 bg-slate-50/50">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 px-6 py-4.5">
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -241,7 +243,7 @@ export function FeedbackDetails({
               <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               <div>
                 <p className="font-semibold">Action Failed</p>
-                <p className="text-xs text-red-600 mt-0.5">{error}</p>
+                <p className="mt-0.5 text-xs text-red-600">{error}</p>
               </div>
             </div>
           )}
@@ -250,12 +252,13 @@ export function FeedbackDetails({
             /* Edit Mode */
             <div className="space-y-4.5">
               <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-3 text-xs text-blue-800">
-                <p className="font-semibold flex items-center gap-1.5">
+                <p className="flex items-center gap-1.5 font-semibold">
                   <Pencil className="size-3.5" />
                   Editing Feedback Record
                 </p>
                 <p className="mt-1 text-blue-700">
-                  Update the rating or clarify written patient feedback. Changes are auditable.
+                  Update the rating or clarify written patient feedback. Changes
+                  are auditable.
                 </p>
               </div>
 
@@ -336,7 +339,7 @@ export function FeedbackDetails({
             <div className="space-y-4">
               {/* Rating Card */}
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                   Satisfaction Score
                 </p>
                 <div className="mt-2 flex items-center justify-between">
@@ -393,13 +396,14 @@ export function FeedbackDetails({
                       </span>
                     </div>
                   ) : (
-                    <div className="rounded-md bg-amber-50/60 border border-amber-200/70 p-2.5 text-xs text-amber-800">
+                    <div className="rounded-md border border-amber-200/70 bg-amber-50/60 p-2.5 text-xs text-amber-800">
                       <p className="font-mono font-bold text-slate-800">
                         {feedback.phoneNumber}
                       </p>
                       <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-700">
                         <Lock className="size-3 text-amber-600" />
-                        Phone number is masked for your role ({capabilities.role}) per data protection policy.
+                        Phone number is masked for your role (
+                        {capabilities.role}) per data protection policy.
                       </p>
                     </div>
                   )}
@@ -408,17 +412,17 @@ export function FeedbackDetails({
 
               {/* Written Feedback Section */}
               <div className="rounded-xl border border-slate-200/80 bg-white p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <p className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                   <MessageSquare className="size-3.5" />
                   Patient Comment
                 </p>
                 <div className="mt-2.5">
                   {feedback.comment ? (
-                    <blockquote className="rounded-lg bg-slate-50 border-l-3 border-blue-500 p-3.5 text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">
+                    <blockquote className="rounded-lg border-l-3 border-blue-500 bg-slate-50 p-3.5 text-sm leading-relaxed whitespace-pre-wrap text-slate-700">
                       &ldquo;{feedback.comment}&rdquo;
                     </blockquote>
                   ) : (
-                    <p className="text-sm italic text-slate-400">
+                    <p className="text-sm text-slate-400 italic">
                       No written comment was provided with this submission.
                     </p>
                   )}
@@ -434,13 +438,15 @@ export function FeedbackDetails({
             {confirmDelete ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-4">
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangle className="size-5 shrink-0 text-red-600 mt-0.5" />
+                  <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" />
                   <div>
                     <h4 className="text-sm font-bold text-red-900">
                       Confirm Soft Deletion
                     </h4>
-                    <p className="mt-1 text-xs text-red-700 leading-relaxed">
-                      This will remove the feedback from active views. In accordance with healthcare data compliance, the record is soft-deleted and preserved in audit archives.
+                    <p className="mt-1 text-xs leading-relaxed text-red-700">
+                      This will remove the feedback from active views. In
+                      accordance with healthcare data compliance, the record is
+                      soft-deleted and preserved in audit archives.
                     </p>
                   </div>
                 </div>

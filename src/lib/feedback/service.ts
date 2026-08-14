@@ -120,8 +120,10 @@ export function listFeedback(
       if (record.id.toLowerCase().includes(term)) return true;
       if (record.branchName.toLowerCase().includes(term)) return true;
       if (record.serviceName.toLowerCase().includes(term)) return true;
-      if (record.comment && record.comment.toLowerCase().includes(term)) return true;
-      if (canSearchPhone && record.phoneNumber.toLowerCase().includes(term)) return true;
+      if (record.comment && record.comment.toLowerCase().includes(term))
+        return true;
+      if (canSearchPhone && record.phoneNumber.toLowerCase().includes(term))
+        return true;
       return false;
     });
   }

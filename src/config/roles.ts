@@ -56,10 +56,7 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
   Analyst: [PERMISSIONS.feedbackRead],
 };
 
-export function hasPermission(
-  role: UserRole,
-  permission: Permission,
-): boolean {
+export function hasPermission(role: UserRole, permission: Permission): boolean {
   return rolePermissions[role].includes(permission);
 }
 

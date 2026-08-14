@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { RATING_VALUES } from "@/lib/feedback/ratings";
 import { RANGE_VALUES } from "@/lib/feedback/ranges";
-import {
-  DEFAULT_PAGE_SIZE,
-  MAX_PAGE_SIZE,
-} from "@/lib/feedback/service";
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "@/lib/feedback/service";
 
 export const feedbackListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
@@ -30,10 +27,9 @@ export const feedbackUpdateSchema = z
     rating: z.enum(RATING_VALUES).optional(),
     comment: z.string().trim().max(1000).nullable().optional(),
   })
-  .refine(
-    (data) => data.rating !== undefined || data.comment !== undefined,
-    { message: "Provide at least one field to update." },
-  );
+  .refine((data) => data.rating !== undefined || data.comment !== undefined, {
+    message: "Provide at least one field to update.",
+  });
 
 export type FeedbackUpdateBody = z.infer<typeof feedbackUpdateSchema>;
 

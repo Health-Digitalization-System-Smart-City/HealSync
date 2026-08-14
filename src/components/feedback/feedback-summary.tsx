@@ -37,7 +37,7 @@ function SummaryCard({
   return (
     <div className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all hover:border-slate-300 hover:shadow">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
           {label}
         </p>
         <span
@@ -66,7 +66,8 @@ function SummaryCard({
       </div>
 
       <p className="mt-1 text-xs text-slate-400">
-        {badgeLabel ?? (loading ? "Loading metrics..." : "Based on current filters")}
+        {badgeLabel ??
+          (loading ? "Loading metrics..." : "Based on current filters")}
       </p>
     </div>
   );

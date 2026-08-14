@@ -44,7 +44,8 @@ export function RoleSelector({
   loading?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const activeRoleConfig = ROLES.find((r) => r.role === currentRole) || ROLES[0];
+  const activeRoleConfig =
+    ROLES.find((r) => r.role === currentRole) || ROLES[0];
 
   async function handleSelect(role: UserRole) {
     setOpen(false);
@@ -59,7 +60,7 @@ export function RoleSelector({
         type="button"
         onClick={() => setOpen(!open)}
         disabled={loading}
-        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:border-slate-300 active:scale-98 disabled:opacity-60"
+        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 active:scale-98 disabled:opacity-60"
         title="Simulate / Switch Dashboard Viewer Role"
       >
         <span className="flex size-4 items-center justify-center rounded-full bg-blue-50 text-blue-600">
@@ -67,7 +68,8 @@ export function RoleSelector({
         </span>
 
         <span>
-          Viewing as: <strong className="text-slate-900">{activeRoleConfig.role}</strong>
+          Viewing as:{" "}
+          <strong className="text-slate-900">{activeRoleConfig.role}</strong>
         </span>
 
         <span className="text-slate-300">·</span>
@@ -75,8 +77,8 @@ export function RoleSelector({
         <span
           className={
             activeRoleConfig.phoneAccess === "Visible"
-              ? "text-emerald-700 font-medium"
-              : "text-amber-700 font-medium flex items-center gap-1"
+              ? "font-medium text-emerald-700"
+              : "flex items-center gap-1 font-medium text-amber-700"
           }
         >
           {activeRoleConfig.phoneAccess === "Visible" ? (
@@ -100,9 +102,9 @@ export function RoleSelector({
             aria-hidden="true"
           />
 
-          <div className="absolute right-0 top-full mt-1.5 z-50 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in zoom-in-95 duration-100">
+          <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-50 mt-1.5 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-xl duration-100">
             <div className="border-b border-slate-100 px-3 py-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                 Simulate Viewer Role (RBAC)
               </p>
               <p className="mt-0.5 text-xs text-slate-500">
@@ -121,12 +123,12 @@ export function RoleSelector({
                     onClick={() => handleSelect(item.role)}
                     className={`w-full rounded-lg px-3 py-2 text-left transition ${
                       isSelected
-                        ? "bg-blue-50/80 text-blue-900 border border-blue-200/80"
-                        : "hover:bg-slate-50 text-slate-700"
+                        ? "border border-blue-200/80 bg-blue-50/80 text-blue-900"
+                        : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
                         <UserCheck className="size-3 text-slate-500" />
                         {item.role}
                       </span>
@@ -136,7 +138,12 @@ export function RoleSelector({
                     </div>
 
                     <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500">
-                      <span>Phone: <strong className="text-slate-700">{item.phoneAccess}</strong></span>
+                      <span>
+                        Phone:{" "}
+                        <strong className="text-slate-700">
+                          {item.phoneAccess}
+                        </strong>
+                      </span>
                       <span>·</span>
                       <span>{item.mutations}</span>
                     </div>

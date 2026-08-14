@@ -11,9 +11,11 @@ describe("computeAnalyticsDashboard", () => {
     expect(data.summary.totalFeedback).toBe(store.records.length);
     expect(data.summary.satisfactionRate).toBeGreaterThanOrEqual(0);
     expect(data.summary.satisfactionRate).toBeLessThanOrEqual(100);
-    expect(data.summary.positiveFeedback + data.summary.neutralFeedback + data.summary.negativeFeedback).toBe(
-      store.records.length,
-    );
+    expect(
+      data.summary.positiveFeedback +
+        data.summary.neutralFeedback +
+        data.summary.negativeFeedback,
+    ).toBe(store.records.length);
     expect(data.summary.avgRatingScore).toBeGreaterThanOrEqual(0);
     expect(data.summary.avgRatingScore).toBeLessThanOrEqual(7);
   });
@@ -62,7 +64,9 @@ describe("computeAnalyticsDashboard", () => {
     const thisMonth = computeAnalyticsDashboard(store, { range: "this_month" });
     const thisYear = computeAnalyticsDashboard(store, { range: "this_year" });
 
-    expect(thisMonth.totalCountInPeriod).toBeLessThanOrEqual(thisYear.totalCountInPeriod);
+    expect(thisMonth.totalCountInPeriod).toBeLessThanOrEqual(
+      thisYear.totalCountInPeriod,
+    );
   });
 
   it("filters analytics by custom date range", () => {
@@ -81,7 +85,9 @@ describe("computeAnalyticsDashboard", () => {
     const branchId = "br-main";
     const data = computeAnalyticsDashboard(store, { branchId });
 
-    const expected = store.records.filter((r) => r.branchId === branchId).length;
+    const expected = store.records.filter(
+      (r) => r.branchId === branchId,
+    ).length;
     expect(data.totalCountInPeriod).toBe(expected);
     expect(data.summary.totalFeedback).toBe(expected);
   });
@@ -91,7 +97,9 @@ describe("computeAnalyticsDashboard", () => {
     const serviceId = "sv-general";
     const data = computeAnalyticsDashboard(store, { serviceId });
 
-    const expected = store.records.filter((r) => r.serviceId === serviceId).length;
+    const expected = store.records.filter(
+      (r) => r.serviceId === serviceId,
+    ).length;
     expect(data.totalCountInPeriod).toBe(expected);
     expect(data.summary.totalFeedback).toBe(expected);
   });
@@ -101,7 +109,10 @@ describe("computeAnalyticsDashboard", () => {
     const data = computeAnalyticsDashboard(store, { range: "all" });
 
     expect(data.distribution).toHaveLength(8);
-    const sumCount = data.distribution.reduce((acc, item) => acc + item.count, 0);
+    const sumCount = data.distribution.reduce(
+      (acc, item) => acc + item.count,
+      0,
+    );
     expect(sumCount).toBe(store.records.length);
   });
 
@@ -110,7 +121,10 @@ describe("computeAnalyticsDashboard", () => {
     const data = computeAnalyticsDashboard(store, { range: "all" });
 
     expect(data.branchComparison).toHaveLength(store.branches.length);
-    const sumTotal = data.branchComparison.reduce((acc, b) => acc + b.totalFeedback, 0);
+    const sumTotal = data.branchComparison.reduce(
+      (acc, b) => acc + b.totalFeedback,
+      0,
+    );
     expect(sumTotal).toBe(store.records.length);
   });
 
@@ -119,7 +133,10 @@ describe("computeAnalyticsDashboard", () => {
     const data = computeAnalyticsDashboard(store, { range: "all" });
 
     expect(data.serviceComparison).toHaveLength(store.services.length);
-    const sumTotal = data.serviceComparison.reduce((acc, s) => acc + s.totalFeedback, 0);
+    const sumTotal = data.serviceComparison.reduce(
+      (acc, s) => acc + s.totalFeedback,
+      0,
+    );
     expect(sumTotal).toBe(store.records.length);
   });
 

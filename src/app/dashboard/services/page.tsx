@@ -42,34 +42,40 @@ export default function ServicesPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Services</h1>
-        <p className="text-slate-600 mt-2">
+        <p className="mt-2 text-slate-600">
           Manage healthcare services provided by the organization.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
         {stats.map((stat) => (
-          <div key={stat.title} className="bg-white p-6 rounded-xl border shadow-sm">
+          <div
+            key={stat.title}
+            className="rounded-xl border bg-white p-6 shadow-sm"
+          >
             <p className="text-slate-500">{stat.title}</p>
-            <h2 className="text-3xl font-bold mt-2">{stat.value}</h2>
+            <h2 className="mt-2 text-3xl font-bold">{stat.value}</h2>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {services.map((service) => (
-          <div key={service.name} className="bg-white p-6 rounded-xl border shadow-sm">
+          <div
+            key={service.name}
+            className="rounded-xl border bg-white p-6 shadow-sm"
+          >
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">{service.name}</h2>
-              <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">
+              <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
                 Active
               </span>
             </div>
-            <p className="text-slate-500 mt-3">{service.description}</p>
+            <p className="mt-3 text-slate-500">{service.description}</p>
             <div className="mt-5 text-sm text-slate-600">
               Patients served: <strong>{service.patients}</strong>
             </div>
-            <button className="w-full mt-5 px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200">
+            <button className="mt-5 w-full rounded-lg bg-slate-100 px-4 py-2 hover:bg-slate-200">
               View Service
             </button>
           </div>

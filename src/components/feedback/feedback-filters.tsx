@@ -43,12 +43,12 @@ export const EMPTY_FILTERS: FeedbackFilterValues = {
 export function isFilterActive(values: FeedbackFilterValues): boolean {
   return Boolean(
     values.search ||
-      values.branchId ||
-      values.serviceId ||
-      values.rating ||
-      values.range !== "all" ||
-      values.customStart ||
-      values.customEnd,
+    values.branchId ||
+    values.serviceId ||
+    values.rating ||
+    values.range !== "all" ||
+    values.customStart ||
+    values.customEnd,
   );
 }
 
@@ -137,7 +137,7 @@ export function FeedbackFilters({
           <SlidersHorizontal className="size-4 text-slate-500" />
           <span>Filters & Search</span>
           {activeCount > 0 && (
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">
               {activeCount} active
             </span>
           )}
@@ -175,7 +175,7 @@ export function FeedbackFilters({
                   setSearchInput("");
                   onChange({ search: "" });
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X className="size-3.5" />
               </button>
@@ -260,20 +260,30 @@ export function FeedbackFilters({
             Specify Custom Date Range (Inclusive)
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-md">
-            <Field label="Start Date (From)" icon={<CalendarDays className="size-3.5" />}>
+            <Field
+              label="Start Date (From)"
+              icon={<CalendarDays className="size-3.5" />}
+            >
               <input
                 type="date"
                 value={values.customStart}
-                onChange={(event) => onChange({ customStart: event.target.value })}
+                onChange={(event) =>
+                  onChange({ customStart: event.target.value })
+                }
                 disabled={disabled}
                 className={inputOrSelectClass}
               />
             </Field>
-            <Field label="End Date (To)" icon={<CalendarDays className="size-3.5" />}>
+            <Field
+              label="End Date (To)"
+              icon={<CalendarDays className="size-3.5" />}
+            >
               <input
                 type="date"
                 value={values.customEnd}
-                onChange={(event) => onChange({ customEnd: event.target.value })}
+                onChange={(event) =>
+                  onChange({ customEnd: event.target.value })
+                }
                 disabled={disabled}
                 className={inputOrSelectClass}
               />
@@ -304,7 +314,7 @@ export function FeedbackFilters({
           )}
 
           {selectedBranch && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
               Branch: {selectedBranch.name}
               <button
                 type="button"
@@ -317,7 +327,7 @@ export function FeedbackFilters({
           )}
 
           {selectedService && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
               Service: {selectedService.name}
               <button
                 type="button"
@@ -330,7 +340,7 @@ export function FeedbackFilters({
           )}
 
           {selectedRating && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 border border-amber-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
               Rating: {selectedRating.label}
               <button
                 type="button"
@@ -343,13 +353,15 @@ export function FeedbackFilters({
           )}
 
           {values.range !== "all" && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 border border-purple-200">
+            <span className="inline-flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700">
               Range: {selectedRange?.label || values.range}
-              {values.range === "custom" && values.customStart && values.customEnd && (
-                <span className="text-[11px] text-purple-600">
-                  ({values.customStart} → {values.customEnd})
-                </span>
-              )}
+              {values.range === "custom" &&
+                values.customStart &&
+                values.customEnd && (
+                  <span className="text-[11px] text-purple-600">
+                    ({values.customStart} → {values.customEnd})
+                  </span>
+                )}
               <button
                 type="button"
                 onClick={() =>
