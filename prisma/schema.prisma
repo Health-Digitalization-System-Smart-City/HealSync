@@ -1,9 +1,11 @@
-// Prisma schema — Phase 1 (Foundation)
+// Prisma schema — HealSync
 //
-// This schema is intentionally minimal. It contains ONLY the core models
-// required by Better Auth (the authentication foundation). Product models
-// (clinics, branches, services, staff, feedback, analytics) will be designed
-// in the dedicated database-design phase — do NOT add them here yet.
+// Implements the data model documented in docs/DATABASE.md (§32 "Recommended
+// Prisma Domain Model"): authentication (Better Auth), RBAC
+// (roles/permissions), branches, services, feedback, and audit logging.
+//
+// Source-of-truth chain (database.md §34):
+//   PRD.md → database.md → schema.prisma → Prisma migrations
 //
 // Prisma 7 notes:
 // - The `prisma-client` generator (new default) emits the client to a custom
@@ -11,7 +13,7 @@
 // - The datasource block only declares the provider; the connection URL is
 //   configured in prisma.config.ts.
 // - The client requires a driver adapter at runtime (@prisma/adapter-pg),
-//   wired up in src/lib/db.ts.
+//   wired up in src/lib/db/index.ts.
 
 generator client {
   provider = "prisma-client"
@@ -23,25 +25,53 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Better Auth core models
+// Authentication — Better Auth core models
 // See: https://www.better-auth.com/docs/adapters/prisma
 // ---------------------------------------------------------------------------
+//
+// Better Auth stores the email+password credential (including the password
+// hash) in Account.password, not on User. The app-level fields below
+// (roleId, isActive, lastLoginAt) extend the library's core User model per
+// docs/DATABASE.md §3; the admin-plugin fields (role, banned, ...) are
+// required by the admin plugin mandated in docs/SECURITY.md §9.
 
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
+<<<<<<< HEAD
   // RBAC role. Roles are fixed (Admin / Manager / Analyst) and managed only
   // through the seed/bootstrap path — never through the dashboard.
   // Defaults to the least-privilege role. See docs/SECURITY.md §2.
   role          String    @default("analyst")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+=======
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+>>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
 
-  sessions Session[]
-  accounts Account[]
+  // Better Auth admin plugin (security.md §9). `role` mirrors Role.name and
+  // is kept in sync at provisioning time (createUser, API.md §14); the admin
+  // plugin is configured with adminRoles: ["Admin"].
+  role       String    @default("user")
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  // App-level fields (database.md §3, §17). Users are never hard-deleted;
+  // disableUser sets isActive = false (API.md §14). The initial admin is
+  // created by the controlled bootstrap/seed (security.md §9).
+  roleId      String? // FK → Role
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+
+  sessions     Session[]
+  accounts     Account[]
+  auditLogs    AuditLog[]
+  assignedRole Role?      @relation("UserRole", fields: [roleId], references: [id])
 
   @@map("user")
 }
@@ -72,7 +102,7 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
-  password              String?
+  password              String? // password hash for email+password (Better Auth)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -88,4 +118,168 @@ model Verification {
   updatedAt  DateTime? @updatedAt
 
   @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// RBAC — roles, permissions, role-permission grants (database.md §4–§5)
+// ---------------------------------------------------------------------------
+// Roles are fixed per security.md §2 (Admin / Manager / Analyst); the system
+// does not support custom roles. The exact permission matrix is defined in
+// the seed (security.md §3) and is not editable through the dashboard.
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users           User[]           @relation("UserRole")
+  rolePermissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique // resource.action, e.g. "feedback.read" (API.md §8)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permission")
+}
+
+// ---------------------------------------------------------------------------
+// Branches & services (database.md §6–§8)
+// ---------------------------------------------------------------------------
+
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?  @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branchServices BranchService[]
+  feedback       Feedback[]
+
+  @@map("branch")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branchServices BranchService[]
+  feedback       Feedback[]
+
+  @@map("service")
+}
+
+// A branch may offer multiple services and a service may be available at
+// multiple branches — many-to-many with an explicit join table (database.md
+// §8). branchId + serviceId is unique. Prefer deactivation (isActive = false)
+// over deletion; Restrict prevents destroying historical references.
+
+model BranchService {
+  branchId  String
+  serviceId String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([branchId, serviceId])
+  @@index([serviceId])
+  @@map("branch_service")
+}
+
+// ---------------------------------------------------------------------------
+// Feedback (database.md §9–§17)
+// ---------------------------------------------------------------------------
+
+// Structured rating values (database.md §12). The final list is standardized
+// before production (PRD.md §33 open decision).
+enum FeedbackRating {
+  VERY_SATISFIED
+  SATISFIED
+  MOSTLY_SATISFIED
+  GOOD
+  NEUTRAL
+  NOT_SATISFIED
+  POOR
+  VERY_POOR
+}
+
+model Feedback {
+  id              String         @id @default(cuid())
+  phoneNumber     String // normalized E.164 (database.md §11); sensitive — server-only
+  phoneNumberHash String? // salted hash for duplicate-submission detection (API.md §24)
+  branchId        String
+  serviceId       String
+  rating          FeedbackRating
+  comment         String? // optional, ≤ 1,000 chars (security.md §14), original text preserved
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime? // soft delete (database.md §17); physical deletion only after retention period
+
+  branch  Branch  @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  // Indexes for the main queries: list filters and analytics aggregation
+  // (database.md §21–§23).
+  @@index([branchId])
+  @@index([serviceId])
+  @@index([createdAt])
+  @@index([rating])
+  @@index([branchId, createdAt])
+  @@index([serviceId, createdAt])
+  @@map("feedback")
+}
+
+// ---------------------------------------------------------------------------
+// Audit log (database.md §18–§19)
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String // acting dashboard user
+  action     String // e.g. create / update / delete / disable
+  entityType String // e.g. branch / service / user / feedback
+  entityId   String?
+  metadata   Json? // structured, evolving (database.md §18)
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+  @@map("audit_log")
 }

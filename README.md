@@ -4,11 +4,13 @@ A feedback platform for private healthcare clinics. Patients share feedback
 on the clinic, branch, and service they received; administrators analyze
 satisfaction, compare branches, and manage clinics, services, and staff.
 
-> **Current status: Phase 2 — Complete product & engineering documentation.**
-> The repository contains the Phase 1 foundation plus the full design
-> documents (`docs/`). No product functionality (feedback, admin dashboard,
-> analytics, clinic management) has been implemented yet — that work begins
-> in Phase 3, guided by the design documents.
+> **Current status: Phase 3 — first vertical slices implemented.**
+> The full design documents (`docs/`) are in place. Implemented so far:
+> the public patient feedback flow, and the **authentication + RBAC** layer
+> (Better Auth `disableSignUp` + admin plugin, server-side `requireUser` /
+> `requirePermission` helpers, login / password-reset pages, dashboard route
+> guard, and admin user management). Analytics, branch/service management,
+> and AI insights follow in later workstreams (see `docs/ROADMAP.md`).
 
 ---
 
@@ -87,9 +89,10 @@ pnpm prisma migrate dev    # create the database tables and apply migrations
 pnpm prisma generate       # regenerate the Prisma Client (src/generated/prisma)
 ```
 
-The Phase 1 schema contains only the Better Auth core tables (`user`,
-`session`, `account`, `verification`). Product tables are designed in the
-database-design phase — see [docs/DATABASE.md](docs/DATABASE.md).
+The schema covers the full data model: Better Auth core tables (`user`,
+`session`, `account`, `verification`), RBAC (`role`, `permission`,
+`role_permission`), branches/services, feedback, and audit logs — see
+[docs/DATABASE.md](docs/DATABASE.md).
 
 > Prisma 7 note: connection configuration lives in `prisma.config.ts`, and
 > the client requires the `@prisma/adapter-pg` driver adapter (wired in
@@ -102,7 +105,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The home page is a
-minimal foundation status page.
+patient-facing landing page that guides visitors straight to the feedback
+flow (`/feedback`).
 
 ## Quality checks
 
