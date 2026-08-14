@@ -197,46 +197,6 @@ export default function Home() {
             <span className="text-lg font-bold tracking-tight">HealSync</span>
           </Link>
 
-<<<<<<< HEAD
-        <div className="flex flex-col items-start gap-4">
-          <h1 className="flex items-center gap-3 text-4xl font-semibold tracking-tight sm:text-5xl">
-            <HeartPulse className="text-primary size-10" aria-hidden />
-            HealSync
-          </h1>
-          <p className="text-muted-foreground max-w-xl text-lg leading-8">
-            A feedback platform for private healthcare clinics. Patients share
-            their experience; administrators analyze satisfaction, services, and
-            staff performance.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/dashboard"
-            className={buttonVariants({ variant: "default" })}
-          >
-            Open Dashboard →
-          </Link>
-          <Link
-            href="/login"
-            className={buttonVariants({ variant: "secondary" })}
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/api/auth/get-session"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            Auth health check
-          </Link>
-        </div>
-
-        <div className="grid w-full gap-4 sm:grid-cols-2">
-          {stack.map((item) => (
-            <div
-              key={item.name}
-              className="border-border bg-card flex items-start gap-3 rounded-lg border p-4"
-=======
           <nav
             className="hidden items-center gap-1 md:flex"
             aria-label="Primary"
@@ -244,7 +204,6 @@ export default function Home() {
             <a
               href="#how"
               className="rounded-md px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
             >
               How it works
             </a>

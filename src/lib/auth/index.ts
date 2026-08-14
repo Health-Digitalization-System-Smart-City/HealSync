@@ -1,10 +1,5 @@
 // Better Auth configuration — Authentication + RBAC target state.
 //
-<<<<<<< HEAD
-// Dashboard users authenticate with email + password. Public self-registration
-// is disabled; dashboard users are provisioned by an Admin through the
-// createUser Server Action (see docs/SECURITY.md §9).
-=======
 // Implements docs/SECURITY.md §9 (Authentication) and §10 (Authorization):
 // - Dashboard users authenticate with email + password only.
 // - Public self-registration is disabled (disableSignUp = true); dashboard
@@ -18,17 +13,12 @@
 // - lastLoginAt is tracked on each new session (database.md §3).
 // - Password reset uses Better Auth's request/reset endpoints; the reset URL is
 //   delivered by the email service (features/auth/email).
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin } from "better-auth/plugins";
 
 import { db } from "@/lib/db";
-<<<<<<< HEAD
-import { ROLES } from "@/lib/permissions";
-=======
 import { sendPasswordResetEmail } from "@/features/auth/email";
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
@@ -37,22 +27,6 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-<<<<<<< HEAD
-    disableSignUp: true,
-  },
-  user: {
-    additionalFields: {
-      // RBAC role. Fixed set (Admin / Manager / Analyst); managed only through
-      // the Admin createUser Server Action and the seed/bootstrap path.
-      // `input: false` prevents clients from setting the role themselves.
-      role: {
-        type: "string",
-        required: false,
-        defaultValue: ROLES.ANALYST,
-        input: false,
-      },
-    },
-=======
     // Unauthenticated clients cannot self-register (security.md §9). The only
     // path that creates dashboard users is the Admin createUser Server Action.
     disableSignUp: true,
@@ -125,7 +99,6 @@ export const auth = betterAuth({
           },
         }
       : {}),
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
   },
 });
 

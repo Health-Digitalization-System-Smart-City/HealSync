@@ -1,13 +1,13 @@
-<<<<<<< HEAD
 // Server-side session + authorization helpers for the dashboard.
 //
 // These helpers are used by server components, layouts, and Server Actions.
 // They are never imported from client components.
 import { cache } from "react";
 import { headers } from "next/headers";
-import { forbidden, redirect } from "next/navigation";
+import { forbidden as nextForbidden, redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { hasPermission, ROLES, type Permission } from "@/lib/permissions";
 
 /**
@@ -44,22 +44,11 @@ export async function requirePermission(permission: Permission) {
   const session = await requireAuth();
 
   if (!hasPermission(session.user.role ?? ROLES.ANALYST, permission)) {
-    forbidden();
+    nextForbidden();
   }
 
   return session;
-=======
-// Server-side authentication helpers (API.md §6, security.md §9–§10).
-//
-// Sessions are resolved server-side with the auth library; role/permission
-// claims are never accepted from the client. requireUser() additionally
-// re-reads the user from the database so that a disabled account can never
-// access protected functionality, even with a pre-existing session
-// (security.md §9, API.md §14 disableUser).
-import { headers } from "next/headers";
-
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+}
 
 /** The authenticated dashboard user as stored in the database. */
 export interface AuthUser {
@@ -93,36 +82,18 @@ export function forbidden(
   return { success: false, error: { code: "FORBIDDEN", message } };
 }
 
-/** Minimal session user summary, or null when unauthenticated. */
-export interface SessionUserSummary {
-  id: string;
-  name: string;
-  email: string;
-  role: string | null;
-}
-
-/** The session user from the auth library, or null when unauthenticated. */
-export async function getSessionUser(): Promise<SessionUserSummary | null> {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return null;
-
-  const u = session.user;
-  return { id: u.id, name: u.name, email: u.email, role: u.role ?? null };
-}
-
 /**
  * Requires an authenticated, active dashboard user.
  *
  * Returns the database user (the authoritative record — never client claims)
- * or an UNAUTHENTICATED result. Server Actions should early-return the result
- * on failure; page layouts redirect to /login instead.
+ * or an UNAUTHENTICATED result.
  */
 export async function requireUser(): Promise<AuthResult<AuthUser>> {
-  const sessionUser = await getSessionUser();
-  if (!sessionUser) return unauthenticated();
+  const session = await getSession();
+  if (!session?.user) return unauthenticated();
 
   const user = await db.user.findUnique({
-    where: { id: sessionUser.id },
+    where: { id: session.user.id },
     select: {
       id: true,
       name: true,
@@ -144,5 +115,4 @@ export async function requireUser(): Promise<AuthResult<AuthUser>> {
   }
 
   return { success: true, data: user };
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
 }
