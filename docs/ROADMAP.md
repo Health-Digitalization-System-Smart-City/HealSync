@@ -158,11 +158,11 @@ mobile viewport; invalid branch/service pair rejected by the backend.
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 5.1 | `[ ]` Branch actions — `getBranches`, `createBranch`, `updateBranch`, `deleteBranch` (deactivate preferred), permissions `branch.*`, audit each mutation (API.md §12) | Server | 1.3 |
-| 5.2 | `[ ]` Service actions — `getServices`, `createService`, `updateService`, `deleteService`, permissions `service.*` (API.md §13) | Server | 1.3 |
-| 5.3 | `[ ]` Branch↔Service linking — manage `BranchService` rows per branch (activate/deactivate); use a transaction + audit (API.md §23, database.md §8) | Server | 5.1, 5.2 |
-| 5.4 | `[ ]` Branches management UI — list/create/edit/deactivate | UI | 5.1 |
-| 5.5 | `[ ]` Services management UI — list/create/edit/deactivate + per-branch availability editor | UI | 5.2, 5.3 |
+| 5.1 | `[x]` Branch actions — `getBranches`, `createBranch`, `updateBranch`, `deleteBranch` (deactivate preferred), permissions `branch.*`, audit each mutation (API.md §12) | Server | 1.3 |
+| 5.2 | `[x]` Service actions — `getServices`, `createService`, `updateService`, `deleteService`, permissions `service.*` (API.md §13) | Server | 1.3 |
+| 5.3 | `[x]` Branch↔Service linking — manage `BranchService` rows per branch (activate/deactivate); use a transaction + audit (API.md §23, database.md §8) | Server | 5.1, 5.2 |
+| 5.4 | `[x]` Branches management UI — list/create/edit/deactivate | UI | 5.1 |
+| 5.5 | `[x]` Services management UI — list/create/edit/deactivate + per-branch availability editor | UI | 5.2, 5.3 |
 
 ---
 

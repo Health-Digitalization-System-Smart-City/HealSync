@@ -53,9 +53,11 @@ function initialsOf(name: string): string {
 type ServiceCardProps = {
   service: ServiceOverview;
   rank?: number;
+  /** Optional management controls rendered in the footer (Admin-only). */
+  actions?: React.ReactNode;
 };
 
-export function ServiceCard({ service, rank }: ServiceCardProps) {
+export function ServiceCard({ service, rank, actions }: ServiceCardProps) {
   const tone = performanceOf(service.satisfactionRate);
   const hasFeedback = service.totalFeedback > 0;
 
@@ -196,15 +198,17 @@ export function ServiceCard({ service, rank }: ServiceCardProps) {
         )}
       </div>
 
-      {/* Footer summary */}
-      <div className="mt-auto flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3">
+      {/* Footer summary / management actions */}
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">
         <span className="text-xs text-slate-500">
           {service.totalFeedback.toLocaleString()}{" "}
           {service.totalFeedback === 1 ? "submission" : "submissions"}
         </span>
-        <span className={cn("text-xs font-semibold", tone.text)}>
-          {tone.label}
-        </span>
+        {actions ?? (
+          <span className={cn("text-xs font-semibold", tone.text)}>
+            {tone.label}
+          </span>
+        )}
       </div>
     </article>
   );

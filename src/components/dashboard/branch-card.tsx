@@ -54,9 +54,11 @@ type BranchCardProps = {
   branch: BranchOverview;
   /** Rank within the page (1-based), shown as a subtle leaderboard badge. */
   rank?: number;
+  /** Optional management controls rendered in the footer (Admin-only). */
+  actions?: React.ReactNode;
 };
 
-export function BranchCard({ branch, rank }: BranchCardProps) {
+export function BranchCard({ branch, rank, actions }: BranchCardProps) {
   const tone = performanceOf(branch.satisfactionRate);
   const hasFeedback = branch.totalFeedback > 0;
 
@@ -196,15 +198,17 @@ export function BranchCard({ branch, rank }: BranchCardProps) {
         )}
       </div>
 
-      {/* Footer summary */}
-      <div className="mt-auto flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-5 py-3">
+      {/* Footer summary / management actions */}
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-3">
         <span className="text-xs text-slate-500">
           {branch.totalFeedback.toLocaleString()}{" "}
           {branch.totalFeedback === 1 ? "submission" : "submissions"}
         </span>
-        <span className={cn("text-xs font-semibold", tone.text)}>
-          {tone.label}
-        </span>
+        {actions ?? (
+          <span className={cn("text-xs font-semibold", tone.text)}>
+            {tone.label}
+          </span>
+        )}
       </div>
     </article>
   );

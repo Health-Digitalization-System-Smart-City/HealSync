@@ -4,9 +4,13 @@ import { AlertTriangle, Building2, MessageSquare, Smile } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageIntro } from "@/components/page-intro";
 import { MetricCard } from "@/components/metric-card";
-import { BranchCard } from "@/components/dashboard/branch-card";
+import {
+  BranchesView,
+  type ServiceOption,
+} from "@/components/dashboard/branch-management";
+import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/session";
-import { PERMISSIONS } from "@/lib/permissions";
+import { hasPermission, PERMISSIONS, ROLES } from "@/lib/permissions";
 import {
   listBranchesWithAnalytics,
   type BranchOverview,
@@ -20,11 +24,33 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function BranchesPage() {
-  await requirePermission(PERMISSIONS.BRANCH_READ);
+  const session = await requirePermission(PERMISSIONS.BRANCH_READ);
+  const role = session.user.role ?? ROLES.ANALYST;
+  const canCreate = hasPermission(role, PERMISSIONS.BRANCH_CREATE);
+  const canUpdate = hasPermission(role, PERMISSIONS.BRANCH_UPDATE);
 
   let branches: BranchOverview[] = [];
+  let services: ServiceOption[] = [];
+  let branchServiceIds: Record<string, string[]> = {};
+
   try {
-    branches = await listBranchesWithAnalytics();
+    const [branchData, serviceData, links] = await Promise.all([
+      listBranchesWithAnalytics(),
+      db.service.findMany({
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, description: true, isActive: true },
+      }),
+      db.branchService.findMany({
+        where: { isActive: true },
+        select: { branchId: true, serviceId: true },
+      }),
+    ]);
+    branches = branchData;
+    services = serviceData;
+    branchServiceIds = links.reduce<Record<string, string[]>>((acc, link) => {
+      (acc[link.branchId] ??= []).push(link.serviceId);
+      return acc;
+    }, {});
   } catch (error) {
     console.error("Failed to load branches:", error);
   }
@@ -44,13 +70,6 @@ export default async function BranchesPage() {
     (b) => b.satisfactionRate < 50,
   ).length;
 
-  // Leaderboard order: active first, then best-performing first.
-  const ranked = [...branches].sort(
-    (a, b) =>
-      Number(b.isActive) - Number(a.isActive) ||
-      b.satisfactionRate - a.satisfactionRate,
-  );
-
   return (
     <div className="space-y-8">
       <PageIntro
@@ -61,7 +80,7 @@ export default async function BranchesPage() {
           </Badge>
         }
         title="Clinic Branches"
-        description="Every clinic location ranked by patient satisfaction, with live feedback statistics and attention flags."
+        description="Every clinic location ranked by patient satisfaction, with live feedback statistics and attention flags. Administrators can add, edit, link services, and shut down branches."
       />
 
       {/* Insight metrics */}
@@ -96,19 +115,14 @@ export default async function BranchesPage() {
         />
       </div>
 
-      {branches.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-          <p className="text-sm text-slate-500">
-            No branches are configured yet.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {ranked.map((branch, index) => (
-            <BranchCard key={branch.id} branch={branch} rank={index + 1} />
-          ))}
-        </div>
-      )}
+      {/* Branch grid + Admin management */}
+      <BranchesView
+        branches={branches}
+        services={services}
+        branchServiceIds={branchServiceIds}
+        canCreate={canCreate}
+        canUpdate={canUpdate}
+      />
     </div>
   );
 }
