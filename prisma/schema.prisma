@@ -33,6 +33,10 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  // RBAC role. Roles are fixed (Admin / Manager / Analyst) and managed only
+  // through the seed/bootstrap path — never through the dashboard.
+  // Defaults to the least-privilege role. See docs/SECURITY.md §2.
+  role          String    @default("analyst")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

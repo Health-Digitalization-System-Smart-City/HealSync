@@ -35,12 +35,26 @@ export default function Home() {
           </p>
         </div>
 
-        <Link
-          href="/api/auth/get-session"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          Auth health check
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard"
+            className={buttonVariants({ variant: "default" })}
+          >
+            Open Dashboard →
+          </Link>
+          <Link
+            href="/login"
+            className={buttonVariants({ variant: "secondary" })}
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/api/auth/get-session"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Auth health check
+          </Link>
+        </div>
 
         <div className="grid w-full gap-4 sm:grid-cols-2">
           {stack.map((item) => (
