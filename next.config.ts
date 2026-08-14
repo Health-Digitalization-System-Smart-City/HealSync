@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // Externalizing these packages prevents Next.js from attempting to bundle
   // the WASM modules and keeps the Prisma client outside the server bundle.
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg"],
+  experimental: {
+    // Enables the `forbidden()` function and `forbidden.tsx` file for
+    // server-side authorization (403) responses.
+    authInterrupts: true,
+  },
 };
 
 export default nextConfig;

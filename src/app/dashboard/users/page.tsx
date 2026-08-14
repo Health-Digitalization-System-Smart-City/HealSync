@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 
 import { can, requirePermission } from "@/lib/auth/permissions";
+
 import { getRoles, getUsers } from "@/features/users/actions";
 import { CreateUserForm } from "@/features/users/components/create-user-form";
 import { UsersTable } from "@/features/users/components/users-table";
@@ -20,6 +21,7 @@ import { UsersTable } from "@/features/users/components/users-table";
 export default async function UsersPage() {
   const authResult = await requirePermission("user.read");
   if (!authResult.success) {
+    // Unauthenticated is handled by the dashboard layout; this is FORBIDDEN.
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
         <div className="bg-muted flex h-14 w-14 items-center justify-center rounded-full">
@@ -72,6 +74,7 @@ export default async function UsersPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
         {canCreateUsers && <CreateUserForm roles={roles} />}
+
         <UsersTable users={users} roles={roles} currentUserId={user.id} />
       </div>
     </div>
