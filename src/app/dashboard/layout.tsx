@@ -1,28 +1,60 @@
-"use client";
+import type { Metadata } from "next";
 
-import { useState } from "react";
 import Providers from "@/components/Providers";
-import Sidebar from "@/components/Sidebar";
-import Topbar from "@/components/Topbar";
+import { AppShell } from "@/components/dashboard/app-shell";
+import {
+  getNavItems,
+  type NavBadgeCounts,
+} from "@/components/dashboard/nav-config";
+import { getNavCounts } from "@/lib/analytics/db";
+import { isRole, ROLES } from "@/lib/permissions";
+import { requireAuth } from "@/lib/auth/session";
 
-export default function DashboardLayout({
+export const metadata: Metadata = {
+  title: {
+    default: "Dashboard",
+    template: "%s · HealSync",
+  },
+};
+
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const session = await requireAuth();
+  const user = session.user;
+
+  const rawRole = user.role ?? ROLES.ANALYST;
+  const role = isRole(rawRole) ? rawRole : ROLES.ANALYST;
+
+  // Shell counts degrade gracefully: a DB hiccup renders the nav without
+  // badges rather than crashing the whole dashboard.
+  let badgeCounts: NavBadgeCounts = {};
+  let branchCount = 0;
+  try {
+    const counts = await getNavCounts();
+    badgeCounts = { tasks: counts.tasks, feedback: counts.feedback };
+    branchCount = counts.branches;
+  } catch (error) {
+    console.error("Failed to load dashboard nav counts:", error);
+  }
+
+  const navItems = getNavItems(role, badgeCounts);
 
   return (
     <Providers>
-      <div className="flex min-h-screen bg-slate-50 text-slate-900">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar onMenuClick={() => setSidebarOpen(true)} />
-
-          <main className="flex-1 overflow-auto p-6">{children}</main>
-        </div>
-      </div>
+      <AppShell
+        user={{
+          name: user.name ?? "Dashboard user",
+          email: user.email ?? "",
+          role,
+        }}
+        navItems={navItems}
+        branchCount={branchCount}
+      >
+        {children}
+      </AppShell>
     </Providers>
   );
 }

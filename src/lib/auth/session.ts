@@ -8,17 +8,35 @@ import { forbidden as nextForbidden, redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { hasPermission, ROLES, type Permission } from "@/lib/permissions";
+import {
+  getPermissions,
+  hasPermission,
+  ROLES,
+  type Permission,
+} from "@/lib/permissions";
 
 /**
  * Resolves the current session on the server. Cached per-request so multiple
  * calls within the same render share one round-trip. Returns `null` when the
  * user is not authenticated.
+ *
+ * If the session lookup itself fails — e.g. the database is unreachable or
+ * waking from a suspend (hosted Postgres free tiers sleep after idle) — we
+ * fail closed: the caller treats the user as unauthenticated instead of
+ * crashing the page with a 500. The error is logged so it stays visible.
  */
 export const getSession = cache(async () => {
-  return await auth.api.getSession({
-    headers: await headers(),
-  });
+  try {
+    return await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch (error) {
+    console.error(
+      "[auth] Session lookup failed; treating user as unauthenticated.",
+      error,
+    );
+    return null;
+  }
 });
 
 /**
@@ -48,6 +66,28 @@ export async function requirePermission(permission: Permission) {
   }
 
   return session;
+}
+
+/**
+ * Same as `requirePermission` but returns a structured result instead of
+ * throwing — for Server Actions and API routes that must respond with a
+ * JSON/typed error (e.g. 401/403) rather than render the forbidden page.
+ *
+ * Returns the authenticated user plus their resolved permission set, which
+ * callers can use to build a domain `Viewer` (see feedback/db.ts).
+ */
+export async function requirePermissionResult(
+  permission: Permission,
+): Promise<
+  AuthResult<{ user: AuthUser; permissions: readonly Permission[] }>
+> {
+  const authResult = await requireUser();
+  if (!authResult.success) return authResult;
+
+  const permissions = getPermissions(authResult.data.role);
+  if (!permissions.includes(permission)) return forbidden();
+
+  return { success: true, data: { user: authResult.data, permissions } };
 }
 
 /** The authenticated dashboard user as stored in the database. */
@@ -92,20 +132,31 @@ export async function requireUser(): Promise<AuthResult<AuthUser>> {
   const session = await getSession();
   if (!session?.user) return unauthenticated();
 
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      roleId: true,
-      isActive: true,
-      image: true,
-      createdAt: true,
-      lastLoginAt: true,
-    },
-  });
+  // Same fail-closed handling as getSession: a DB hiccup (e.g. the hosted
+  // compute waking from a suspend) must degrade to "unauthenticated" rather
+  // than crash the page with a 500.
+  let user: AuthUser | null = null;
+  try {
+    user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        roleId: true,
+        isActive: true,
+        image: true,
+        createdAt: true,
+        lastLoginAt: true,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "[auth] User lookup failed; treating user as unauthenticated.",
+      error,
+    );
+  }
 
   if (!user) return unauthenticated();
   if (!user.isActive) {

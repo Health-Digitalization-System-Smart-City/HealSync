@@ -7,7 +7,8 @@ import { isRole, PERMISSIONS, ROLES } from "@/lib/permissions";
 
 export const metadata: Metadata = {
   title: "Tasks & Workflows",
-  description: "Operational task management, patient follow-ups, and clinic quality audits across Smart City branches.",
+  description:
+    "Operational task management, patient follow-ups, and clinic quality audits across Smart City branches.",
 };
 
 export default async function TasksPage() {
@@ -16,7 +17,7 @@ export default async function TasksPage() {
   const role = isRole(rawRole) ? rawRole : ROLES.ANALYST;
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
       <PageHeader
         title="Operational Tasks & Workflows"
         description="Track patient feedback follow-ups, triage speed audits, sanitization checks, and branch action items."

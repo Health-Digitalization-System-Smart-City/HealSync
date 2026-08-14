@@ -7,7 +7,10 @@ function Skeleton({
   return (
     <div
       data-slot="skeleton"
-      className={cn("animate-pulse rounded-md bg-muted/60 dark:bg-muted/40", className)}
+      className={cn(
+        "bg-muted/60 dark:bg-muted/40 animate-pulse rounded-md",
+        className,
+      )}
       {...props}
     />
   );

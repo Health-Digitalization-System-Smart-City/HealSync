@@ -2,14 +2,7 @@
 
 import { useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import {
-  Bell,
-  CheckCircle2,
-  Menu,
-  Search,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +14,7 @@ import {
 import { UserMenu } from "@/components/dashboard/user-menu";
 import { DashboardBreadcrumbs } from "@/components/dashboard/breadcrumbs";
 import type { NavItem } from "@/components/dashboard/nav-config";
-import type { Role } from "@/lib/permissions";
+import { ROLES, type Role } from "@/lib/permissions";
 
 export type DashboardUser = {
   name: string;
@@ -33,10 +26,12 @@ export function AppShell({
   children,
   navItems,
   user,
+  branchCount,
 }: {
   children: React.ReactNode;
   navItems: readonly NavItem[];
   user: DashboardUser;
+  branchCount: number;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -49,7 +44,7 @@ export function AppShell({
             <SidebarBrand />
           </div>
           <div className="flex flex-1 flex-col overflow-y-auto p-3.5">
-            <SidebarNav items={navItems} />
+            <SidebarNav items={navItems} branchCount={branchCount} />
           </div>
           <div className="border-t border-border/70 p-3 bg-muted/20">
             <SidebarFooter {...user} />
@@ -66,7 +61,7 @@ export function AppShell({
                 render={
                   <Button
                     variant="ghost"
-                    size="icon-sm"
+                    size="icon"
                     className="lg:hidden"
                     aria-label="Open navigation menu"
                   >
@@ -84,12 +79,12 @@ export function AppShell({
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500"></span>
                 </span>
-                <span>13 Branches Active</span>
+                <span>{branchCount} Branches Active</span>
               </div>
 
               <div className="hidden sm:block">
                 <Badge
-                  variant={user.role === "admin" ? "default" : user.role === "manager" ? "secondary" : "outline"}
+                  variant={user.role === ROLES.ADMIN ? "default" : user.role === ROLES.MANAGER ? "secondary" : "outline"}
                   className="font-mono text-[10px] uppercase font-bold tracking-wider"
                 >
                   {user.role} role
@@ -121,7 +116,7 @@ export function AppShell({
             </Dialog.Close>
           </div>
           <div className="flex flex-1 flex-col overflow-y-auto p-3.5" onClick={() => setMobileOpen(false)}>
-            <SidebarNav items={navItems} />
+            <SidebarNav items={navItems} branchCount={branchCount} />
           </div>
           <div className="border-t border-sidebar-border p-3 bg-muted/20" onClick={() => setMobileOpen(false)}>
             <SidebarFooter {...user} />

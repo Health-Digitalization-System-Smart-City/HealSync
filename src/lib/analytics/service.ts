@@ -7,6 +7,13 @@ import {
 } from "@/lib/feedback/ratings";
 import { resolveDateRange } from "@/lib/feedback/ranges";
 import type { FeedbackStore } from "@/lib/feedback/store";
+
+// The computation only needs the data parts of a store (records + option lists), not its mutations —
+// this lets the Prisma-backed layer (analytics/db.ts) feed it directly.
+export type FeedbackStoreData = Pick<
+  FeedbackStore,
+  "branches" | "services" | "records"
+>;
 import type { FeedbackRecord } from "@/lib/feedback/types";
 import type {
   AnalyticsDashboardData,
@@ -26,7 +33,7 @@ function formatShortDate(date: Date): string {
 }
 
 export function computeAnalyticsDashboard(
-  store: FeedbackStore,
+  store: FeedbackStoreData,
   query: AnalyticsQuery = {},
   now: Date = new Date(),
 ): AnalyticsDashboardData {

@@ -4,7 +4,7 @@
 // docs/DATABASE.md §28:
 //
 //   Roles (3 fixed — Admin / Manager / Analyst)
-//   Permissions (17 — full set from API.md §8 / security.md §3)
+//   Permissions (full set — mirrored from src/lib/permissions.ts)
 //   Role→permission grants (the precise matrix, interpreted from the docs)
 //   Initial admin user (bootstrapped with Better Auth's own password hashing;
 //     security.md §9 "Dashboard user provisioning")
@@ -12,6 +12,7 @@
 //   3 services (Laboratory, Pharmacy, Reception)
 //   Branch→service links
 //   Sample feedback records
+//   Sample operational tasks
 //
 // Idempotent: safe to re-run (upserts, skips feedback if already present).
 // Production: set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD env vars to avoid
@@ -70,13 +71,14 @@ const ROLES: RoleDef[] = [
   },
 ];
 
-/** All 17 permissions defined in API.md §8 / security.md §3. */
+/** All permissions — mirrored from src/lib/permissions.ts (single source of truth). */
 const PERMISSIONS: string[] = [
   "analytics.read",
   "analytics.ai",
   "feedback.read",
   "feedback.update",
   "feedback.delete",
+  "feedback.phone",
   "branch.read",
   "branch.create",
   "branch.update",
@@ -89,6 +91,8 @@ const PERMISSIONS: string[] = [
   "user.create",
   "user.update",
   "user.disable",
+  "task.read",
+  "task.manage",
 ];
 
 /**
@@ -98,10 +102,20 @@ const PERMISSIONS: string[] = [
  * defined here (seed/configuration) per security.md §3 and is not editable
  * through the dashboard.
  */
+// Mirrors the matrix in src/lib/permissions.ts. Feedback is strictly
+// read-only for Manager/Analyst (no update/delete/phone — Admin only);
+// tasks are manageable by Admin + Manager.
 const ROLE_PERMISSIONS: Record<string, string[]> = {
   Admin: [...PERMISSIONS],
-  Manager: ["analytics.read", "feedback.read", "branch.read", "service.read"],
-  Analyst: ["analytics.read", "branch.read", "service.read"],
+  Manager: [
+    "analytics.read",
+    "feedback.read",
+    "branch.read",
+    "service.read",
+    "task.read",
+    "task.manage",
+  ],
+  Analyst: ["analytics.read", "feedback.read", "task.read"],
 };
 
 /**
@@ -396,6 +410,126 @@ async function main(): Promise<void> {
   } else {
     console.log(
       `  • Skipping sample feedback (${existingFeedbackCount} records already exist)`,
+    );
+  }
+
+  // ── 9. Sample tasks (idempotent: only if table empty) ────────────────
+
+  const existingTaskCount = await prisma.task.count();
+  if (existingTaskCount === 0) {
+    console.log("  • Seeding sample tasks…");
+
+    const taskBranches = await prisma.branch.findMany({
+      where: { isActive: true },
+      take: 6,
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true },
+    });
+    const adminUser = await prisma.user.findUnique({
+      where: { email: ADMIN_EMAIL },
+      select: { id: true },
+    });
+
+    const sampleTasks = [
+      {
+        title: "Urgent Patient Follow-up: Cardiology Consult",
+        description:
+          "Follow up with patient after a 2-star rating regarding extended wait time in the clinic.",
+        category: "Follow-up",
+        priority: "urgent",
+        status: "pending",
+        assigneeName: "Sarah Jenkins",
+        assigneeRole: "Care Coordinator",
+        dueDate: "Today, 4:00 PM",
+        createdAt: 0,
+      },
+      {
+        title: "Pharmacy Dispensing Speed Audit",
+        description:
+          "Review peak-hour medication dispensing bottlenecks reported at the branch.",
+        category: "Inspection",
+        priority: "high",
+        status: "in_progress",
+        assigneeName: "Kevin Miller",
+        assigneeRole: "Lead Pharmacist",
+        dueDate: "Tomorrow, 11:00 AM",
+        createdAt: 1,
+      },
+      {
+        title: "Quarterly Diagnostic Ultrasound Calibration",
+        description:
+          "Mandatory calibration and certified maintenance for the branch's ultrasound units.",
+        category: "Equipment",
+        priority: "medium",
+        status: "pending",
+        assigneeName: "Nathan Cole",
+        assigneeRole: "Biomedical Engineer",
+        dueDate: "Aug 18, 2026",
+        createdAt: 2,
+      },
+      {
+        title: "Pediatric Waiting Lounge Childproofing Review",
+        description:
+          "Verify sanitization stations and interactive play tablet stations are fully operational.",
+        category: "Protocol",
+        priority: "low",
+        status: "completed",
+        assigneeName: "Maya Sharma",
+        assigneeRole: "Pediatric Lead",
+        dueDate: "Aug 14, 2026",
+        createdAt: 3,
+      },
+      {
+        title: "Patient Feedback Resolution: Staff Courtesy Commendation",
+        description:
+          "Deliver a commendation certificate to the night-shift nursing team for outstanding patient care scores.",
+        category: "Staffing",
+        priority: "medium",
+        status: "completed",
+        assigneeName: "Liam Gallagher",
+        assigneeRole: "Branch Director",
+        dueDate: "Aug 13, 2026",
+        createdAt: 4,
+      },
+      {
+        title: "Investigate Peak-Hour Wait Times",
+        description:
+          "Analyze triage queue logs between 5 PM and 7 PM to reduce patient wait times.",
+        category: "Inspection",
+        priority: "high",
+        status: "pending",
+        assigneeName: "Rachel Zheng",
+        assigneeRole: "Operations Lead",
+        dueDate: "Aug 16, 2026",
+        createdAt: 5,
+      },
+    ];
+
+    const now = Date.now();
+    for (const task of sampleTasks) {
+      const branch =
+        taskBranches[task.createdAt % Math.max(taskBranches.length, 1)];
+      await prisma.task.create({
+        data: {
+          title: task.title,
+          description: task.description,
+          category: task.category,
+          priority: task.priority,
+          status: task.status,
+          dueDate: task.dueDate,
+          assigneeName: task.assigneeName,
+          assigneeRole: task.assigneeRole,
+          branchId: branch?.id ?? null,
+          createdById: adminUser?.id ?? null,
+          createdAt: new Date(now - (task.createdAt + 1) * 24 * 60 * 60 * 1000),
+        },
+      });
+    }
+
+    console.log(`  ✓ Created ${sampleTasks.length} sample task records`);
+  } else {
+    console.log(
+      `  • Skipping sample tasks (${existingTaskCount} records already exist)`,
     );
   }
 

@@ -11,7 +11,7 @@
 // - Soft deletion is used for feedback (retention policy, `docs/database.md`
 //   §17).
 
-import { PERMISSIONS, type Permission } from "@/config/roles";
+import { PERMISSIONS, type Permission } from "@/lib/permissions";
 import { forbidden, notFound } from "./errors";
 import {
   RATING_OPTIONS,
@@ -42,9 +42,9 @@ export function viewerCapabilities(viewer: Viewer): ViewerCapabilities {
   const permissions = new Set(viewer.permissions);
   return {
     role: viewer.role,
-    canSeePhone: permissions.has(PERMISSIONS.feedbackPhone),
-    canUpdate: permissions.has(PERMISSIONS.feedbackUpdate),
-    canDelete: permissions.has(PERMISSIONS.feedbackDelete),
+    canSeePhone: permissions.has(PERMISSIONS.FEEDBACK_PHONE),
+    canUpdate: permissions.has(PERMISSIONS.FEEDBACK_UPDATE),
+    canDelete: permissions.has(PERMISSIONS.FEEDBACK_DELETE),
   };
 }
 
@@ -54,13 +54,13 @@ function assertPermission(viewer: Viewer, permission: Permission): void {
   }
 }
 
-function maskPhone(phoneNumber: string): string {
+export function maskPhone(phoneNumber: string): string {
   const digits = phoneNumber.replace(/\D/g, "");
   if (digits.length === 0) return "••••";
   return `•••• ${digits.slice(-4)}`;
 }
 
-function shapeFeedback(record: FeedbackRecord, viewer: Viewer): FeedbackView {
+export function shapeFeedback(record: FeedbackRecord, viewer: Viewer): FeedbackView {
   const capabilities = viewerCapabilities(viewer);
   return {
     id: record.id,
@@ -79,7 +79,7 @@ function shapeFeedback(record: FeedbackRecord, viewer: Viewer): FeedbackView {
   };
 }
 
-function computeSummary(records: FeedbackRecord[]): FeedbackSummary {
+export function computeSummary(records: FeedbackRecord[]): FeedbackSummary {
   let positive = 0;
   let neutral = 0;
   let needsAttention = 0;
@@ -187,7 +187,7 @@ export function updateFeedback(
   input: UpdateFeedbackInput,
   viewer: Viewer,
 ): FeedbackView {
-  assertPermission(viewer, PERMISSIONS.feedbackUpdate);
+  assertPermission(viewer, PERMISSIONS.FEEDBACK_UPDATE);
 
   const patch: { rating?: FeedbackRecord["rating"]; comment?: string | null } =
     {};
@@ -205,7 +205,7 @@ export function deleteFeedback(
   id: string,
   viewer: Viewer,
 ): { id: string } {
-  assertPermission(viewer, PERMISSIONS.feedbackDelete);
+  assertPermission(viewer, PERMISSIONS.FEEDBACK_DELETE);
 
   const record = store.softDelete(id);
   if (!record) throw notFound();

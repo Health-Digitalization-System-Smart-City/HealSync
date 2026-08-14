@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Check,
   ChevronRight,
   LogOut,
   ShieldCheck,
@@ -16,7 +15,7 @@ import { Menu } from "@base-ui/react/menu";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/client";
 import { Badge } from "@/components/ui/badge";
-import { getPermissions, type Role } from "@/lib/permissions";
+import { getPermissions, ROLES, type Role } from "@/lib/permissions";
 
 function initials(name: string) {
   return name
@@ -77,7 +76,7 @@ export function UserMenu({
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm font-semibold text-foreground">{name}</span>
                 <Badge
-                  variant={role === "admin" ? "default" : role === "manager" ? "secondary" : "outline"}
+                  variant={role === ROLES.ADMIN ? "default" : role === ROLES.MANAGER ? "secondary" : "outline"}
                   className="text-[10px] uppercase font-bold tracking-wider"
                 >
                   {role}

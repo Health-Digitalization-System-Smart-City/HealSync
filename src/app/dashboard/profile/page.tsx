@@ -7,7 +7,8 @@ import { isRole, ROLES } from "@/lib/permissions";
 
 export const metadata: Metadata = {
   title: "Profile & Security",
-  description: "User credentials, granted server-side permissions, and session security status.",
+  description:
+    "User credentials, granted server-side permissions, and session security status.",
 };
 
 export default async function ProfilePage() {
@@ -16,7 +17,7 @@ export default async function ProfilePage() {
   const role = isRole(rawRole) ? rawRole : ROLES.ANALYST;
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
       <PageHeader
         title="Profile & Security Scope"
         description="Inspect your active identity, role-based authorization matrix, and cryptographic session telemetry."

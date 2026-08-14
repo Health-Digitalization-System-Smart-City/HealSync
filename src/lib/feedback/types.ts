@@ -4,7 +4,7 @@
 // the API client (`src/lib/api/feedback.ts`). They describe the permission-
 // aware shape of feedback data returned to the browser.
 
-import type { Permission, UserRole } from "@/config/roles";
+import type { Permission, Role } from "@/lib/permissions";
 
 export type FeedbackRating =
   | "VERY_SATISFIED"
@@ -30,7 +30,7 @@ export type FeedbackRange =
 // The viewer context is resolved server-side and drives both the data that is
 // returned and (via the `viewer` block) the UI capabilities rendered.
 export type Viewer = {
-  role: UserRole;
+  role: Role;
   permissions: Permission[];
 };
 
@@ -84,7 +84,7 @@ export type FeedbackListResult = {
 };
 
 export type ViewerCapabilities = {
-  role: UserRole;
+  role: Role;
   canSeePhone: boolean;
   canUpdate: boolean;
   canDelete: boolean;

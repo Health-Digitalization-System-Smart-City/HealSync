@@ -218,7 +218,15 @@ function getDateRangeForPreset(range?: string, date?: Date) {
     }
     case "previous_month": {
       const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      const end = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0,
+        23,
+        59,
+        59,
+        999,
+      );
       return { startDate: start, endDate: end };
     }
     case "this_year": {
@@ -247,8 +255,18 @@ export async function getDashboardSummary(): Promise<
   const todayEnd = new Date(today);
   todayEnd.setHours(23, 59, 59, 999);
 
-  let allRows: Array<{ rating: string; createdAt: Date; branchId: string; serviceId: string }> = [];
-  let todayRows: Array<{ rating: string; createdAt: Date; branchId: string; serviceId: string }> = [];
+  let allRows: Array<{
+    rating: string;
+    createdAt: Date;
+    branchId: string;
+    serviceId: string;
+  }> = [];
+  let todayRows: Array<{
+    rating: string;
+    createdAt: Date;
+    branchId: string;
+    serviceId: string;
+  }> = [];
   try {
     [allRows, todayRows] = await Promise.all([
       getRelevantFeedbackRows(),
@@ -275,9 +293,9 @@ export async function getDashboardSummary(): Promise<
   });
 }
 
-export async function getFeedbackTrends(input: unknown): Promise<
-  ActionResponse<FeedbackTrendPoint[]>
-> {
+export async function getFeedbackTrends(
+  input: unknown,
+): Promise<ActionResponse<FeedbackTrendPoint[]>> {
   const authResult = await requirePermission("analytics.read");
   if (!authResult.success) return authResult;
 
@@ -296,7 +314,12 @@ export async function getFeedbackTrends(input: unknown): Promise<
     ? { startDate, endDate }
     : getDateRangeForPreset(range, date);
 
-  let rows: Array<{ rating: string; createdAt: Date; branchId: string; serviceId: string }> = [];
+  let rows: Array<{
+    rating: string;
+    createdAt: Date;
+    branchId: string;
+    serviceId: string;
+  }> = [];
   try {
     rows = await getRelevantFeedbackRows({
       branchId,
@@ -328,11 +351,13 @@ export async function getFeedbackTrends(input: unknown): Promise<
     byLabel.set(key, bucket);
   }
 
-  return ok(Array.from(byLabel.values()).map((item) => ({
-    bucket: item.label,
-    label: item.label,
-    value: item.value,
-  })));
+  return ok(
+    Array.from(byLabel.values()).map((item) => ({
+      bucket: item.label,
+      label: item.label,
+      value: item.value,
+    })),
+  );
 }
 
 export async function getSatisfactionDistribution(
@@ -341,7 +366,12 @@ export async function getSatisfactionDistribution(
   const authResult = await requirePermission("analytics.read");
   if (!authResult.success) return authResult;
 
-  let rows: Array<{ rating: string; createdAt: Date; branchId: string; serviceId: string }> = [];
+  let rows: Array<{
+    rating: string;
+    createdAt: Date;
+    branchId: string;
+    serviceId: string;
+  }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
   } catch (err: any) {
@@ -411,17 +441,19 @@ export async function getBranchAnalytics(
     grouped.set(row.branchId, bucket);
   }
 
-  const analytics = Array.from(grouped.entries()).map(([branchId, branchRows]) => {
-    const summary = summarizeRows(branchRows);
-    return {
-      branchId,
-      branchName: branchMap.get(branchId) ?? "Unknown branch",
-      total: summary.total,
-      satisfactionRate: summary.satisfactionRate,
-      negativeRate: summary.negativeRate,
-      neutralRate: summary.neutralRate,
-    };
-  });
+  const analytics = Array.from(grouped.entries()).map(
+    ([branchId, branchRows]) => {
+      const summary = summarizeRows(branchRows);
+      return {
+        branchId,
+        branchName: branchMap.get(branchId) ?? "Unknown branch",
+        total: summary.total,
+        satisfactionRate: summary.satisfactionRate,
+        negativeRate: summary.negativeRate,
+        neutralRate: summary.neutralRate,
+      };
+    },
+  );
 
   return ok(analytics.sort((a, b) => b.total - a.total));
 }
@@ -462,26 +494,30 @@ export async function getServiceAnalytics(
     grouped.set(row.serviceId, bucket);
   }
 
-  const analytics = Array.from(grouped.entries()).map(([serviceId, serviceRows]) => {
-    const summary = summarizeRows(serviceRows);
-    return {
-      serviceId,
-      serviceName: serviceMap.get(serviceId) ?? "Unknown service",
-      total: summary.total,
-      satisfactionRate: summary.satisfactionRate,
-      negativeRate: summary.negativeRate,
-      neutralRate: summary.neutralRate,
-    };
-  });
+  const analytics = Array.from(grouped.entries()).map(
+    ([serviceId, serviceRows]) => {
+      const summary = summarizeRows(serviceRows);
+      return {
+        serviceId,
+        serviceName: serviceMap.get(serviceId) ?? "Unknown service",
+        total: summary.total,
+        satisfactionRate: summary.satisfactionRate,
+        negativeRate: summary.negativeRate,
+        neutralRate: summary.neutralRate,
+      };
+    },
+  );
 
   return ok(analytics.sort((a, b) => b.total - a.total));
 }
 
-export async function generateFeedbackInsights(input: {
-  branchId?: string;
-  serviceId?: string;
-  limit?: number;
-} = {}): Promise<
+export async function generateFeedbackInsights(
+  input: {
+    branchId?: string;
+    serviceId?: string;
+    limit?: number;
+  } = {},
+): Promise<
   ActionResponse<{
     summary: string;
     positiveThemes: string[];
@@ -492,13 +528,21 @@ export async function generateFeedbackInsights(input: {
   const authResult = await requirePermission("analytics.ai");
   if (!authResult.success) return authResult;
 
-  let rows: Array<{ rating: string; createdAt: Date; branchId: string; serviceId: string }> = [];
+  let rows: Array<{
+    rating: string;
+    createdAt: Date;
+    branchId: string;
+    serviceId: string;
+  }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
   } catch (err: any) {
     // eslint-disable-next-line no-console
     console.error("generateFeedbackInsights db error:", err);
-    return fail("DATABASE_ERROR", "Failed to generate AI insights due to DB error.");
+    return fail(
+      "DATABASE_ERROR",
+      "Failed to generate AI insights due to DB error.",
+    );
   }
   const subset = rows.slice(0, Math.min(input.limit ?? 50, 200));
 
@@ -511,7 +555,9 @@ export async function generateFeedbackInsights(input: {
       positive.add("Patient experience remains broadly positive");
     }
     if (bucketRating(rating) === "negative") {
-      negative.add("Targeted follow-up is recommended for issue-prone touchpoints");
+      negative.add(
+        "Targeted follow-up is recommended for issue-prone touchpoints",
+      );
     }
   }
 

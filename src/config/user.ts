@@ -1,7 +1,7 @@
-import type { UserRole } from "./roles";
+import type { Role } from "@/lib/permissions";
 
 export const currentUser = {
   name: "Admin User",
   email: "admin@example.com",
-  role: "Admin" as UserRole,
+  role: "Admin" as Role,
 };

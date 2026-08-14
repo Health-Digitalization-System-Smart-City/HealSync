@@ -41,25 +41,17 @@ model User {
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
-<<<<<<< HEAD
-  // RBAC role. Roles are fixed (Admin / Manager / Analyst) and managed only
-  // through the seed/bootstrap path — never through the dashboard.
-  // Defaults to the least-privilege role. See docs/SECURITY.md §2.
-  role          String    @default("analyst")
+
+  // RBAC role — mirrors Role.name (Admin / Manager / Analyst) and is kept in
+  // sync at provisioning time (createUser, API.md §14). Defaults to Better
+  // Auth's "user" role; the dashboard treats any non-RBAC value as the
+  // least-privilege Analyst fallback. See docs/SECURITY.md §2, §9.
+  role          String    @default("user")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-=======
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
->>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
-
-  // Better Auth admin plugin (security.md §9). `role` mirrors Role.name and
-  // is kept in sync at provisioning time (createUser, API.md §14); the admin
-  // plugin is configured with adminRoles: ["Admin"].
-  role       String    @default("user")
-  banned     Boolean?  @default(false)
-  banReason  String?
-  banExpires DateTime?
 
   // App-level fields (database.md §3, §17). Users are never hard-deleted;
   // disableUser sets isActive = false (API.md §14). The initial admin is
@@ -71,6 +63,7 @@ model User {
   sessions     Session[]
   accounts     Account[]
   auditLogs    AuditLog[]
+  tasks        Task[]
   assignedRole Role?      @relation("UserRole", fields: [roleId], references: [id])
 
   @@map("user")
@@ -180,6 +173,7 @@ model Branch {
 
   branchServices BranchService[]
   feedback       Feedback[]
+  tasks          Task[]
 
   @@map("branch")
 }
@@ -259,6 +253,39 @@ model Feedback {
   @@index([branchId, createdAt])
   @@index([serviceId, createdAt])
   @@map("feedback")
+}
+
+// ---------------------------------------------------------------------------
+// Tasks (dashboard operational tasks)
+// ---------------------------------------------------------------------------
+
+// Operational dashboard tasks (follow-ups, inspections, equipment checks,
+// protocol reviews, staffing). `priority`, `status`, and `category` are
+// controlled string values matching the dashboard UI; tasks are soft-deleted
+// like other app entities (database.md §17).
+model Task {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  category     String   @default("Follow-up")
+  priority     String   @default("medium")
+  status       String   @default("pending")
+  dueDate      String   @default("")
+  assigneeName String   @default("Clinic Duty Lead")
+  assigneeRole String   @default("Coordinator")
+  branchId     String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  branch    Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([branchId])
+  @@index([status])
+  @@index([priority])
+  @@map("task")
 }
 
 // ---------------------------------------------------------------------------

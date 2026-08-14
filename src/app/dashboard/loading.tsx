@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 animate-in fade-in-50 duration-300">
+    <div className="animate-in fade-in-50 flex flex-col gap-6 p-4 duration-300 sm:p-6">
       {/* Header Skeleton */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
@@ -21,7 +21,10 @@ export default function DashboardLoading() {
       {/* 4 Metric Cards Skeletons */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/80 bg-card p-5 space-y-3">
+          <div
+            key={i}
+            className="border-border/80 bg-card space-y-3 rounded-xl border p-5"
+          >
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="size-5 rounded-full" />
@@ -34,14 +37,14 @@ export default function DashboardLoading() {
 
       {/* Charts & Main Content Skeletons */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-border/80 bg-card p-5 lg:col-span-2 space-y-4">
+        <div className="border-border/80 bg-card space-y-4 rounded-xl border p-5 lg:col-span-2">
           <div className="flex items-center justify-between">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-7 w-28" />
           </div>
           <Skeleton className="h-64 w-full rounded-lg" />
         </div>
-        <div className="rounded-xl border border-border/80 bg-card p-5 space-y-4">
+        <div className="border-border/80 bg-card space-y-4 rounded-xl border p-5">
           <Skeleton className="h-5 w-32" />
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -58,7 +61,7 @@ export default function DashboardLoading() {
       </div>
 
       {/* Activity Table Skeleton */}
-      <div className="rounded-xl border border-border/80 bg-card p-5 space-y-3">
+      <div className="border-border/80 bg-card space-y-3 rounded-xl border p-5">
         <Skeleton className="h-5 w-36" />
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (

@@ -1,8 +1,17 @@
-// RBAC roles and permissions.
+// RBAC roles and permissions — single source of truth.
 //
-// Roles are fixed (Admin / Manager / Analyst) and cannot be created or edited
-// through the dashboard. This module is the single source of truth for the
-// role → permission matrix (see docs/SECURITY.md §2 and §3).
+// This module unifies the former `src/config/roles.ts` (feedback-domain
+// permissions + route visibility) and `src/lib/permissions.ts` (dashboard
+// matrix) into one role → permission map (see docs/SECURITY.md §2 and §3).
+//
+// Role names are capitalized ("Admin" / "Manager" / "Analyst") because those
+// are the values stored in the database (`Role.name`, `User.role`) and
+// configured in the Better Auth admin plugin. Every consumer must use these
+// values — never lowercase variants.
+//
+// Feedback access follows the security model: only Admin may edit, delete, or
+// view raw patient phone numbers; Manager and Analyst are read-only on
+// feedback (security.md §8).
 //
 // IMPORTANT: This module is used server-side for authorization. The dashboard
 // navigation is filtered client-side from the same matrix, but that is a UX
@@ -10,9 +19,9 @@
 // the session + permission on the server.
 
 export const ROLES = {
-  ADMIN: "admin",
-  MANAGER: "manager",
-  ANALYST: "analyst",
+  ADMIN: "Admin",
+  MANAGER: "Manager",
+  ANALYST: "Analyst",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -22,6 +31,7 @@ export const PERMISSIONS = {
   FEEDBACK_READ: "feedback.read",
   FEEDBACK_UPDATE: "feedback.update",
   FEEDBACK_DELETE: "feedback.delete",
+  FEEDBACK_PHONE: "feedback.phone",
   BRANCH_READ: "branch.read",
   BRANCH_CREATE: "branch.create",
   BRANCH_UPDATE: "branch.update",
@@ -41,12 +51,13 @@ export const PERMISSIONS = {
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  // Full system access.
+  // Full system access, including raw patient phone numbers.
   [ROLES.ADMIN]: [
     PERMISSIONS.ANALYTICS_READ,
     PERMISSIONS.FEEDBACK_READ,
     PERMISSIONS.FEEDBACK_UPDATE,
     PERMISSIONS.FEEDBACK_DELETE,
+    PERMISSIONS.FEEDBACK_PHONE,
     PERMISSIONS.BRANCH_READ,
     PERMISSIONS.BRANCH_CREATE,
     PERMISSIONS.BRANCH_UPDATE,
@@ -62,11 +73,11 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     PERMISSIONS.TASK_READ,
     PERMISSIONS.TASK_MANAGE,
   ],
-  // Operational dashboard + analytics + feedback + branches + services + tasks.
+  // Operational dashboard + analytics + branches + services + tasks.
+  // Feedback is strictly read-only (no update / delete / phone — Admin only).
   [ROLES.MANAGER]: [
     PERMISSIONS.ANALYTICS_READ,
     PERMISSIONS.FEEDBACK_READ,
-    PERMISSIONS.FEEDBACK_UPDATE,
     PERMISSIONS.BRANCH_READ,
     PERMISSIONS.SERVICE_READ,
     PERMISSIONS.TASK_READ,
@@ -80,7 +91,11 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   ],
 };
 
-export function isRole(value: string): value is Role {
+/**
+ * Type guard for role values as stored in the database. Accepts `unknown`
+ * so untrusted input (cookie / header / request body) can be validated.
+ */
+export function isRole(value: unknown): value is Role {
   return Object.values(ROLES).includes(value as Role);
 }
 
@@ -92,3 +107,4 @@ export function getPermissions(role: string): readonly Permission[] {
 export function hasPermission(role: string, permission: Permission): boolean {
   return getPermissions(role).includes(permission);
 }
+

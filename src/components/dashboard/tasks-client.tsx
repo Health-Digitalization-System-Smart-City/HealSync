@@ -6,29 +6,45 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Filter,
   Plus,
   Search,
-  Tag,
   User,
   X,
 } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  CLINIC_BRANCHES,
-  DASHBOARD_TASKS,
-  type DashboardTask,
-} from "@/lib/dashboard-data";
-import type { Role } from "@/lib/permissions";
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  createTask,
+  getTaskBoardData,
+  updateTaskStatus,
+  type TaskData,
+} from "@/features/tasks/actions";
+import {
+  TASK_CATEGORIES,
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  type TaskPriority,
+  type TaskStatus,
+} from "@/lib/validation/tasks";
+import { ROLES, type Role } from "@/lib/permissions";
+
+function nextStatus(status: TaskStatus): TaskStatus {
+  if (status === "pending") return "in_progress";
+  if (status === "in_progress") return "completed";
+  return "pending";
+}
 
 export function TasksClient({ userRole }: { userRole: Role }) {
-  const [tasks, setTasks] = useState<DashboardTask[]>(DASHBOARD_TASKS);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -38,12 +54,40 @@ export function TasksClient({ userRole }: { userRole: Role }) {
   // Form state for creating a new task
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newBranch, setNewBranch] = useState(CLINIC_BRANCHES[0]?.name || "");
-  const [newPriority, setNewPriority] = useState<"urgent" | "high" | "medium" | "low">("medium");
-  const [newCategory, setNewCategory] = useState<DashboardTask["category"]>("Follow-up");
-  const [newDueDate, setNewDueDate] = useState("Tomorrow, 5:00 PM");
+  const [newBranchId, setNewBranchId] = useState("");
+  const [newPriority, setNewPriority] = useState<TaskPriority>("medium");
+  const [newCategory, setNewCategory] =
+    useState<(typeof TASK_CATEGORIES)[number]>("Follow-up");
+  const [newDueDate, setNewDueDate] = useState("");
 
-  const canManage = userRole === "admin" || userRole === "manager";
+  const canManage = userRole === ROLES.ADMIN || userRole === ROLES.MANAGER;
+
+  const boardQuery = useQuery({
+    queryKey: ["task-board"],
+    queryFn: async () => {
+      const result = await getTaskBoardData();
+      if (!result.success) throw new Error(result.error.message);
+      return result.data;
+    },
+  });
+
+  const tasks = boardQuery.data?.tasks ?? [];
+  const branches = boardQuery.data?.branches ?? [];
+  const loading = boardQuery.isLoading;
+
+  const createMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["task-board"] });
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: updateTaskStatus,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["task-board"] });
+    },
+  });
 
   // Filter tasks
   const filteredTasks = tasks.filter((task) => {
@@ -57,77 +101,76 @@ export function TasksClient({ userRole }: { userRole: Role }) {
     const matchesPriority =
       priorityFilter === "all" ? true : task.priority === priorityFilter;
     const matchesBranch =
-      branchFilter === "all" ? true : task.branchName === branchFilter;
+      branchFilter === "all" ? true : task.branchId === branchFilter;
 
     return matchesSearch && matchesStatus && matchesPriority && matchesBranch;
   });
 
-  function toggleTaskStatus(id: string) {
+  function toggleTaskStatus(task: TaskData) {
     if (!canManage) return;
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id === id) {
-          const nextStatus =
-            t.status === "completed"
-              ? "pending"
-              : t.status === "pending"
-                ? "in_progress"
-                : "completed";
-          return { ...t, status: nextStatus };
-        }
-        return t;
-      }),
-    );
+    statusMutation.mutate({ id: task.id, status: nextStatus(task.status) });
+  }
+
+  function openNewTaskDialog() {
+    if (branches.length > 0) setNewBranchId(branches[0].id);
+    setIsNewTaskOpen(true);
   }
 
   function handleCreateTask(e: React.FormEvent) {
     e.preventDefault();
-    if (!newTitle.trim()) return;
+    if (!newTitle.trim() || createMutation.isPending) return;
 
-    const newTask: DashboardTask = {
-      id: `tsk-${Date.now().toString().slice(-4)}`,
-      title: newTitle.trim(),
-      description: newDescription.trim() || "No additional description provided.",
-      branchName: newBranch,
-      category: newCategory,
-      priority: newPriority,
-      status: "pending",
-      assignee: {
-        name: "Clinic Duty Lead",
-        role: "Coordinator",
+    createMutation.mutate(
+      {
+        title: newTitle.trim(),
+        description: newDescription.trim(),
+        branchId: newBranchId || undefined,
+        category: newCategory,
+        priority: newPriority,
+        dueDate: newDueDate.trim(),
       },
-      dueDate: newDueDate,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTasks([newTask, ...tasks]);
-    setNewTitle("");
-    setNewDescription("");
-    setIsNewTaskOpen(false);
+      {
+        onSuccess: () => {
+          setNewTitle("");
+          setNewDescription("");
+          setNewBranchId("");
+          setNewPriority("medium");
+          setNewCategory("Follow-up");
+          setNewDueDate("");
+          setIsNewTaskOpen(false);
+        },
+      },
+    );
   }
 
   const pendingCount = tasks.filter((t) => t.status === "pending").length;
-  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
+  const inProgressCount = tasks.filter(
+    (t) => t.status === "in_progress",
+  ).length;
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in-50 duration-300">
+    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-300">
       {/* Summary KPI Pills */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div
-          onClick={() => setStatusFilter(statusFilter === "pending" ? "all" : "pending")}
+          onClick={() =>
+            setStatusFilter(statusFilter === "pending" ? "all" : "pending")
+          }
           className={cn(
-            "flex items-center justify-between rounded-xl border p-4 transition-all cursor-pointer",
+            "flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all",
             statusFilter === "pending"
               ? "border-amber-500/80 bg-amber-500/10 shadow-xs"
               : "border-border/80 bg-card hover:bg-muted/40",
           )}
         >
           <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Pending Actions
             </span>
-            <div className="text-2xl font-bold text-foreground">{pendingCount}</div>
+            <div className="text-foreground text-2xl font-bold">
+              {pendingCount}
+            </div>
           </div>
           <span className="flex size-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
             <Clock className="size-4.5" />
@@ -135,19 +178,25 @@ export function TasksClient({ userRole }: { userRole: Role }) {
         </div>
 
         <div
-          onClick={() => setStatusFilter(statusFilter === "in_progress" ? "all" : "in_progress")}
+          onClick={() =>
+            setStatusFilter(
+              statusFilter === "in_progress" ? "all" : "in_progress",
+            )
+          }
           className={cn(
-            "flex items-center justify-between rounded-xl border p-4 transition-all cursor-pointer",
+            "flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all",
             statusFilter === "in_progress"
               ? "border-blue-500/80 bg-blue-500/10 shadow-xs"
               : "border-border/80 bg-card hover:bg-muted/40",
           )}
         >
           <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               In Progress
             </span>
-            <div className="text-2xl font-bold text-foreground">{inProgressCount}</div>
+            <div className="text-foreground text-2xl font-bold">
+              {inProgressCount}
+            </div>
           </div>
           <span className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
             <AlertCircle className="size-4.5" />
@@ -155,19 +204,25 @@ export function TasksClient({ userRole }: { userRole: Role }) {
         </div>
 
         <div
-          onClick={() => setStatusFilter(statusFilter === "completed" ? "all" : "completed")}
+          onClick={() =>
+            setStatusFilter(
+              statusFilter === "completed" ? "all" : "completed",
+            )
+          }
           className={cn(
-            "flex items-center justify-between rounded-xl border p-4 transition-all cursor-pointer",
+            "flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all",
             statusFilter === "completed"
               ? "border-emerald-500/80 bg-emerald-500/10 shadow-xs"
               : "border-border/80 bg-card hover:bg-muted/40",
           )}
         >
           <div className="space-y-0.5">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Completed
             </span>
-            <div className="text-2xl font-bold text-foreground">{completedCount}</div>
+            <div className="text-foreground text-2xl font-bold">
+              {completedCount}
+            </div>
           </div>
           <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="size-4.5" />
@@ -181,12 +236,12 @@ export function TasksClient({ userRole }: { userRole: Role }) {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-2.5 left-3 size-4" />
               <Input
                 placeholder="Search tasks, descriptions, or assignees..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
+                className="h-9 pl-9"
               />
             </div>
 
@@ -195,37 +250,40 @@ export function TasksClient({ userRole }: { userRole: Role }) {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+                className="border-border bg-background text-foreground focus:ring-ring h-9 rounded-lg border px-2.5 text-xs font-medium outline-none focus:ring-2"
                 aria-label="Filter by task status"
               >
                 <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
+                {TASK_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status.replace("_", " ")}
+                  </option>
+                ))}
               </select>
 
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="h-9 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+                className="border-border bg-background text-foreground focus:ring-ring h-9 rounded-lg border px-2.5 text-xs font-medium outline-none focus:ring-2"
                 aria-label="Filter by task priority"
               >
                 <option value="all">All Priorities</option>
-                <option value="urgent">Urgent</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                {TASK_PRIORITIES.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {priority}
+                  </option>
+                ))}
               </select>
 
               <select
                 value={branchFilter}
                 onChange={(e) => setBranchFilter(e.target.value)}
-                className="h-9 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground outline-none focus:ring-2 focus:ring-ring max-w-[180px]"
+                className="border-border bg-background text-foreground focus:ring-ring h-9 max-w-[180px] rounded-lg border px-2.5 text-xs font-medium outline-none focus:ring-2"
                 aria-label="Filter by clinic branch"
               >
                 <option value="all">All Branches</option>
-                {CLINIC_BRANCHES.map((b) => (
-                  <option key={b.id} value={b.name}>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
                     {b.name}
                   </option>
                 ))}
@@ -233,7 +291,7 @@ export function TasksClient({ userRole }: { userRole: Role }) {
 
               {canManage ? (
                 <Button
-                  onClick={() => setIsNewTaskOpen(true)}
+                  onClick={openNewTaskDialog}
                   className="h-9 gap-1.5 shadow-xs"
                 >
                   <Plus className="size-4" />
@@ -247,24 +305,48 @@ export function TasksClient({ userRole }: { userRole: Role }) {
 
       {/* Task List */}
       <div className="space-y-3">
-        {filteredTasks.length === 0 ? (
+        {loading ? (
           <Card className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              No tasks match your current filter criteria.
+            <p className="text-muted-foreground text-sm">Loading tasks…</p>
+          </Card>
+        ) : boardQuery.isError ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              {boardQuery.error instanceof Error
+                ? boardQuery.error.message
+                : "Unable to load tasks."}
             </p>
             <Button
               variant="outline"
               size="sm"
               className="mt-3"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-                setPriorityFilter("all");
-                setBranchFilter("all");
-              }}
+              onClick={() => void boardQuery.refetch()}
             >
-              Reset Filters
+              Retry
             </Button>
+          </Card>
+        ) : filteredTasks.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground text-sm">
+              {tasks.length === 0
+                ? "No tasks yet. Create your first operational task."
+                : "No tasks match your current filter criteria."}
+            </p>
+            {tasks.length > 0 ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  setPriorityFilter("all");
+                  setBranchFilter("all");
+                }}
+              >
+                Reset Filters
+              </Button>
+            ) : null}
           </Card>
         ) : (
           filteredTasks.map((task) => {
@@ -283,8 +365,8 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                 <div className="flex items-start gap-3.5">
                   <button
                     type="button"
-                    onClick={() => toggleTaskStatus(task.id)}
-                    disabled={!canManage}
+                    onClick={() => toggleTaskStatus(task)}
+                    disabled={!canManage || statusMutation.isPending}
                     aria-label={`Mark task ${task.title} status`}
                     className={cn(
                       "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
@@ -307,8 +389,8 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                     <div className="flex flex-wrap items-center gap-2">
                       <h3
                         className={cn(
-                          "text-sm font-semibold text-foreground",
-                          isCompleted && "line-through text-muted-foreground",
+                          "text-foreground text-sm font-semibold",
+                          isCompleted && "text-muted-foreground line-through",
                         )}
                       >
                         {task.title}
@@ -321,7 +403,7 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                               ? "secondary"
                               : "outline"
                         }
-                        className="text-[10px] uppercase font-bold px-1.5 py-0"
+                        className="px-1.5 py-0 text-[10px] font-bold uppercase"
                       >
                         {task.priority}
                       </Badge>
@@ -330,21 +412,29 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                       </Badge>
                     </div>
 
-                    <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-                      {task.description}
+                    <p className="text-muted-foreground max-w-2xl text-xs leading-relaxed">
+                      {task.description || "No description provided."}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-3 pt-1 text-[11px] text-muted-foreground">
-                      <span className="font-medium text-foreground">{task.branchName}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="size-3" />
-                        <span>Due {task.dueDate}</span>
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-3 pt-1 text-[11px]">
+                      <span className="text-foreground font-medium">
+                        {task.branchName}
                       </span>
                       <span>•</span>
+                      {task.dueDate ? (
+                        <>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="size-3" />
+                            <span>Due {task.dueDate}</span>
+                          </span>
+                          <span>•</span>
+                        </>
+                      ) : null}
                       <span className="flex items-center gap-1">
                         <User className="size-3" />
-                        <span>{task.assignee.name} ({task.assignee.role})</span>
+                        <span>
+                          {task.assignee.name} ({task.assignee.role})
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -360,7 +450,7 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                           ? "secondary"
                           : "outline"
                     }
-                    className="capitalize text-xs"
+                    className="text-xs capitalize"
                   >
                     {task.status.replace("_", " ")}
                   </Badge>
@@ -375,12 +465,14 @@ export function TasksClient({ userRole }: { userRole: Role }) {
       <Dialog.Root open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
         <Dialog.Portal>
           <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity" />
-          <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-border">
-              <h2 className="text-lg font-bold text-foreground">Create Clinic Operational Task</h2>
+          <Dialog.Popup className="border-border bg-card fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border p-6 shadow-2xl">
+            <div className="border-border flex items-center justify-between border-b pb-4">
+              <h2 className="text-foreground text-lg font-bold">
+                Create Clinic Operational Task
+              </h2>
               <Dialog.Close
                 aria-label="Close dialog"
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted"
+                className="text-muted-foreground hover:bg-muted rounded-lg p-1"
               >
                 <X className="size-4" />
               </Dialog.Close>
@@ -388,7 +480,9 @@ export function TasksClient({ userRole }: { userRole: Role }) {
 
             <form onSubmit={handleCreateTask} className="mt-4 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Task Title</label>
+                <label className="text-foreground text-xs font-semibold">
+                  Task Title
+                </label>
                 <Input
                   required
                   placeholder="e.g. Urgent Follow-up on Pediatric Triage Wait Times"
@@ -398,10 +492,12 @@ export function TasksClient({ userRole }: { userRole: Role }) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Description</label>
+                <label className="text-foreground text-xs font-semibold">
+                  Description
+                </label>
                 <textarea
                   rows={3}
-                  className="w-full rounded-lg border border-input bg-transparent p-2 text-xs placeholder:text-muted-foreground focus:ring-2 focus:ring-ring outline-none"
+                  className="border-input placeholder:text-muted-foreground focus:ring-ring w-full rounded-lg border bg-transparent p-2 text-xs outline-none focus:ring-2"
                   placeholder="Actionable steps or patient context..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
@@ -410,53 +506,86 @@ export function TasksClient({ userRole }: { userRole: Role }) {
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Clinic Branch</label>
+                  <label className="text-foreground text-xs font-semibold">
+                    Clinic Branch
+                  </label>
                   <select
-                    value={newBranch}
-                    onChange={(e) => setNewBranch(e.target.value)}
-                    className="h-9 w-full rounded-lg border border-input bg-transparent px-2 text-xs focus:ring-2 focus:ring-ring outline-none"
+                    value={newBranchId}
+                    onChange={(e) => setNewBranchId(e.target.value)}
+                    className="border-input focus:ring-ring h-9 w-full rounded-lg border bg-transparent px-2 text-xs outline-none focus:ring-2"
                   >
-                    {CLINIC_BRANCHES.map((b) => (
-                      <option key={b.id} value={b.name} className="bg-popover text-foreground">
-                        {b.name}
+                    {branches.length === 0 ? (
+                      <option value="" className="bg-popover text-foreground">
+                        No branches available
                       </option>
-                    ))}
+                    ) : (
+                      branches.map((b) => (
+                        <option
+                          key={b.id}
+                          value={b.id}
+                          className="bg-popover text-foreground"
+                        >
+                          {b.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Priority</label>
+                  <label className="text-foreground text-xs font-semibold">
+                    Priority
+                  </label>
                   <select
                     value={newPriority}
-                    onChange={(e) => setNewPriority(e.target.value as any)}
-                    className="h-9 w-full rounded-lg border border-input bg-transparent px-2 text-xs focus:ring-2 focus:ring-ring outline-none"
+                    onChange={(e) =>
+                      setNewPriority(e.target.value as TaskPriority)
+                    }
+                    className="border-input focus:ring-ring h-9 w-full rounded-lg border bg-transparent px-2 text-xs outline-none focus:ring-2"
                   >
-                    <option value="urgent" className="bg-popover text-foreground">Urgent</option>
-                    <option value="high" className="bg-popover text-foreground">High</option>
-                    <option value="medium" className="bg-popover text-foreground">Medium</option>
-                    <option value="low" className="bg-popover text-foreground">Low</option>
+                    {TASK_PRIORITIES.map((priority) => (
+                      <option
+                        key={priority}
+                        value={priority}
+                        className="bg-popover text-foreground"
+                      >
+                        {priority}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Category</label>
+                  <label className="text-foreground text-xs font-semibold">
+                    Category
+                  </label>
                   <select
                     value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="h-9 w-full rounded-lg border border-input bg-transparent px-2 text-xs focus:ring-2 focus:ring-ring outline-none"
+                    onChange={(e) =>
+                      setNewCategory(
+                        e.target.value as (typeof TASK_CATEGORIES)[number],
+                      )
+                    }
+                    className="border-input focus:ring-ring h-9 w-full rounded-lg border bg-transparent px-2 text-xs outline-none focus:ring-2"
                   >
-                    <option value="Follow-up" className="bg-popover text-foreground">Follow-up</option>
-                    <option value="Inspection" className="bg-popover text-foreground">Inspection</option>
-                    <option value="Equipment" className="bg-popover text-foreground">Equipment</option>
-                    <option value="Protocol" className="bg-popover text-foreground">Protocol</option>
-                    <option value="Staffing" className="bg-popover text-foreground">Staffing</option>
+                    {TASK_CATEGORIES.map((category) => (
+                      <option
+                        key={category}
+                        value={category}
+                        className="bg-popover text-foreground"
+                      >
+                        {category}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Due Date</label>
+                  <label className="text-foreground text-xs font-semibold">
+                    Due Date
+                  </label>
                   <Input
                     placeholder="e.g. Tomorrow, 4:00 PM"
                     value={newDueDate}
@@ -465,7 +594,7 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-border">
+              <div className="border-border flex justify-end gap-2 border-t pt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -474,8 +603,12 @@ export function TasksClient({ userRole }: { userRole: Role }) {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm">
-                  Create Task
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? "Creating…" : "Create Task"}
                 </Button>
               </div>
             </form>

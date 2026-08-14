@@ -4,10 +4,9 @@ import {
   ROLES,
   PERMISSIONS,
   isRole,
-  getPermissions,
   hasPermission,
 } from "@/lib/permissions";
-import { getNavItems, NAV_ITEMS } from "@/components/dashboard/nav-config";
+import { getNavItems } from "@/components/dashboard/nav-config";
 
 describe("RBAC Permissions & Navigation UX", () => {
   describe("isRole()", () => {
@@ -28,7 +27,9 @@ describe("RBAC Permissions & Navigation UX", () => {
     it("gives Admin role full system permissions including user management and branch creation", () => {
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.ANALYTICS_READ)).toBe(true);
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.FEEDBACK_READ)).toBe(true);
-      expect(hasPermission(ROLES.ADMIN, PERMISSIONS.FEEDBACK_DELETE)).toBe(true);
+      expect(hasPermission(ROLES.ADMIN, PERMISSIONS.FEEDBACK_DELETE)).toBe(
+        true,
+      );
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.BRANCH_CREATE)).toBe(true);
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.SERVICE_CREATE)).toBe(true);
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.USER_READ)).toBe(true);
@@ -38,9 +39,16 @@ describe("RBAC Permissions & Navigation UX", () => {
     });
 
     it("gives Manager operational permissions (branches, services, tasks, feedback) but denies user management", () => {
-      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.ANALYTICS_READ)).toBe(true);
-      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_READ)).toBe(true);
-      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_UPDATE)).toBe(true);
+      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.ANALYTICS_READ)).toBe(
+        true,
+      );
+      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_READ)).toBe(
+        true,
+      );
+      // Feedback mutations and raw phone numbers are Admin-only (security.md §8).
+      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_UPDATE)).toBe(
+        false,
+      );
       expect(hasPermission(ROLES.MANAGER, PERMISSIONS.BRANCH_READ)).toBe(true);
       expect(hasPermission(ROLES.MANAGER, PERMISSIONS.SERVICE_READ)).toBe(true);
       expect(hasPermission(ROLES.MANAGER, PERMISSIONS.TASK_READ)).toBe(true);
@@ -49,25 +57,57 @@ describe("RBAC Permissions & Navigation UX", () => {
       // Denied user management and permanent deletion
       expect(hasPermission(ROLES.MANAGER, PERMISSIONS.USER_READ)).toBe(false);
       expect(hasPermission(ROLES.MANAGER, PERMISSIONS.USER_CREATE)).toBe(false);
-      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_DELETE)).toBe(false);
+      expect(hasPermission(ROLES.MANAGER, PERMISSIONS.FEEDBACK_DELETE)).toBe(
+        false,
+      );
     });
 
     it("gives Analyst read-only access to analytics, feedback, and tasks", () => {
-      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.ANALYTICS_READ)).toBe(true);
-      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_READ)).toBe(true);
+      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.ANALYTICS_READ)).toBe(
+        true,
+      );
+      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_READ)).toBe(
+        true,
+      );
       expect(hasPermission(ROLES.ANALYST, PERMISSIONS.TASK_READ)).toBe(true);
 
       // Denied write & management permissions
-      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_UPDATE)).toBe(false);
-      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_DELETE)).toBe(false);
+      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_UPDATE)).toBe(
+        false,
+      );
+      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.FEEDBACK_DELETE)).toBe(
+        false,
+      );
       expect(hasPermission(ROLES.ANALYST, PERMISSIONS.BRANCH_READ)).toBe(false);
-      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.SERVICE_READ)).toBe(false);
+      expect(hasPermission(ROLES.ANALYST, PERMISSIONS.SERVICE_READ)).toBe(
+        false,
+      );
       expect(hasPermission(ROLES.ANALYST, PERMISSIONS.USER_READ)).toBe(false);
       expect(hasPermission(ROLES.ANALYST, PERMISSIONS.TASK_MANAGE)).toBe(false);
     });
   });
 
   describe("getNavItems(role) - Client Navigation Filtering", () => {
+    it("returns serializable plain data (safe as Server → Client props)", () => {
+      const nav = getNavItems(ROLES.ADMIN, { tasks: 3, feedback: 2 });
+
+      // Icons are string keys, never component references.
+      expect(nav.every((item) => typeof item.icon === "string")).toBe(true);
+
+      // Full JSON round-trip must be lossless — functions/components would
+      // be dropped and fail this assertion (regression guard for the
+      // "Functions cannot be passed directly to Client Components" error).
+      expect(JSON.parse(JSON.stringify(nav))).toEqual(nav);
+
+      // Live counts are attached as static badges (zero hides the badge).
+      expect(nav.find((item) => item.href === "/dashboard/tasks")?.badge).toBe(
+        "3",
+      );
+      expect(
+        nav.find((item) => item.href === "/dashboard/feedback")?.badge,
+      ).toBe("2");
+    });
+
     it("returns all navigation items for Admin", () => {
       const nav = getNavItems(ROLES.ADMIN);
       const titles = nav.map((item) => item.title);

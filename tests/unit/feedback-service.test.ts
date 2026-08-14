@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PERMISSIONS } from "@/config/roles";
+import { PERMISSIONS } from "@/lib/permissions";
 import { FeedbackError } from "@/lib/feedback/errors";
 import {
   deleteFeedback,
@@ -15,21 +15,21 @@ import type { Viewer } from "@/lib/feedback/types";
 const adminViewer: Viewer = {
   role: "Admin",
   permissions: [
-    PERMISSIONS.feedbackRead,
-    PERMISSIONS.feedbackUpdate,
-    PERMISSIONS.feedbackDelete,
-    PERMISSIONS.feedbackPhone,
+    PERMISSIONS.FEEDBACK_READ,
+    PERMISSIONS.FEEDBACK_UPDATE,
+    PERMISSIONS.FEEDBACK_DELETE,
+    PERMISSIONS.FEEDBACK_PHONE,
   ],
 };
 
 const managerViewer: Viewer = {
   role: "Manager",
-  permissions: [PERMISSIONS.feedbackRead],
+  permissions: [PERMISSIONS.FEEDBACK_READ],
 };
 
 const analystViewer: Viewer = {
   role: "Analyst",
-  permissions: [PERMISSIONS.feedbackRead],
+  permissions: [PERMISSIONS.FEEDBACK_READ],
 };
 
 function freshStore(): FeedbackStore {

@@ -2,12 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Radio } from "lucide-react";
+import {
+  Activity,
+  Building2,
+  CheckSquare,
+  LayoutDashboard,
+  MessageSquareText,
+  Stethoscope,
+  TrendingUp,
+  UserCheck,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { getNavSections, type NavItem } from "@/components/dashboard/nav-config";
-import type { Role } from "@/lib/permissions";
+import {
+  getNavSections,
+  type NavIcon,
+  type NavItem,
+} from "@/components/dashboard/nav-config";
+import { ROLES, type Role } from "@/lib/permissions";
+
+/**
+ * Resolves serializable nav icon keys to their Lucide components. Kept in the
+ * client bundle so `nav-config` stays plain data and can cross the RSC
+ * boundary (functions cannot be passed from Server to Client Components).
+ */
+const ICONS: Record<NavIcon, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  tasks: CheckSquare,
+  feedback: MessageSquareText,
+  analytics: TrendingUp,
+  branches: Building2,
+  services: Stethoscope,
+  users: Users,
+  profile: UserCheck,
+};
 
 export function SidebarBrand() {
   return (
@@ -28,7 +59,13 @@ export function SidebarBrand() {
   );
 }
 
-export function SidebarNav({ items }: { items: readonly NavItem[] }) {
+export function SidebarNav({
+  items,
+  branchCount,
+}: {
+  items: readonly NavItem[];
+  branchCount: number;
+}) {
   const pathname = usePathname();
   const sections = getNavSections(items);
 
@@ -41,7 +78,7 @@ export function SidebarNav({ items }: { items: readonly NavItem[] }) {
           </div>
           <div className="flex flex-col gap-0.5">
             {sectionItems.map((item) => {
-              const Icon = item.icon;
+              const Icon = ICONS[item.icon];
               const isActive =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
@@ -94,7 +131,7 @@ export function SidebarNav({ items }: { items: readonly NavItem[] }) {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
           </span>
-          <span>13 Clinics Connected</span>
+          <span>{branchCount} Clinics Connected</span>
         </div>
         <p className="mt-1 text-[11px] text-muted-foreground">
           Real-time patient feedback & SLA monitoring active.
@@ -133,7 +170,7 @@ export function SidebarFooter({
             {name}
           </span>
           <Badge
-            variant={role === "admin" ? "default" : role === "manager" ? "secondary" : "outline"}
+            variant={role === ROLES.ADMIN ? "default" : role === ROLES.MANAGER ? "secondary" : "outline"}
             className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0"
           >
             {role}

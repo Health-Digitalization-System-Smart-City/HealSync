@@ -21,7 +21,6 @@ import type {
   FeedbackView,
   UpdateFeedbackInput,
 } from "@/lib/feedback/types";
-import type { UserRole } from "@/config/roles";
 import {
   EMPTY_FILTERS,
   FeedbackFilters,
@@ -33,7 +32,6 @@ import { FeedbackSummary } from "./feedback-summary";
 import { FeedbackTable } from "./feedback-table";
 import { FeedbackDetails } from "./feedback-details";
 import { EmptyState, ErrorState, TableSkeleton } from "./feedback-states";
-import { RoleSelector } from "./role-selector";
 
 export default function FeedbackDashboard() {
   const [filters, setFilters] = useState<FeedbackFilterValues>(EMPTY_FILTERS);
@@ -41,7 +39,6 @@ export default function FeedbackDashboard() {
   const [pageSize, setPageSize] = useState(10);
   const [selected, setSelected] = useState<FeedbackView | null>(null);
   const [initialEditing, setInitialEditing] = useState(false);
-  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -175,23 +172,6 @@ export default function FeedbackDashboard() {
     setSelected(item);
   }
 
-  async function handleRoleChange(newRole: UserRole) {
-    setIsRoleSwitching(true);
-    try {
-      await fetch("/api/auth/role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: newRole }),
-      });
-      await queryClient.invalidateQueries({ queryKey: ["feedback-list"] });
-      if (selected) {
-        setSelected(null);
-      }
-    } finally {
-      setIsRoleSwitching(false);
-    }
-  }
-
   const listData = listQuery.data;
   const capabilities = listData?.viewer;
 
@@ -209,15 +189,6 @@ export default function FeedbackDashboard() {
           </p>
         </div>
 
-        {capabilities && (
-          <div className="self-start sm:self-auto">
-            <RoleSelector
-              currentRole={capabilities.role}
-              onRoleChange={handleRoleChange}
-              loading={isRoleSwitching || listQuery.isFetching}
-            />
-          </div>
-        )}
       </div>
 
       {/* KPI Summary Cards */}
