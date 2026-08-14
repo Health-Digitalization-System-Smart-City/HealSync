@@ -11,9 +11,17 @@ export default defineConfig({
     },
   },
   test: {
-    // Only pick up unit tests; Playwright specs live in tests/e2e and are
-    // handled by the separate Playwright runner.
-    include: ["tests/unit/**/*.{test,spec}.{ts,tsx}"],
+    // Only pick up unit + component tests; Playwright specs live in tests/e2e
+    // and are handled by the separate Playwright runner. Component tests use
+    // `// @vitest-environment jsdom` to opt into a DOM environment.
+    include: [
+      "tests/unit/**/*.{test,spec}.{ts,tsx}",
+      "tests/component/**/*.{test,spec}.{ts,tsx}",
+    ],
     environment: "node",
+    // Enable global afterEach so @testing-library/react can auto-cleanup the
+    // DOM between component tests.
+    globals: true,
+    setupFiles: ["./tests/setup.ts"],
   },
 });

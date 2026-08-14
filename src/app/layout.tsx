@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · HealSync",
   },
   description:
-    "Feedback platform for private healthcare clinics. Phase 1 — foundation.",
+    "Share your healthcare experience with HealSync and help our clinics improve patient care.",
 };
 
 export default function RootLayout({

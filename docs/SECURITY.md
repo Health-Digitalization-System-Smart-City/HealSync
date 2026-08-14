@@ -207,6 +207,22 @@ Configuration notes:
 * Use Better Auth's documented configuration to extend behavior; do not build
   custom session logic.
 
+### Implementation status
+
+The target configuration is live in `src/lib/auth/index.ts`:
+
+* `emailAndPassword.disableSignUp = true` — no public self-registration.
+* Admin plugin with `adminRoles: ["Admin"]` — server-side user provisioning
+  via the `createUser` Server Action.
+* `databaseHooks.session.create.before` rejects sign-in for disabled accounts
+  (`isActive = false`); protected code re-checks `isActive` on every request.
+* `databaseHooks.session.create.after` records `User.lastLoginAt`.
+* Per-IP rate limiting on `/api/auth/*` (100 requests/minute, plus a built-in
+  cap of 3 sign-in attempts per 10 seconds). `BETTER_AUTH_RATE_LIMIT_RELAXED`
+  exists for test environments only and must never be set in production.
+* Password reset enabled; reset URLs are emailed (Resend) or previewed on the
+  server console in development.
+
 ### Dashboard user provisioning
 
 Only Admin can create dashboard users. Public self-registration is disabled;

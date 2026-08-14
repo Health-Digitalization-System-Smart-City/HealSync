@@ -1,69 +1,78 @@
-const stats = [
-  { title: "Total Users", value: "42" },
-  { title: "Active Users", value: "39" },
-  { title: "Administrators", value: "3" },
-];
+import { Lock, Users } from "lucide-react";
 
-const users = [
-  { name: "Admin User", email: "admin@example.com", role: "Admin", roleClass: "bg-purple-100 text-purple-700" },
-  { name: "Manager User", email: "manager@example.com", role: "Manager", roleClass: "bg-blue-100 text-blue-700" },
-  { name: "Analyst User", email: "analyst@example.com", role: "Analyst", roleClass: "bg-yellow-100 text-yellow-700" },
-  { name: "Staff User", email: "staff@example.com", role: "Analyst", roleClass: "bg-yellow-100 text-yellow-700" },
-];
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-export default function UsersPage() {
+import { can, requirePermission } from "@/lib/auth/permissions";
+import { getRoles, getUsers } from "@/features/users/actions";
+import { CreateUserForm } from "@/features/users/components/create-user-form";
+import { UsersTable } from "@/features/users/components/users-table";
+
+/**
+ * User management (security.md §4, PRD.md §22). Page-level permission check
+ * is UX only — every mutation is re-authorized server-side by the actions.
+ */
+export default async function UsersPage() {
+  const authResult = await requirePermission("user.read");
+  if (!authResult.success) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <div className="bg-muted flex h-14 w-14 items-center justify-center rounded-full">
+          <Lock className="text-muted-foreground h-6 w-6" aria-hidden />
+        </div>
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold">Access denied</h1>
+          <p className="text-muted-foreground max-w-sm text-sm">
+            Your role does not have permission to manage dashboard users.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const user = authResult.data.user;
+  const [usersResult, rolesResult] = await Promise.all([
+    getUsers(),
+    getRoles(),
+  ]);
+
+  const users = usersResult.success ? usersResult.data : [];
+  const roles = rolesResult.success ? rolesResult.data : [];
+  const canCreateUsers = await can(user.id, "user.create");
+
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Users</h1>
-        <p className="text-slate-600 mt-2">
-          Manage system users and their roles.
+    <div className="space-y-8">
+      <div className="flex flex-col gap-2">
+        <Badge variant="secondary" className="w-fit gap-2 px-3 py-1">
+          <Users className="h-3.5 w-3.5 text-emerald-500" aria-hidden />
+          Administration
+        </Badge>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          User management
+        </h1>
+        <p className="text-muted-foreground max-w-2xl leading-relaxed">
+          Create dashboard accounts, assign the fixed roles (Admin, Manager,
+          Analyst), and revoke access. Every action is audited.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-        {stats.map((stat) => (
-          <div key={stat.title} className="bg-white p-6 rounded-xl border shadow-sm">
-            <p className="text-slate-500">{stat.title}</p>
-            <h2 className="text-3xl font-bold mt-2">{stat.value}</h2>
-          </div>
-        ))}
-      </div>
+      {!usersResult.success && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Could not load users</CardTitle>
+            <CardDescription>{usersResult.error.message}</CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold">System Users</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[650px]">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-4">Name</th>
-                <th className="text-left p-4">Email</th>
-                <th className="text-left p-4">Role</th>
-                <th className="text-left p-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.email} className="border-t">
-                  <td className="p-4 font-medium">{user.name}</td>
-                  <td className="p-4 text-slate-600">{user.email}</td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-sm ${user.roleClass}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">
-                      Active
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
+        {canCreateUsers && <CreateUserForm roles={roles} />}
+        <UsersTable users={users} roles={roles} currentUserId={user.id} />
       </div>
     </div>
   );

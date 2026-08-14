@@ -1,8 +1,3 @@
-// Zod schemas for the feedback API (`docs/API.md` §5, §18).
-//
-// All external input is validated at the server boundary; client-side
-// validation is only a UX aid and never a security control.
-
 import { z } from "zod";
 import { RATING_VALUES } from "@/lib/feedback/ratings";
 import { RANGE_VALUES } from "@/lib/feedback/ranges";
@@ -41,3 +36,64 @@ export const feedbackUpdateSchema = z
   );
 
 export type FeedbackUpdateBody = z.infer<typeof feedbackUpdateSchema>;
+
+/**
+ * Supported Feedback Ratings enum values matching Prisma schema (DATABASE.md §12).
+ */
+export const FeedbackRatingEnum = z.enum(
+  [
+    "VERY_SATISFIED",
+    "SATISFIED",
+    "MOSTLY_SATISFIED",
+    "GOOD",
+    "NEUTRAL",
+    "NOT_SATISFIED",
+    "POOR",
+    "VERY_POOR",
+  ],
+  { message: "Please select a rating option." },
+);
+
+export type FeedbackRating = z.infer<typeof FeedbackRatingEnum>;
+
+/**
+ * Phone number regex validation:
+ * Supports international E.164 format (+251912345678) or local Ethiopian formats (0912345678 / 0712345678).
+ */
+const phoneNumberRegex = /^(\+251|0)?[79]\d{8}$|^(\+\d{1,3})?\d{8,14}$/;
+
+export const FEEDBACK_COMMENT_MAX_LENGTH = 1000;
+
+export const phoneNumberSchema = z
+  .string()
+  .trim()
+  .min(1, "Phone number is required")
+  .refine((val) => phoneNumberRegex.test(val.replace(/[\s-]/g, "")), {
+    message:
+      "Please enter a valid phone number (e.g., 0912345678 or +251912345678)",
+  });
+
+export const feedbackCommentSchema = z
+  .string()
+  .trim()
+  .max(
+    FEEDBACK_COMMENT_MAX_LENGTH,
+    `Comment cannot exceed ${FEEDBACK_COMMENT_MAX_LENGTH} characters`,
+  )
+  .optional();
+
+export const submitFeedbackSchema = z.object({
+  phoneNumber: phoneNumberSchema,
+  branchId: z.string().min(1, "Please select a clinic branch"),
+  serviceId: z.string().min(1, "Please select a service or department"),
+  rating: FeedbackRatingEnum,
+  comment: feedbackCommentSchema,
+});
+
+export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;
+
+export const getServiceByBranchSchema = z.object({
+  branchId: z.string().min(1, "branchId is required"),
+});
+
+export type GetServiceByBranchInput = z.infer<typeof getServiceByBranchSchema>;
