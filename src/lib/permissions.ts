@@ -107,4 +107,3 @@ export function getPermissions(role: string): readonly Permission[] {
 export function hasPermission(role: string, permission: Permission): boolean {
   return getPermissions(role).includes(permission);
 }
-

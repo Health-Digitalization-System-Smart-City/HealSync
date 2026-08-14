@@ -94,7 +94,9 @@ function toTaskData(row: TaskRow): TaskData {
  * Branch options come from the database so task creation always references a
  * real branch.
  */
-export async function getTaskBoardData(): Promise<ActionResponse<TaskBoardData>> {
+export async function getTaskBoardData(): Promise<
+  ActionResponse<TaskBoardData>
+> {
   const auth = await requirePermissionResult(PERMISSIONS.TASK_READ);
   if (!auth.success) return auth;
 
@@ -115,7 +117,10 @@ export async function getTaskBoardData(): Promise<ActionResponse<TaskBoardData>>
     return ok({ tasks: tasks.map(toTaskData), branches });
   } catch (error) {
     console.error("Failed to load task board:", error);
-    return fail("DATABASE_ERROR", "Unable to load tasks. Please try again later.");
+    return fail(
+      "DATABASE_ERROR",
+      "Unable to load tasks. Please try again later.",
+    );
   }
 }
 
@@ -132,9 +137,13 @@ export async function createTask(
 
   const parsed = createTaskSchema.safeParse(input);
   if (!parsed.success) {
-    return fail("VALIDATION_ERROR", "Please check the task details and try again.", {
-      ...parsed.error.flatten().fieldErrors,
-    });
+    return fail(
+      "VALIDATION_ERROR",
+      "Please check the task details and try again.",
+      {
+        ...parsed.error.flatten().fieldErrors,
+      },
+    );
   }
 
   const { title, description, branchId, category, priority, dueDate } =
@@ -169,7 +178,10 @@ export async function createTask(
     return ok(toTaskData(task));
   } catch (error) {
     console.error("Failed to create task:", error);
-    return fail("DATABASE_ERROR", "Unable to create the task. Please try again.");
+    return fail(
+      "DATABASE_ERROR",
+      "Unable to create the task. Please try again.",
+    );
   }
 }
 
@@ -214,6 +226,9 @@ export async function updateTaskStatus(
     return ok(toTaskData(task));
   } catch (error) {
     console.error("Failed to update task:", error);
-    return fail("DATABASE_ERROR", "Unable to update the task. Please try again.");
+    return fail(
+      "DATABASE_ERROR",
+      "Unable to update the task. Please try again.",
+    );
   }
 }

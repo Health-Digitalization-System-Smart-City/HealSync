@@ -78,9 +78,7 @@ export async function requirePermission(permission: Permission) {
  */
 export async function requirePermissionResult(
   permission: Permission,
-): Promise<
-  AuthResult<{ user: AuthUser; permissions: readonly Permission[] }>
-> {
+): Promise<AuthResult<{ user: AuthUser; permissions: readonly Permission[] }>> {
   const authResult = await requireUser();
   if (!authResult.success) return authResult;
 

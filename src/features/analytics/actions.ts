@@ -159,7 +159,6 @@ async function getRelevantFeedbackRows(input?: {
   } catch (err) {
     // Log detailed error server-side for diagnostics and rethrow so callers
     // can return a structured failure response instead of crashing.
-    // eslint-disable-next-line no-console
     console.error("getRelevantFeedbackRows db error:", err);
     throw err;
   }
@@ -275,8 +274,7 @@ export async function getDashboardSummary(): Promise<
         endDate: todayEnd,
       }),
     ]);
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("getDashboardSummary db error:", err);
     return fail("DATABASE_ERROR", "Failed to load analytics summary.");
   }
@@ -327,8 +325,7 @@ export async function getFeedbackTrends(
       startDate: resolvedRange.startDate,
       endDate: resolvedRange.endDate,
     });
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("getFeedbackTrends db error:", err);
     return fail("DATABASE_ERROR", "Failed to load analytics trends.");
   }
@@ -374,8 +371,7 @@ export async function getSatisfactionDistribution(
   }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("getSatisfactionDistribution db error:", err);
     return fail("DATABASE_ERROR", "Failed to load satisfaction distribution.");
   }
@@ -414,8 +410,7 @@ export async function getBranchAnalytics(
   let rows: Array<{ rating: string } & { branchId: string }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("getBranchAnalytics db error:", err);
     return fail("DATABASE_ERROR", "Failed to load branch analytics.");
   }
@@ -467,8 +462,7 @@ export async function getServiceAnalytics(
   let rows: Array<{ rating: string } & { serviceId: string }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("getServiceAnalytics db error:", err);
     return fail("DATABASE_ERROR", "Failed to load service analytics.");
   }
@@ -536,8 +530,7 @@ export async function generateFeedbackInsights(
   }> = [];
   try {
     rows = await getRelevantFeedbackRows(input);
-  } catch (err: any) {
-    // eslint-disable-next-line no-console
+  } catch (err) {
     console.error("generateFeedbackInsights db error:", err);
     return fail(
       "DATABASE_ERROR",

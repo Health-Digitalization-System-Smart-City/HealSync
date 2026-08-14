@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  KeyRound,
-  Mail,
-  ShieldCheck,
-} from "lucide-react";
+import { CheckCircle2, KeyRound, Mail, ShieldCheck } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {

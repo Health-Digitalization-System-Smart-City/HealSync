@@ -58,48 +58,64 @@ export function UserMenu({
     <Menu.Root>
       <Menu.Trigger
         aria-label="Open user menu"
-        className="flex items-center gap-2.5 rounded-full border border-border/80 bg-card p-1 pr-3 text-xs font-semibold text-foreground shadow-2xs transition-all hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring select-none"
+        className="border-border/80 bg-card text-foreground hover:bg-muted/70 focus-visible:ring-ring flex items-center gap-2.5 rounded-full border p-1 pr-3 text-xs font-semibold shadow-2xs transition-all select-none focus-visible:ring-2"
       >
-        <div className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+        <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-xs font-bold">
           {initials(name)}
         </div>
         <div className="hidden flex-col text-left sm:flex">
-          <span className="text-xs font-medium leading-none">{name}</span>
-          <span className="text-[10px] text-muted-foreground capitalize">{role}</span>
+          <span className="text-xs leading-none font-medium">{name}</span>
+          <span className="text-muted-foreground text-[10px] capitalize">
+            {role}
+          </span>
         </div>
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner sideOffset={8} align="end" className="outline-hidden z-50">
-          <Menu.Popup className="relative z-50 min-w-64 origin-[var(--transform-origin)] rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-xl outline-hidden transition-[scale,opacity] duration-150 ease-out data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
+        <Menu.Positioner
+          sideOffset={8}
+          align="end"
+          className="z-50 outline-hidden"
+        >
+          <Menu.Popup className="border-border bg-popover text-popover-foreground relative z-50 min-w-64 origin-[var(--transform-origin)] rounded-xl border p-1.5 shadow-xl outline-hidden transition-[scale,opacity] duration-150 ease-out data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
             {/* User Details */}
-            <div className="flex flex-col gap-1 rounded-lg bg-muted/40 p-2.5">
+            <div className="bg-muted/40 flex flex-col gap-1 rounded-lg p-2.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-sm font-semibold text-foreground">{name}</span>
+                <span className="text-foreground truncate text-sm font-semibold">
+                  {name}
+                </span>
                 <Badge
-                  variant={role === ROLES.ADMIN ? "default" : role === ROLES.MANAGER ? "secondary" : "outline"}
-                  className="text-[10px] uppercase font-bold tracking-wider"
+                  variant={
+                    role === ROLES.ADMIN
+                      ? "default"
+                      : role === ROLES.MANAGER
+                        ? "secondary"
+                        : "outline"
+                  }
+                  className="text-[10px] font-bold tracking-wider uppercase"
                 >
                   {role}
                 </Badge>
               </div>
-              <span className="truncate text-xs text-muted-foreground">{email}</span>
-              <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="text-muted-foreground truncate text-xs">
+                {email}
+              </span>
+              <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-[11px]">
                 <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
                 <span>{permissions.length} server permissions active</span>
               </div>
             </div>
 
-            <Menu.Separator className="my-1.5 h-px bg-border" />
+            <Menu.Separator className="bg-border my-1.5 h-px" />
 
             {/* Profile link */}
             <Menu.Item
               className={menuItemClass}
               render={<Link href="/dashboard/profile" />}
             >
-              <UserRound className="size-4 text-muted-foreground" aria-hidden />
+              <UserRound className="text-muted-foreground size-4" aria-hidden />
               <div className="flex flex-1 items-center justify-between">
                 <span>Profile & Security</span>
-                <ChevronRight className="size-3.5 text-muted-foreground/60" />
+                <ChevronRight className="text-muted-foreground/60 size-3.5" />
               </div>
             </Menu.Item>
 
@@ -108,17 +124,20 @@ export function UserMenu({
               className={menuItemClass}
               render={<Link href="/dashboard" />}
             >
-              <Sparkles className="size-4 text-muted-foreground" aria-hidden />
+              <Sparkles className="text-muted-foreground size-4" aria-hidden />
               <div className="flex flex-1 items-center justify-between">
                 <span>Dashboard Overview</span>
               </div>
             </Menu.Item>
 
-            <Menu.Separator className="my-1.5 h-px bg-border" />
+            <Menu.Separator className="bg-border my-1.5 h-px" />
 
             {/* Sign out */}
             <Menu.Item
-              className={cn(menuItemClass, "text-destructive focus:bg-destructive/10 data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive")}
+              className={cn(
+                menuItemClass,
+                "text-destructive focus:bg-destructive/10 data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive",
+              )}
               onSelect={handleSignOut}
               disabled={pending}
             >

@@ -9,14 +9,14 @@
 // filtered by the user's role (from the server session) — this is a UX
 // convenience only. Every route and Server Action re-checks authorization
 // server-side.
-import { PERMISSIONS, getPermissions, type Permission } from "@/lib/permissions";
+import {
+  PERMISSIONS,
+  getPermissions,
+  type Permission,
+} from "@/lib/permissions";
 
 export type NavSection =
-  | "Core"
-  | "Operations"
-  | "Intelligence"
-  | "Management"
-  | "Account";
+  "Core" | "Operations" | "Intelligence" | "Management" | "Account";
 
 /** Serializable icon key — resolved to a Lucide component in the client sidebar. */
 export type NavIcon =

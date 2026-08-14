@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermissionResult } from "@/lib/auth/session";
 import { PERMISSIONS } from "@/lib/permissions";
 import { apiAuthError, apiErrorResponse } from "@/lib/api/errors";
-import {
-  listFeedbackFromDb,
-  viewerFromUser,
-} from "@/lib/feedback/db";
+import { listFeedbackFromDb, viewerFromUser } from "@/lib/feedback/db";
 import { feedbackListQuerySchema } from "@/lib/validation/feedback";
 
 /**

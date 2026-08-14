@@ -18,10 +18,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   createTask,
   getTaskBoardData,
@@ -205,9 +202,7 @@ export function TasksClient({ userRole }: { userRole: Role }) {
 
         <div
           onClick={() =>
-            setStatusFilter(
-              statusFilter === "completed" ? "all" : "completed",
-            )
+            setStatusFilter(statusFilter === "completed" ? "all" : "completed")
           }
           className={cn(
             "flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all",

@@ -23,11 +23,7 @@ import {
 } from "@/lib/permissions";
 import { forbidden, notFound } from "./errors";
 import { resolveDateRange } from "./ranges";
-import {
-  isNeutralRating,
-  isPositiveRating,
-  RATING_OPTIONS,
-} from "./ratings";
+import { isNeutralRating, isPositiveRating, RATING_OPTIONS } from "./ratings";
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,

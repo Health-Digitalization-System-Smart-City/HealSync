@@ -27,7 +27,12 @@ export async function computeAnalyticsDashboardFromDb(
   query: AnalyticsQuery,
   now: Date = new Date(),
 ): Promise<AnalyticsDashboardData> {
-  const range = resolveDateRange(query.range, query.startDate, query.endDate, now);
+  const range = resolveDateRange(
+    query.range,
+    query.startDate,
+    query.endDate,
+    now,
+  );
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const todayEnd = new Date(
     now.getFullYear(),
@@ -57,7 +62,12 @@ export async function computeAnalyticsDashboardFromDb(
         ...(query.serviceId ? { serviceId: query.serviceId } : {}),
         ...(range ? { createdAt: { gte: range.start, lte: range.end } } : {}),
       },
-      select: { rating: true, createdAt: true, branchId: true, serviceId: true },
+      select: {
+        rating: true,
+        createdAt: true,
+        branchId: true,
+        serviceId: true,
+      },
     }),
     db.feedback.count({
       where: {
@@ -157,7 +167,9 @@ export async function getDashboardOverviewData(
     totalFeedback,
     todayFeedback,
     satisfactionRate:
-      totalFeedback > 0 ? Math.round((positiveFeedback / totalFeedback) * 100) : 0,
+      totalFeedback > 0
+        ? Math.round((positiveFeedback / totalFeedback) * 100)
+        : 0,
     avgRatingScore:
       totalFeedback > 0
         ? Math.round((totalScore / totalFeedback) * 10) / 10
@@ -203,6 +215,9 @@ export type BranchOverview = {
   totalFeedback: number;
   satisfactionRate: number; // 0..100
   avgScore: number; // 0..7 scale
+  positive: number; // satisfied (5–7) submissions
+  neutral: number; // neutral (3–4) submissions
+  negative: number; // needs attention (0–2) submissions
   servicesCount: number;
 };
 
@@ -214,6 +229,9 @@ export type ServiceOverview = {
   totalFeedback: number;
   satisfactionRate: number; // 0..100
   avgScore: number; // 0..7 scale
+  positive: number; // satisfied (5–7) submissions
+  neutral: number; // neutral (3–4) submissions
+  negative: number; // needs attention (0–2) submissions
   branchesCount: number;
 };
 
@@ -229,13 +247,23 @@ function summarize(buckets: RatingBuckets): {
   totalFeedback: number;
   satisfactionRate: number;
   avgScore: number;
+  positive: number;
+  neutral: number;
+  negative: number;
 } {
   return {
     totalFeedback: buckets.total,
     satisfactionRate:
-      buckets.total > 0 ? Math.round((buckets.positive / buckets.total) * 100) : 0,
+      buckets.total > 0
+        ? Math.round((buckets.positive / buckets.total) * 100)
+        : 0,
     avgScore:
-      buckets.total > 0 ? Math.round((buckets.score / buckets.total) * 10) / 10 : 0,
+      buckets.total > 0
+        ? Math.round((buckets.score / buckets.total) * 10) / 10
+        : 0,
+    positive: buckets.positive,
+    neutral: buckets.neutral,
+    negative: buckets.negative,
   };
 }
 
@@ -274,14 +302,13 @@ export async function listBranchesWithAnalytics(): Promise<BranchOverview[]> {
 
   const byBranch = new Map<string, RatingBuckets>();
   for (const group of grouped) {
-    const buckets =
-      byBranch.get(group.branchId) ?? {
-        total: 0,
-        positive: 0,
-        neutral: 0,
-        negative: 0,
-        score: 0,
-      };
+    const buckets = byBranch.get(group.branchId) ?? {
+      total: 0,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+      score: 0,
+    };
     addBucket(buckets, group.rating as FeedbackRating, group._count._all);
     byBranch.set(group.branchId, buckets);
   }
@@ -330,14 +357,13 @@ export async function listServicesWithAnalytics(): Promise<ServiceOverview[]> {
 
   const byService = new Map<string, RatingBuckets>();
   for (const group of grouped) {
-    const buckets =
-      byService.get(group.serviceId) ?? {
-        total: 0,
-        positive: 0,
-        neutral: 0,
-        negative: 0,
-        score: 0,
-      };
+    const buckets = byService.get(group.serviceId) ?? {
+      total: 0,
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+      score: 0,
+    };
     addBucket(buckets, group.rating as FeedbackRating, group._count._all);
     byService.set(group.serviceId, buckets);
   }
@@ -362,4 +388,3 @@ export async function listServicesWithAnalytics(): Promise<ServiceOverview[]> {
     };
   });
 }
-

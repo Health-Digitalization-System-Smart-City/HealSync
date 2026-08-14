@@ -22,19 +22,22 @@ export function DashboardBreadcrumbs() {
   // If on /dashboard exactly
   if (segments.length <= 1) {
     return (
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
         <Home className="size-3.5" aria-hidden />
-        <ChevronRight className="size-3 text-muted-foreground/60" aria-hidden />
-        <span className="font-semibold text-foreground">Overview</span>
+        <ChevronRight className="text-muted-foreground/60 size-3" aria-hidden />
+        <span className="text-foreground font-semibold">Overview</span>
       </div>
     );
   }
 
   return (
-    <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+    <nav
+      aria-label="Breadcrumbs"
+      className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium"
+    >
       <Link
         href="/dashboard"
-        className="flex items-center gap-1 transition-colors hover:text-foreground"
+        className="hover:text-foreground flex items-center gap-1 transition-colors"
       >
         <Home className="size-3.5" aria-hidden />
         <span className="hidden sm:inline">Overview</span>
@@ -47,11 +50,19 @@ export function DashboardBreadcrumbs() {
 
         return (
           <div key={href} className="flex items-center gap-1.5">
-            <ChevronRight className="size-3 text-muted-foreground/60" aria-hidden />
+            <ChevronRight
+              className="text-muted-foreground/60 size-3"
+              aria-hidden
+            />
             {isLast ? (
-              <span className="font-semibold text-foreground capitalize">{label}</span>
+              <span className="text-foreground font-semibold capitalize">
+                {label}
+              </span>
             ) : (
-              <Link href={href} className="transition-colors hover:text-foreground capitalize">
+              <Link
+                href={href}
+                className="hover:text-foreground capitalize transition-colors"
+              >
                 {label}
               </Link>
             )}

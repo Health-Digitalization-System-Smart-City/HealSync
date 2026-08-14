@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  ROLES,
-  PERMISSIONS,
-  isRole,
-  hasPermission,
-} from "@/lib/permissions";
+import { ROLES, PERMISSIONS, isRole, hasPermission } from "@/lib/permissions";
 import { getNavItems } from "@/components/dashboard/nav-config";
 
 describe("RBAC Permissions & Navigation UX", () => {

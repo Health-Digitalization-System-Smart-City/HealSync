@@ -1,72 +1,88 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
 export default function DashboardLoading() {
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-6 p-4 duration-300 sm:p-6">
-      {/* Header Skeleton */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-72" />
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-8 w-28" />
-          <Skeleton className="h-8 w-24" />
+    <div className="space-y-8" role="status" aria-live="polite">
+      <span className="sr-only">Loading dashboard…</span>
+
+      {/* PageIntro skeleton */}
+      <div className="border-border/70 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 space-y-3">
+          <div className="h-6 w-32 animate-pulse rounded-full bg-slate-200" />
+          <div className="h-9 w-64 animate-pulse rounded-md bg-slate-200 sm:h-10" />
+          <div className="h-4 w-full max-w-2xl animate-pulse rounded bg-slate-100" />
         </div>
       </div>
 
-      {/* Greeting banner skeleton */}
-      <Skeleton className="h-24 w-full rounded-xl" />
-
-      {/* 4 Metric Cards Skeletons */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      {/* KPI Metric Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
           <div
             key={i}
-            className="border-border/80 bg-card space-y-3 rounded-xl border p-5"
+            className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm"
           >
             <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="size-5 rounded-full" />
+              <div className="h-3.5 w-24 animate-pulse rounded bg-slate-200" />
+              <div className="size-9 animate-pulse rounded-xl bg-slate-100" />
             </div>
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="h-3 w-36" />
+            <div className="mt-3 h-8 w-20 animate-pulse rounded-md bg-slate-200" />
+            <div className="mt-1 h-3 w-32 animate-pulse rounded bg-slate-100" />
           </div>
         ))}
       </div>
 
-      {/* Charts & Main Content Skeletons */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="border-border/80 bg-card space-y-4 rounded-xl border p-5 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-7 w-28" />
+      {/* Sentiment insight panel */}
+      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="size-11 shrink-0 animate-pulse rounded-xl bg-slate-200" />
+            <div className="min-w-0 space-y-2">
+              <div className="h-3 w-40 animate-pulse rounded bg-slate-100" />
+              <div className="h-5 w-64 animate-pulse rounded bg-slate-200" />
+              <div className="h-3.5 w-full max-w-lg animate-pulse rounded bg-slate-100" />
+            </div>
           </div>
-          <Skeleton className="h-64 w-full rounded-lg" />
-        </div>
-        <div className="border-border/80 bg-card space-y-4 rounded-xl border p-5">
-          <Skeleton className="h-5 w-32" />
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="size-9 rounded-lg" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-3 w-2/3" />
-                </div>
-              </div>
-            ))}
+          <div className="w-full max-w-md shrink-0 rounded-xl border border-white/60 bg-white/70 p-4 shadow-xs">
+            <div className="mb-2.5 h-3 w-28 animate-pulse rounded bg-slate-100" />
+            <div className="h-2.5 w-full animate-pulse rounded-full bg-slate-100" />
+            <div className="mt-2 h-2.5 w-2/3 animate-pulse rounded-full bg-slate-100" />
           </div>
         </div>
       </div>
 
-      {/* Activity Table Skeleton */}
-      <div className="border-border/80 bg-card space-y-3 rounded-xl border p-5">
-        <Skeleton className="h-5 w-36" />
-        <div className="space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full rounded-lg" />
-          ))}
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Recent Patient Feedback feed */}
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div className="h-4 w-44 animate-pulse rounded bg-slate-200" />
+            <div className="h-3.5 w-14 animate-pulse rounded bg-slate-200" />
+          </div>
+          <div className="divide-y divide-slate-100">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="p-4.5">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-slate-200" />
+                <div className="mt-2 h-3 w-48 animate-pulse rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Navigation */}
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div className="h-4 w-36 animate-pulse rounded bg-slate-200" />
+          </div>
+          <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200/80 bg-slate-50/40 p-4"
+              >
+                <div className="size-9 animate-pulse rounded-lg bg-slate-200" />
+                <div className="mt-2.5 h-4 w-32 animate-pulse rounded bg-slate-200" />
+                <div className="mt-1.5 h-3 w-40 animate-pulse rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

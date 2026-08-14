@@ -60,7 +60,10 @@ export function maskPhone(phoneNumber: string): string {
   return `•••• ${digits.slice(-4)}`;
 }
 
-export function shapeFeedback(record: FeedbackRecord, viewer: Viewer): FeedbackView {
+export function shapeFeedback(
+  record: FeedbackRecord,
+  viewer: Viewer,
+): FeedbackView {
   const capabilities = viewerCapabilities(viewer);
   return {
     id: record.id,
