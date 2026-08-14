@@ -41,8 +41,17 @@ model User {
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
+<<<<<<< HEAD
+  // RBAC role. Roles are fixed (Admin / Manager / Analyst) and managed only
+  // through the seed/bootstrap path — never through the dashboard.
+  // Defaults to the least-privilege role. See docs/SECURITY.md §2.
+  role          String    @default("analyst")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+=======
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+>>>>>>> d7f1791ce0ab492099e231d8e60834dae192064e
 
   // Better Auth admin plugin (security.md §9). `role` mirrors Role.name and
   // is kept in sync at provisioning time (createUser, API.md §14); the admin
