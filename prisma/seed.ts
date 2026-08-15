@@ -109,13 +109,14 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   Admin: [...PERMISSIONS],
   Manager: [
     "analytics.read",
+    "analytics.ai",
     "feedback.read",
     "branch.read",
     "service.read",
     "task.read",
     "task.manage",
   ],
-  Analyst: ["analytics.read", "feedback.read", "task.read"],
+  Analyst: ["analytics.read", "analytics.ai", "feedback.read", "task.read"],
 };
 
 /**

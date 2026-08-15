@@ -17,10 +17,12 @@
     "db:setup": "prisma migrate deploy && prisma generate && prisma db seed"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.44",
     "@base-ui/react": "^1.7.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "7.9.1",
     "@tanstack/react-query": "^5.101.4",
+    "ai": "^7.0.66",
     "better-auth": "^1.6.26",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

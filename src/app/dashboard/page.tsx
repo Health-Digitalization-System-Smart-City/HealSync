@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import {
   BarChart3,
@@ -14,6 +15,8 @@ import {
 import { MetricCard } from "@/components/metric-card";
 import { PageIntro } from "@/components/page-intro";
 import { SatisfactionBar } from "@/components/dashboard/satisfaction-bar";
+import { AiInsightsSection } from "@/components/ai-insights/ai-insights-section";
+import { AiInsightsSkeleton } from "@/components/ai-insights/ai-insights-skeleton";
 import { requirePermissionResult } from "@/lib/auth/session";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getRatingLabel } from "@/lib/feedback/ratings";
@@ -178,6 +181,11 @@ export default async function DashboardPage() {
           detail={`out of 7 · ${overview.neutralFeedback} neutral · ${overview.negativeFeedback} needs attention`}
         />
       </div>
+
+      {/* AI Insights — loads independently so it never blocks the stats */}
+      <Suspense fallback={<AiInsightsSkeleton />}>
+        <AiInsightsSection />
+      </Suspense>
 
       {/* Sentiment insight panel */}
       {overview.totalFeedback > 0 && (

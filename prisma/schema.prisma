@@ -289,6 +289,28 @@ model Task {
 }
 
 // ---------------------------------------------------------------------------
+// AI insights (Phase 1 — daily; later phases add weekly/monthly/yearly)
+// ---------------------------------------------------------------------------
+
+// Persisted, validated AI analysis so the dashboard does not call the LLM on
+// every render (API.md §20). `content` holds the validated structured result
+// (DailyAIInsight); raw patient-identifying data is never stored here.
+model AIInsight {
+  id            String   @id @default(cuid())
+  type          String // e.g. "daily" (Phase 1). Later phases extend this value set.
+  periodStart   DateTime
+  periodEnd     DateTime
+  feedbackCount Int
+  content       Json // validated structured AI result
+  model         String? // AI model used to generate the insight
+  generatedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type, periodStart, periodEnd])
+  @@map("ai_insight")
+}
+
+// ---------------------------------------------------------------------------
 // Audit log (database.md §18–§19)
 // ---------------------------------------------------------------------------
 

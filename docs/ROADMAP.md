@@ -65,7 +65,7 @@ Tests    Automated test coverage
 [x]  Better Auth foundation — mounted at /api/auth/*, email+password enabled
 [x]  Better Auth target config — disableSignUp + admin plugin + session hooks configured
 [x]  Landing page + button/badge UI components
-[/]  Server Actions, validation schemas, permission checks — auth/user done; analytics, AI pending
+[x]  Server Actions, validation schemas, permission checks — auth/user done; analytics + AI Insights (Phase 1) done
 [x]  Unit + e2e tests — smoke, feedback, auth/RBAC
 ```
 
@@ -191,9 +191,9 @@ browser to compute statistics (API.md §19, Architecture.md §9).
 
 | # | Task | Type | Depends |
 | - | ---- | ---- | ------- |
-| 7.1 | `[ ]` AI provider abstraction — swappable provider interface + `AI_API_KEY` env (Architecture.md §10, PRD §33 decision 12) | Server | — |
-| 7.2 | `[ ]` `generateFeedbackInsights` — auth → `analytics.ai` → validate scope → fetch feedback **excluding phone numbers** → send minimal data → validate AI response → structured result (API.md §20–21, security.md §20) | Server | 1.3, 6.1 |
-| 7.3 | `[ ]` AI insights UI — clearly labeled "AI Insight" panel (themes, recommendations), never presented as fact, with path back to source feedback (PRD §20.3) | UI | 7.2 |
+| 7.1 | `[x]` AI provider abstraction — swappable provider interface (`src/lib/ai/provider.ts` + `model.ts`) + `AI_PROVIDER` / `AI_MODEL` / `AI_API_KEY` env (Architecture.md §10, PRD §33 decision 12) | Server | — |
+| 7.2 | `[x]` `generateFeedbackInsights` — auth → `analytics.ai` → validate scope → fetch feedback **excluding phone numbers** → send minimal data → validate AI response → structured result, persisted in `AIInsight` (API.md §20–21, security.md §20) | Server | 1.3, 6.1 |
+| 7.3 | `[x]` AI insights UI — clearly labeled "AI Insight" panel (summary, findings, themes, recommendations), never presented as fact, with loading/no-feedback/error states (PRD §20.3) | UI | 7.2 |
 
 ---
 

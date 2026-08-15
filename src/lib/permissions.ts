@@ -28,6 +28,7 @@ export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 export const PERMISSIONS = {
   ANALYTICS_READ: "analytics.read",
+  ANALYTICS_AI: "analytics.ai",
   FEEDBACK_READ: "feedback.read",
   FEEDBACK_UPDATE: "feedback.update",
   FEEDBACK_DELETE: "feedback.delete",
@@ -54,6 +55,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   // Full system access, including raw patient phone numbers.
   [ROLES.ADMIN]: [
     PERMISSIONS.ANALYTICS_READ,
+    PERMISSIONS.ANALYTICS_AI,
     PERMISSIONS.FEEDBACK_READ,
     PERMISSIONS.FEEDBACK_UPDATE,
     PERMISSIONS.FEEDBACK_DELETE,
@@ -77,6 +79,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   // Feedback is strictly read-only (no update / delete / phone — Admin only).
   [ROLES.MANAGER]: [
     PERMISSIONS.ANALYTICS_READ,
+    PERMISSIONS.ANALYTICS_AI,
     PERMISSIONS.FEEDBACK_READ,
     PERMISSIONS.BRANCH_READ,
     PERMISSIONS.SERVICE_READ,
@@ -86,6 +89,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   // Read-only: dashboard + analytics + aggregated feedback + tasks view.
   [ROLES.ANALYST]: [
     PERMISSIONS.ANALYTICS_READ,
+    PERMISSIONS.ANALYTICS_AI,
     PERMISSIONS.FEEDBACK_READ,
     PERMISSIONS.TASK_READ,
   ],

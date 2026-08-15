@@ -5,6 +5,9 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { fail, ok, type ActionResponse } from "@/lib/actions";
 import { requirePermission } from "@/lib/auth/permissions";
+import { AiError } from "@/lib/ai/errors";
+import { dailyInsightsService } from "@/lib/ai-insights/service";
+import type { DailyInsightsResult } from "@/lib/ai-insights/types";
 
 const ratingOrder = [
   "VERY_SATISFIED",
@@ -505,70 +508,52 @@ export async function getServiceAnalytics(
   return ok(analytics.sort((a, b) => b.total - a.total));
 }
 
+const refreshInsightSchema = z.object({
+  refresh: z.boolean().optional().default(false),
+});
+
+/**
+ * Generates (or returns the cached) AI analysis of today's feedback
+ * (ROADMAP 7.2, API.md §20–21).
+ *
+ * Requires `analytics.ai`. Results are persisted in the `AIInsight` table so
+ * the dashboard does not call the LLM on every render; forced refreshes are
+ * throttled by the service's cooldown to protect the AI quota.
+ */
 export async function generateFeedbackInsights(
-  input: {
-    branchId?: string;
-    serviceId?: string;
-    limit?: number;
-  } = {},
-): Promise<
-  ActionResponse<{
-    summary: string;
-    positiveThemes: string[];
-    negativeThemes: string[];
-    recommendations: string[];
-  }>
-> {
+  input: unknown = {},
+): Promise<ActionResponse<DailyInsightsResult>> {
   const authResult = await requirePermission("analytics.ai");
   if (!authResult.success) return authResult;
 
-  let rows: Array<{
-    rating: string;
-    createdAt: Date;
-    branchId: string;
-    serviceId: string;
-  }> = [];
-  try {
-    rows = await getRelevantFeedbackRows(input);
-  } catch (err) {
-    console.error("generateFeedbackInsights db error:", err);
-    return fail(
-      "DATABASE_ERROR",
-      "Failed to generate AI insights due to DB error.",
-    );
+  const parsed = refreshInsightSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("VALIDATION_ERROR", "Invalid AI insights request.");
   }
-  const subset = rows.slice(0, Math.min(input.limit ?? 50, 200));
 
-  const positive = new Set<string>();
-  const negative = new Set<string>();
-
-  for (const row of subset) {
-    const rating = row.rating as string;
-    if (bucketRating(rating) === "satisfied") {
-      positive.add("Patient experience remains broadly positive");
-    }
-    if (bucketRating(rating) === "negative") {
-      negative.add(
-        "Targeted follow-up is recommended for issue-prone touchpoints",
+  try {
+    return ok(
+      await dailyInsightsService.getDailyInsights({
+        refresh: parsed.data.refresh,
+      }),
+    );
+  } catch (error) {
+    // AI is an enhancement, never a dependency: any failure is surfaced as a
+    // graceful error and the rest of the dashboard keeps working.
+    if (error instanceof AiError) {
+      console.error("[ai-insights] generateFeedbackInsights AI error:", error);
+      return fail(
+        "AI_ERROR",
+        "Today's AI analysis is temporarily unavailable. Please try again later.",
       );
     }
+    console.error(
+      "[ai-insights] generateFeedbackInsights unexpected error:",
+      error,
+    );
+    return fail(
+      "INTERNAL_ERROR",
+      "Something went wrong while generating the AI analysis.",
+    );
   }
-
-  const summary =
-    subset.length === 0
-      ? "No recent feedback is available for AI review in the selected scope."
-      : `Across ${subset.length} recent feedback entries, the experience is mostly ${
-          summarizeRows(subset).satisfactionRate >= 60 ? "positive" : "mixed"
-        } with follow-up opportunities in the lower-scoring areas.`;
-
-  return ok({
-    summary,
-    positiveThemes: Array.from(positive),
-    negativeThemes: Array.from(negative),
-    recommendations: [
-      "Review the lowest-scoring branch or service experience in the selected period.",
-      "Look for repeated service delays, communication issues, or front-desk friction in comments.",
-      "Pair trend checks with recent operational changes before making a service response.",
-    ],
-  });
 }
