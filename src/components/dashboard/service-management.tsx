@@ -173,7 +173,11 @@ export function ServicesView({
             No services are configured yet.
           </p>
           {canCreate ? (
-            <Button onClick={openCreate} variant="outline" className="mt-4 gap-1.5">
+            <Button
+              onClick={openCreate}
+              variant="outline"
+              className="mt-4 gap-1.5"
+            >
               <Plus className="size-4" />
               Add your first service
             </Button>
@@ -241,7 +245,9 @@ export function ServicesView({
           <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity" />
           <Dialog.Popup className="border-border bg-card fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
-              <h2 className="text-foreground text-lg font-bold">{dialogTitle}</h2>
+              <h2 className="text-foreground text-lg font-bold">
+                {dialogTitle}
+              </h2>
               <Dialog.Close
                 aria-label="Close dialog"
                 className="text-muted-foreground hover:bg-muted rounded-lg p-1"
@@ -258,7 +264,10 @@ export function ServicesView({
               {dialog?.type === "create" || dialog?.type === "edit" ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="service-name" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="service-name"
+                      className="text-xs font-semibold"
+                    >
                       Service name <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -273,7 +282,10 @@ export function ServicesView({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="service-description" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="service-description"
+                      className="text-xs font-semibold"
+                    >
                       Description
                     </Label>
                     <textarea
@@ -296,7 +308,12 @@ export function ServicesView({
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" size="sm" disabled={isSubmitting} className="gap-1.5">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={isSubmitting}
+                      className="gap-1.5"
+                    >
                       {isSubmitting ? (
                         <>
                           <Loader2 className="size-3.5 animate-spin" />
@@ -313,7 +330,8 @@ export function ServicesView({
                 </form>
               ) : null}
 
-              {dialog?.type === "deactivate" || dialog?.type === "reactivate" ? (
+              {dialog?.type === "deactivate" ||
+              dialog?.type === "reactivate" ? (
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {dialog.type === "deactivate"

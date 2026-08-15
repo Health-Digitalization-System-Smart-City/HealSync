@@ -182,7 +182,10 @@ export function BranchesView({
   }
 
   async function handleSetActive(isActive: boolean) {
-    if (!dialog || (dialog.type !== "deactivate" && dialog.type !== "reactivate")) {
+    if (
+      !dialog ||
+      (dialog.type !== "deactivate" && dialog.type !== "reactivate")
+    ) {
       return;
     }
     setIsSubmitting(true);
@@ -251,7 +254,11 @@ export function BranchesView({
             No branches are configured yet.
           </p>
           {canCreate ? (
-            <Button onClick={openCreate} variant="outline" className="mt-4 gap-1.5">
+            <Button
+              onClick={openCreate}
+              variant="outline"
+              className="mt-4 gap-1.5"
+            >
               <Plus className="size-4" />
               Add your first branch
             </Button>
@@ -329,7 +336,9 @@ export function BranchesView({
           <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity" />
           <Dialog.Popup className="border-border bg-card fixed top-1/2 left-1/2 z-50 max-h-[90vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border p-6 shadow-2xl">
             <div className="border-border flex items-center justify-between border-b pb-4">
-              <h2 className="text-foreground text-lg font-bold">{dialogTitle}</h2>
+              <h2 className="text-foreground text-lg font-bold">
+                {dialogTitle}
+              </h2>
               <Dialog.Close
                 aria-label="Close dialog"
                 className="text-muted-foreground hover:bg-muted rounded-lg p-1"
@@ -345,11 +354,16 @@ export function BranchesView({
 
               {dialog?.type === "create" || dialog?.type === "edit" ? (
                 <form
-                  onSubmit={dialog.type === "create" ? handleCreate : handleEdit}
+                  onSubmit={
+                    dialog.type === "create" ? handleCreate : handleEdit
+                  }
                   className="space-y-4"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="branch-name" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="branch-name"
+                      className="text-xs font-semibold"
+                    >
                       Branch name <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -364,7 +378,10 @@ export function BranchesView({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="branch-code" className="text-xs font-semibold">
+                    <Label
+                      htmlFor="branch-code"
+                      className="text-xs font-semibold"
+                    >
                       Branch code
                     </Label>
                     <Input
@@ -375,7 +392,8 @@ export function BranchesView({
                       error={Boolean(fieldErrors.code?.length)}
                     />
                     <p className="text-muted-foreground text-[11px]">
-                      Optional short identifier shown to patients. Must be unique.
+                      Optional short identifier shown to patients. Must be
+                      unique.
                     </p>
                     <FormAlert messages={fieldErrors.code} compact />
                   </div>
@@ -389,7 +407,12 @@ export function BranchesView({
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" size="sm" disabled={isSubmitting} className="gap-1.5">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={isSubmitting}
+                      className="gap-1.5"
+                    >
                       {isSubmitting ? (
                         <>
                           <Loader2 className="size-3.5 animate-spin" />
@@ -410,13 +433,14 @@ export function BranchesView({
                 <form onSubmit={handleSaveServices} className="space-y-4">
                   <p className="text-muted-foreground text-xs leading-relaxed">
                     Choose which services patients can select for this branch.
-                    Deactivated services can be reactivated from the Services page.
+                    Deactivated services can be reactivated from the Services
+                    page.
                   </p>
 
                   {services.length === 0 ? (
                     <p className="text-muted-foreground rounded-lg border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4 text-center text-xs">
-                      No services exist yet. Create services on the Services page
-                      first, then link them here.
+                      No services exist yet. Create services on the Services
+                      page first, then link them here.
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -490,7 +514,8 @@ export function BranchesView({
                 </form>
               ) : null}
 
-              {dialog?.type === "deactivate" || dialog?.type === "reactivate" ? (
+              {dialog?.type === "deactivate" ||
+              dialog?.type === "reactivate" ? (
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {dialog.type === "deactivate"

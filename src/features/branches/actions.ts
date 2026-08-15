@@ -205,7 +205,9 @@ export async function setBranchActive(
     if (existing.isActive === isActive) {
       return fail(
         "CONFLICT",
-        isActive ? "This branch is already active." : "This branch is already shut down.",
+        isActive
+          ? "This branch is already active."
+          : "This branch is already shut down.",
       );
     }
 

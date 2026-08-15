@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Activity,
-  AlertTriangle,
-  MessageSquare,
-  Smile,
-} from "lucide-react";
+import { Activity, AlertTriangle, MessageSquare, Smile } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { PageIntro } from "@/components/page-intro";
