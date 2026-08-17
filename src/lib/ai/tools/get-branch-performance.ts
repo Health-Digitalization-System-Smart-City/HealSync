@@ -26,8 +26,10 @@ Ranking is computed by the database — do not rank or calculate yourself.`,
     execute: async ({ startDate, endDate }) => {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const { previousStart, previousEnd } =
-        previousPeriodOfEqualLength(start, end);
+      const { previousStart, previousEnd } = previousPeriodOfEqualLength(
+        start,
+        end,
+      );
       const result = await analytics.getBranchPerformance(
         start,
         end,

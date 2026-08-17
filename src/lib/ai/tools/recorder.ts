@@ -24,9 +24,7 @@ export function createToolCallRecorder(): {
 }
 
 /** Deduplicates recorded tool calls, preserving first-seen order. */
-export function dedupeToolRecords(
-  records: ToolCallRecord[],
-): ToolCallRecord[] {
+export function dedupeToolRecords(records: ToolCallRecord[]): ToolCallRecord[] {
   const seen = new Set<string>();
   const out: ToolCallRecord[] = [];
   for (const record of records) {

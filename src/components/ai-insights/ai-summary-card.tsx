@@ -209,9 +209,7 @@ function EmptyOrGenerate({
         <Sparkles className="size-5" aria-hidden />
       </div>
       <div>
-        <h3 className="text-sm font-bold text-slate-900">
-          No AI summary yet
-        </h3>
+        <h3 className="text-sm font-bold text-slate-900">No AI summary yet</h3>
         <p className="mt-1 max-w-xl text-sm leading-relaxed text-slate-600">
           Generate an AI analysis of the feedback in this period — a summary,
           key findings, themes, and recommendations.
@@ -425,9 +423,7 @@ function SummarySkeleton() {
             <h3 className="text-sm font-bold text-slate-900">
               Overall AI Summary
             </h3>
-            <p className="text-[11px] font-medium text-violet-600">
-              Loading…
-            </p>
+            <p className="text-[11px] font-medium text-violet-600">Loading…</p>
           </div>
         </div>
       </div>

@@ -26,15 +26,20 @@ database — do not rank or calculate yourself.`,
     execute: async ({ startDate, endDate }) => {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const { previousStart, previousEnd } =
-        previousPeriodOfEqualLength(start, end);
+      const { previousStart, previousEnd } = previousPeriodOfEqualLength(
+        start,
+        end,
+      );
       const result = await analytics.getServicePerformance(
         start,
         end,
         previousStart,
         previousEnd,
       );
-      record?.("getServicePerformance", "Per-service performance for the period");
+      record?.(
+        "getServicePerformance",
+        "Per-service performance for the period",
+      );
       return result;
     },
   });

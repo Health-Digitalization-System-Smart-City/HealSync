@@ -14,7 +14,8 @@ export function ThemesSection({
   coverage: { analyzedFeedbackCount: number; feedbackCountInPeriod: number };
 }) {
   const max = themes.length > 0 ? themes[0].count : 1;
-  const partial = coverage.analyzedFeedbackCount < coverage.feedbackCountInPeriod;
+  const partial =
+    coverage.analyzedFeedbackCount < coverage.feedbackCountInPeriod;
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -56,7 +57,9 @@ export function ThemesSection({
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-400"
-                    style={{ width: `${Math.max(4, (theme.count / max) * 100)}%` }}
+                    style={{
+                      width: `${Math.max(4, (theme.count / max) * 100)}%`,
+                    }}
                   />
                 </div>
                 <span className="w-16 shrink-0 text-right text-xs font-semibold text-slate-500">

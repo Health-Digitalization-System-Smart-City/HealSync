@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  BarChart3,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { AlertTriangle, BarChart3, Loader2, RefreshCw } from "lucide-react";
 
 import { getAiInsightsPageData } from "@/features/ai-insights/actions";
 import { Button } from "@/components/ui/button";
@@ -200,9 +195,7 @@ export function AiInsightsWorkspace() {
         <aside
           className={cn(
             "order-1 min-w-0 xl:order-2",
-            askOpen
-              ? "xl:sticky xl:top-16 xl:w-95"
-              : "xl:w-12",
+            askOpen ? "xl:sticky xl:top-16 xl:w-95" : "xl:w-12",
           )}
         >
           <AskAiPanel

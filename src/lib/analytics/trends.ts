@@ -13,10 +13,7 @@ import {
   emptyBuckets,
   satisfactionRate,
 } from "./insights-helpers";
-import type {
-  FeedbackTrendItem,
-  TrendGranularity,
-} from "./insights-types";
+import type { FeedbackTrendItem, TrendGranularity } from "./insights-types";
 
 type Row = { rating: FeedbackRating; createdAt: Date };
 
@@ -43,7 +40,12 @@ function isoWeek(date: Date): number {
   const firstThursday = new Date(target.getFullYear(), 0, 4);
   const firstDayNr = (firstThursday.getDay() + 6) % 7;
   firstThursday.setDate(firstThursday.getDate() - firstDayNr + 3);
-  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  return (
+    1 +
+    Math.round(
+      (target.getTime() - firstThursday.getTime()) / (7 * 24 * 60 * 60 * 1000),
+    )
+  );
 }
 
 function bucketLabel(key: string, granularity: TrendGranularity): string {

@@ -28,7 +28,10 @@ present partial themes as complete.`,
       const start = new Date(startDate);
       const end = new Date(endDate);
       const result = await analytics.getFeedbackThemes(start, end);
-      record?.("getFeedbackThemes", "Aggregated feedback themes for the period");
+      record?.(
+        "getFeedbackThemes",
+        "Aggregated feedback themes for the period",
+      );
       return result;
     },
   });

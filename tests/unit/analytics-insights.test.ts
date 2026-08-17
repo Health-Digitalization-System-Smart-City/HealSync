@@ -113,7 +113,9 @@ describe("getBranchPerformance", () => {
         { branchId: "br-a", rating: "SATISFIED", _count: { _all: 2 } },
       ])
       .mockResolvedValueOnce([]);
-    dbMock.branch.findMany.mockResolvedValue([{ id: "br-a", name: "Branch A" }]);
+    dbMock.branch.findMany.mockResolvedValue([
+      { id: "br-a", name: "Branch A" },
+    ]);
 
     const branches = await getBranchPerformance(START, END);
 

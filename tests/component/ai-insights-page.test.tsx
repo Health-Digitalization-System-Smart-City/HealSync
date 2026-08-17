@@ -6,12 +6,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { AiInsightsWorkspace } from "@/components/ai-insights/ai-insights-workspace";
 import { AskAiPanel } from "@/components/ai-insights/ask-ai-panel";
@@ -87,9 +82,21 @@ function makePageData(
         feedbackCountInPeriod: 42,
       },
       comparison: {
-        current: { feedbackCount: 42, averageRating: 4.3, satisfactionRate: 71 },
-        previous: { feedbackCount: 40, averageRating: 4.5, satisfactionRate: 78 },
-        changes: { feedbackCount: 2, averageRating: -0.2, satisfactionRate: -7 },
+        current: {
+          feedbackCount: 42,
+          averageRating: 4.3,
+          satisfactionRate: 71,
+        },
+        previous: {
+          feedbackCount: 40,
+          averageRating: 4.5,
+          satisfactionRate: 78,
+        },
+        changes: {
+          feedbackCount: 2,
+          averageRating: -0.2,
+          satisfactionRate: -7,
+        },
       },
     },
     insight: null,
@@ -178,30 +185,23 @@ describe("AiInsightsWorkspace", () => {
 
     renderWorkspace();
 
-    expect(
-      await screen.findByText(/Could not load analytics/i),
-    ).toBeTruthy();
+    expect(await screen.findByText(/Could not load analytics/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /Retry/i })).toBeTruthy();
   });
 });
 
 describe("AskAiPanel", () => {
   it("renders the question input and disables submit when empty", () => {
-    render(
-      <AskAiPanel
-        period={{ value: "today" }}
-        periodLabel="Today"
-      />,
-    );
+    render(<AskAiPanel period={{ value: "today" }} periodLabel="Today" />);
 
-    expect(
-      screen.getByLabelText("Ask AI a question"),
-    ).toBeTruthy();
+    expect(screen.getByLabelText("Ask AI a question")).toBeTruthy();
     const askButton = screen.getByRole("button", { name: /Ask$/i });
     expect((askButton as HTMLButtonElement).disabled).toBe(true);
     // Suggested questions are rendered.
     expect(
-      screen.getByRole("button", { name: /Which branch needs the most attention/i }),
+      screen.getByRole("button", {
+        name: /Which branch needs the most attention/i,
+      }),
     ).toBeTruthy();
   });
 
@@ -239,10 +239,7 @@ describe("AskAiPanel", () => {
     });
 
     render(
-      <AskAiPanel
-        period={{ value: "30_days" }}
-        periodLabel="Last 30 Days"
-      />,
+      <AskAiPanel period={{ value: "30_days" }} periodLabel="Last 30 Days" />,
     );
 
     const input = screen.getByLabelText("Ask AI a question");

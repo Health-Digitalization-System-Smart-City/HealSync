@@ -12,10 +12,7 @@ import {
   emptyBuckets,
   satisfactionRate,
 } from "./insights-helpers";
-import type {
-  BranchPerformanceItem,
-  RatingBuckets,
-} from "./insights-types";
+import type { BranchPerformanceItem, RatingBuckets } from "./insights-types";
 
 type GroupRow = {
   branchId: string;

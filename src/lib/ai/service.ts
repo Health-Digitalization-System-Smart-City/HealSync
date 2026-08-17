@@ -68,7 +68,9 @@ export async function defaultGenerateStructured(
   const kind = options.kind ?? "daily";
   const schema = options.schema ?? dailyAIInsightSchema;
   const promptVersion =
-    kind === "daily" ? DAILY_ANALYSIS_PROMPT_VERSION : CLINIC_INSIGHTS_PROMPT_VERSION;
+    kind === "daily"
+      ? DAILY_ANALYSIS_PROMPT_VERSION
+      : CLINIC_INSIGHTS_PROMPT_VERSION;
 
   try {
     const result = await generateText({
@@ -150,7 +152,8 @@ export async function analyzePeriodFeedback(
     prompt,
     generate,
     schema: periodAIInsightSchema,
-    errorContext: "AI period output failed schema validation — result discarded",
+    errorContext:
+      "AI period output failed schema validation — result discarded",
   });
 
   return raw as PeriodAIInsight;

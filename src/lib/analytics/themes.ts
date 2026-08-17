@@ -13,7 +13,10 @@ import { db } from "@/lib/db";
 import { AI_INSIGHT_TYPE_DAILY } from "@/lib/ai-insights/db";
 import type { DailyAIInsightResult } from "@/lib/ai/schema";
 import { percentageOf } from "./insights-helpers";
-import type { FeedbackThemesResult, ThemeAggregateItem } from "./insights-types";
+import type {
+  FeedbackThemesResult,
+  ThemeAggregateItem,
+} from "./insights-types";
 
 /** Normalizes a theme name so similar concepts collapse (e.g. "Waiting Time" == "waiting time"). */
 function normalizeThemeName(name: string): string {

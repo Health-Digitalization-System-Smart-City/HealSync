@@ -116,9 +116,7 @@ describe("tool input schemas", () => {
     expect(
       dateTimeStringSchema.safeParse("2026-08-01T00:00:00.000Z").success,
     ).toBe(true);
-    expect(
-      dateTimeStringSchema.safeParse("2026-08-01").success,
-    ).toBe(true);
+    expect(dateTimeStringSchema.safeParse("2026-08-01").success).toBe(true);
   });
 
   it("rejects non-date strings", () => {
@@ -133,9 +131,7 @@ describe("tool input schemas", () => {
         endDate: "2026-08-15T00:00:00.000Z",
       }).success,
     ).toBe(false);
-    expect(
-      dateRangeSchema.safeParse({}).success,
-    ).toBe(false);
+    expect(dateRangeSchema.safeParse({}).success).toBe(false);
   });
 
   it("caps the negative-feedback sample limit at 20", () => {
@@ -155,13 +151,12 @@ describe("tool execution", () => {
     const analytics = makeAnalytics();
     const tools = createInsightTools(analytics);
 
-    const tool =
-      tools.getClinicSummary as unknown as {
-        execute: (args: {
-          startDate: string;
-          endDate: string;
-        }) => Promise<ClinicSummary>;
-      };
+    const tool = tools.getClinicSummary as unknown as {
+      execute: (args: {
+        startDate: string;
+        endDate: string;
+      }) => Promise<ClinicSummary>;
+    };
     const result = await tool.execute({
       startDate: "2026-08-01T00:00:00.000Z",
       endDate: "2026-08-15T23:59:59.999Z",
@@ -178,20 +173,20 @@ describe("tool execution", () => {
     const analytics = makeAnalytics();
     const tools = createInsightTools(analytics);
 
-    const tool =
-      tools.getBranchPerformance as unknown as {
-        execute: (args: {
-          startDate: string;
-          endDate: string;
-        }) => Promise<BranchPerformanceItem[]>;
-      };
+    const tool = tools.getBranchPerformance as unknown as {
+      execute: (args: {
+        startDate: string;
+        endDate: string;
+      }) => Promise<BranchPerformanceItem[]>;
+    };
     await tool.execute({
       startDate: "2026-08-08T00:00:00.000Z",
       endDate: "2026-08-15T23:59:59.999Z",
     });
 
-    const [start, end, previousStart, previousEnd] =
-      vi.mocked(analytics.getBranchPerformance).mock.calls[0];
+    const [start, end, previousStart, previousEnd] = vi.mocked(
+      analytics.getBranchPerformance,
+    ).mock.calls[0];
     expect(start).toBeInstanceOf(Date);
     expect(end).toBeInstanceOf(Date);
     // Previous period is the equal-length window immediately before.
@@ -207,14 +202,13 @@ describe("tool execution", () => {
     const analytics = makeAnalytics();
     const tools = createInsightTools(analytics);
 
-    const tool =
-      tools.getNegativeFeedback as unknown as {
-        execute: (args: {
-          startDate: string;
-          endDate: string;
-          limit?: number;
-        }) => Promise<unknown[]>;
-      };
+    const tool = tools.getNegativeFeedback as unknown as {
+      execute: (args: {
+        startDate: string;
+        endDate: string;
+        limit?: number;
+      }) => Promise<unknown[]>;
+    };
     await tool.execute({
       startDate: "2026-08-01T00:00:00.000Z",
       endDate: "2026-08-15T23:59:59.999Z",
@@ -290,7 +284,10 @@ describe("tool call recorder", () => {
 
     await (
       tools.getClinicSummary as unknown as {
-        execute: (a: { startDate: string; endDate: string }) => Promise<unknown>;
+        execute: (a: {
+          startDate: string;
+          endDate: string;
+        }) => Promise<unknown>;
       }
     ).execute({
       startDate: "2026-08-01T00:00:00.000Z",

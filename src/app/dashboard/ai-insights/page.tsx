@@ -29,8 +29,8 @@ export default async function AiInsightsPage() {
         <div className="space-y-1">
           <h1 className="text-xl font-semibold">Access denied</h1>
           <p className="text-muted-foreground max-w-sm text-sm">
-            Your role does not have permission to view AI Insights. This
-            feature is available to Admin, Manager, and Analyst roles.
+            Your role does not have permission to view AI Insights. This feature
+            is available to Admin, Manager, and Analyst roles.
           </p>
         </div>
       </div>
@@ -41,10 +41,7 @@ export default async function AiInsightsPage() {
     <div className="space-y-8">
       <PageIntro
         eyebrow={
-          <Badge
-            variant="secondary"
-            className="w-fit gap-2 px-3 py-1"
-          >
+          <Badge variant="secondary" className="w-fit gap-2 px-3 py-1">
             <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-hidden />
             Intelligence
           </Badge>

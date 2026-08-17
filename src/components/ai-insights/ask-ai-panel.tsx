@@ -130,8 +130,7 @@ export function AskAiPanel({
   }, [prefill, open, onToggle, submitQuestion]);
 
   const ask = (text: string) => submitQuestion(text);
-  const canSubmit =
-    question.trim().length > 0 && !isPending && ready;
+  const canSubmit = question.trim().length > 0 && !isPending && ready;
 
   // Collapsed: a compact, always-visible rail inviting the user to expand.
   if (!open) {
@@ -152,7 +151,7 @@ export function AskAiPanel({
               <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
             </span>
           </span>
-          <span className="text-xs font-bold tracking-widest uppercase xl:[writing-mode:vertical-rl] xl:text-[11px] xl:tracking-[0.2em]">
+          <span className="text-xs font-bold tracking-widest uppercase xl:text-[11px] xl:tracking-[0.2em] xl:[writing-mode:vertical-rl]">
             Ask AI
           </span>
         </span>
@@ -288,7 +287,10 @@ export function AskAiPanel({
                 >
                   {isPending ? (
                     <>
-                      <Sparkles className="size-3.5 animate-pulse" aria-hidden />
+                      <Sparkles
+                        className="size-3.5 animate-pulse"
+                        aria-hidden
+                      />
                       Analyzing…
                     </>
                   ) : (
@@ -304,7 +306,10 @@ export function AskAiPanel({
             {/* Error */}
             {error ? (
               <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                <AlertTriangle
+                  className="mt-0.5 size-3.5 shrink-0"
+                  aria-hidden
+                />
                 <span>{error}</span>
               </div>
             ) : null}
@@ -332,17 +337,26 @@ function AnswerView({ result }: { result: AiAssistantResult }) {
             >
               {point.type === "positive" ? (
                 <CheckCircle2
-                  className={cn("mt-0.5 size-3.5 shrink-0", POINT_TONES.positive)}
+                  className={cn(
+                    "mt-0.5 size-3.5 shrink-0",
+                    POINT_TONES.positive,
+                  )}
                   aria-hidden
                 />
               ) : point.type === "negative" ? (
                 <AlertTriangle
-                  className={cn("mt-0.5 size-3.5 shrink-0", POINT_TONES.negative)}
+                  className={cn(
+                    "mt-0.5 size-3.5 shrink-0",
+                    POINT_TONES.negative,
+                  )}
                   aria-hidden
                 />
               ) : (
                 <Info
-                  className={cn("mt-0.5 size-3.5 shrink-0", POINT_TONES.neutral)}
+                  className={cn(
+                    "mt-0.5 size-3.5 shrink-0",
+                    POINT_TONES.neutral,
+                  )}
                   aria-hidden
                 />
               )}

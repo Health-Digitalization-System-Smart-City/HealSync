@@ -107,10 +107,10 @@ export function BranchPerformanceTable({
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] tracking-wider text-slate-400 uppercase">
-                <th className="pb-2 pr-3 font-semibold">Branch</th>
-                <th className="pb-2 pr-3 font-semibold">Feedback</th>
-                <th className="pb-2 pr-3 font-semibold">Avg Rating</th>
-                <th className="pb-2 pr-3 font-semibold">Satisfaction</th>
+                <th className="pr-3 pb-2 font-semibold">Branch</th>
+                <th className="pr-3 pb-2 font-semibold">Feedback</th>
+                <th className="pr-3 pb-2 font-semibold">Avg Rating</th>
+                <th className="pr-3 pb-2 font-semibold">Satisfaction</th>
                 <th className="pb-2 font-semibold">vs Previous</th>
               </tr>
             </thead>
@@ -130,9 +130,7 @@ export function BranchPerformanceTable({
                     <RatingBar satisfactionRate={branch.satisfactionRate} />
                   </td>
                   <td className="py-2.5">
-                    <ChangeBadge
-                      change={branch.changeFromPreviousPeriod}
-                    />
+                    <ChangeBadge change={branch.changeFromPreviousPeriod} />
                   </td>
                 </tr>
               ))}
@@ -162,10 +160,10 @@ export function ServicePerformanceTable({
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] tracking-wider text-slate-400 uppercase">
-                <th className="pb-2 pr-3 font-semibold">Service</th>
-                <th className="pb-2 pr-3 font-semibold">Feedback</th>
-                <th className="pb-2 pr-3 font-semibold">Avg Rating</th>
-                <th className="pb-2 pr-3 font-semibold">Satisfaction</th>
+                <th className="pr-3 pb-2 font-semibold">Service</th>
+                <th className="pr-3 pb-2 font-semibold">Feedback</th>
+                <th className="pr-3 pb-2 font-semibold">Avg Rating</th>
+                <th className="pr-3 pb-2 font-semibold">Satisfaction</th>
                 <th className="pb-2 font-semibold">vs Previous</th>
               </tr>
             </thead>

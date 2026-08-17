@@ -43,8 +43,7 @@ export async function comparePeriods(
       feedbackCount: current.feedbackCount - previous.feedbackCount,
       averageRating:
         Math.round((current.averageRating - previous.averageRating) * 10) / 10,
-      satisfactionRate:
-        current.satisfactionRate - previous.satisfactionRate,
+      satisfactionRate: current.satisfactionRate - previous.satisfactionRate,
     },
   };
 }

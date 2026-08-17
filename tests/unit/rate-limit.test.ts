@@ -56,9 +56,9 @@ describe("config helpers", () => {
   });
 
   it("ignores invalid environment values", () => {
-    expect(getAskAiRateLimit({ AI_ASK_MAX_REQUESTS_PER_MINUTE: "abc" }).max).toBe(
-      10,
-    );
+    expect(
+      getAskAiRateLimit({ AI_ASK_MAX_REQUESTS_PER_MINUTE: "abc" }).max,
+    ).toBe(10);
     expect(getAskAiMaxLength({ AI_ASK_MAX_LENGTH: "-5" })).toBe(500);
   });
 });

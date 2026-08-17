@@ -27,7 +27,10 @@ export type AiInsightsPageAnalytics = {
   branches: BranchPerformanceItem[];
   services: ServicePerformanceItem[];
   themes: ThemeAggregateItem[];
-  themesCoverage: { analyzedFeedbackCount: number; feedbackCountInPeriod: number };
+  themesCoverage: {
+    analyzedFeedbackCount: number;
+    feedbackCountInPeriod: number;
+  };
   comparison: PeriodComparison;
 };
 
@@ -62,36 +65,30 @@ function decodeCached(
 export async function buildAiInsightsPageData(
   range: ResolvedPeriod,
 ): Promise<AiInsightsPageData> {
-  const [
-    summary,
-    branches,
-    services,
-    themes,
-    comparison,
-    cached,
-  ] = await Promise.all([
-    getClinicSummary(range.start, range.end),
-    getBranchPerformance(
-      range.start,
-      range.end,
-      range.previousStart,
-      range.previousEnd,
-    ),
-    getServicePerformance(
-      range.start,
-      range.end,
-      range.previousStart,
-      range.previousEnd,
-    ),
-    getFeedbackThemes(range.start, range.end),
-    comparePeriods({
-      currentStart: range.start,
-      currentEnd: range.end,
-      previousStart: range.previousStart,
-      previousEnd: range.previousEnd,
-    }),
-    findCachedInsight(AI_INSIGHT_TYPE_PERIOD, range.start, range.end),
-  ]);
+  const [summary, branches, services, themes, comparison, cached] =
+    await Promise.all([
+      getClinicSummary(range.start, range.end),
+      getBranchPerformance(
+        range.start,
+        range.end,
+        range.previousStart,
+        range.previousEnd,
+      ),
+      getServicePerformance(
+        range.start,
+        range.end,
+        range.previousStart,
+        range.previousEnd,
+      ),
+      getFeedbackThemes(range.start, range.end),
+      comparePeriods({
+        currentStart: range.start,
+        currentEnd: range.end,
+        previousStart: range.previousStart,
+        previousEnd: range.previousEnd,
+      }),
+      findCachedInsight(AI_INSIGHT_TYPE_PERIOD, range.start, range.end),
+    ]);
 
   const insight = decodeCached(cached);
 

@@ -27,7 +27,9 @@ function changePasswordErrorMessage(error: {
     case "CREDENTIAL_ACCOUNT_NOT_FOUND":
       return "No password is set for this account. Contact your administrator.";
     default:
-      return error.message ?? "Unable to change your password. Please try again.";
+      return (
+        error.message ?? "Unable to change your password. Please try again."
+      );
   }
 }
 
@@ -121,17 +123,23 @@ export function ChangePasswordForm() {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             disabled={isSubmitting}
-            className="h-11 pl-9 pr-10"
+            className="h-11 pr-10 pl-9"
             required
           />
           <button
             type="button"
             onClick={() => setShowCurrent((v) => !v)}
-            aria-label={showCurrent ? "Hide current password" : "Show current password"}
+            aria-label={
+              showCurrent ? "Hide current password" : "Show current password"
+            }
             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-slate-600"
             tabIndex={-1}
           >
-            {showCurrent ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {showCurrent ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
           </button>
         </div>
       </div>
@@ -147,7 +155,7 @@ export function ChangePasswordForm() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             disabled={isSubmitting}
-            className="h-11 pl-9 pr-10"
+            className="h-11 pr-10 pl-9"
             minLength={MIN_PASSWORD_LENGTH}
             required
           />
@@ -158,7 +166,11 @@ export function ChangePasswordForm() {
             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-slate-600"
             tabIndex={-1}
           >
-            {showNew ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {showNew ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
           </button>
         </div>
         <p className="text-xs text-slate-500">
@@ -177,17 +189,23 @@ export function ChangePasswordForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={isSubmitting}
-            className="h-11 pl-9 pr-10"
+            className="h-11 pr-10 pl-9"
             required
           />
           <button
             type="button"
             onClick={() => setShowConfirm((v) => !v)}
-            aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+            aria-label={
+              showConfirm ? "Hide confirm password" : "Show confirm password"
+            }
             className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-slate-600"
             tabIndex={-1}
           >
-            {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {showConfirm ? (
+              <EyeOff className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
           </button>
         </div>
       </div>

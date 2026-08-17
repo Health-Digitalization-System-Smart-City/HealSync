@@ -1,4 +1,10 @@
-import { AlertTriangle, ArrowRight, CheckCircle2, Info, Sparkles } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Info,
+  Sparkles,
+} from "lucide-react";
 
 import type { AiInsightsPageData } from "@/lib/ai-insights/page-data";
 import { cn } from "@/lib/utils";
@@ -73,9 +79,7 @@ export function buildSpotlightItems(data: AiInsightsPageData): SpotlightItem[] {
 
   const worstService =
     services.length > 0
-      ? [...services].sort(
-          (a, b) => a.satisfactionRate - b.satisfactionRate,
-        )[0]
+      ? [...services].sort((a, b) => a.satisfactionRate - b.satisfactionRate)[0]
       : undefined;
   if (worstService && worstService.satisfactionRate < 60) {
     items.push({

@@ -20,11 +20,7 @@ import {
   type InsightPeriodInput,
   type ResolvedPeriod,
 } from "@/lib/analytics/periods";
-import {
-  findCachedInsight,
-  upsertInsight,
-  type StoredAIInsight,
-} from "./db";
+import { findCachedInsight, upsertInsight, type StoredAIInsight } from "./db";
 import { getRefreshCooldownMs } from "./service";
 import { collectPeriodData } from "./period-db";
 import type { PeriodAnalysisInput } from "./types";
@@ -152,8 +148,7 @@ function decodeCached(stored: StoredAIInsight): PeriodAIInsightResult | null {
     return null;
   }
   const metadata = stored.content.metadata as
-    | PeriodAIInsightResult["metadata"]
-    | undefined;
+    PeriodAIInsightResult["metadata"] | undefined;
   return {
     ...parsed.data,
     metadata:

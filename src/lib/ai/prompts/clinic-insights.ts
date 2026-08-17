@@ -92,9 +92,7 @@ Required output schema:
   ]
 }`;
 
-function formatBranches(
-  rows: PeriodAnalysisInput["branches"],
-): string {
+function formatBranches(rows: PeriodAnalysisInput["branches"]): string {
   if (rows.length === 0) return "(no branch feedback in this period)";
   return rows
     .map(
@@ -104,9 +102,7 @@ function formatBranches(
     .join("\n");
 }
 
-function formatServices(
-  rows: PeriodAnalysisInput["services"],
-): string {
+function formatServices(rows: PeriodAnalysisInput["services"]): string {
   if (rows.length === 0) return "(no service feedback in this period)";
   return rows
     .map(

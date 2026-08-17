@@ -15,7 +15,9 @@ export function getAskAiRateLimit(
 ): { windowMs: number; max: number } {
   const raw = Number(env.AI_ASK_MAX_REQUESTS_PER_MINUTE);
   const max =
-    Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : DEFAULT_ASK_AI_MAX_REQUESTS;
+    Number.isFinite(raw) && raw > 0
+      ? Math.floor(raw)
+      : DEFAULT_ASK_AI_MAX_REQUESTS;
   return { windowMs: DEFAULT_ASK_AI_WINDOW_MS, max };
 }
 
@@ -50,9 +52,7 @@ export function createSlidingWindowLimiter(
     allow(key: string): boolean {
       const current = now();
       const windowStart = current - windowMs;
-      const timestamps = (hits.get(key) ?? []).filter(
-        (ts) => ts > windowStart,
-      );
+      const timestamps = (hits.get(key) ?? []).filter((ts) => ts > windowStart);
 
       if (timestamps.length >= max) {
         hits.set(key, timestamps);

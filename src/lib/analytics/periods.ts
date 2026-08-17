@@ -144,8 +144,12 @@ export function resolveInsightPeriod(
       break;
     }
     case "custom": {
-      const customStart = input.startDate ? parseDateOnly(input.startDate) : undefined;
-      const customEnd = input.endDate ? parseDateOnly(input.endDate) : undefined;
+      const customStart = input.startDate
+        ? parseDateOnly(input.startDate)
+        : undefined;
+      const customEnd = input.endDate
+        ? parseDateOnly(input.endDate)
+        : undefined;
       if (!customStart || !customEnd) {
         throw validationError(
           "A custom range requires both a start and an end date.",
@@ -160,7 +164,10 @@ export function resolveInsightPeriod(
     }
   }
 
-  const { previousStart, previousEnd } = previousPeriodOfEqualLength(start, end);
+  const { previousStart, previousEnd } = previousPeriodOfEqualLength(
+    start,
+    end,
+  );
 
   const label =
     period === "custom" ? formatRange(start, end) : PERIOD_LABELS[period];

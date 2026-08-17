@@ -5,10 +5,7 @@ import { z } from "zod";
 import { fail, ok, type ActionResponse } from "@/lib/actions";
 import { requirePermission } from "@/lib/auth/permissions";
 import { AiError } from "@/lib/ai/errors";
-import {
-  askAiRateLimiter,
-  getAskAiMaxLength,
-} from "@/lib/ai/rate-limit";
+import { askAiRateLimiter, getAskAiMaxLength } from "@/lib/ai/rate-limit";
 import { askAiInsightsQuestion } from "@/lib/ai/assistant";
 import type { AiAssistantResult } from "@/lib/ai/schema";
 import { productionAnalyticsPort } from "@/lib/ai/tools";
@@ -20,10 +17,7 @@ import {
   buildAiInsightsPageData,
   type AiInsightsPageData,
 } from "@/lib/ai-insights/page-data";
-import {
-  INSIGHT_PERIODS,
-  resolveInsightPeriod,
-} from "@/lib/analytics/periods";
+import { INSIGHT_PERIODS, resolveInsightPeriod } from "@/lib/analytics/periods";
 
 const periodInputSchema = z.object({
   period: z.enum(INSIGHT_PERIODS),

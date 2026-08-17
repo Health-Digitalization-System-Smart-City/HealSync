@@ -6,10 +6,7 @@
 
 import { db } from "@/lib/db";
 import type { FeedbackRating } from "@/lib/feedback/types";
-import {
-  aggregateRatingGroups,
-  summarizeClinic,
-} from "./insights-helpers";
+import { aggregateRatingGroups, summarizeClinic } from "./insights-helpers";
 import type { ClinicSummary } from "./insights-types";
 
 type RatingGroupRow = { rating: FeedbackRating; _count: { _all: number } };

@@ -88,9 +88,7 @@ describe("resolveInsightPeriod", () => {
   });
 
   it("rejects malformed dates", () => {
-    expect(() => parseDateOnly("08/01/2026")).toThrow(
-      /YYYY-MM-DD/,
-    );
+    expect(() => parseDateOnly("08/01/2026")).toThrow(/YYYY-MM-DD/);
     expect(() => parseDateOnly("2026-13-01")).toThrow(/YYYY-MM-DD/);
   });
 });

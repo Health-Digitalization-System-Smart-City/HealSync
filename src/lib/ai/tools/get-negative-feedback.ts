@@ -20,9 +20,11 @@ import type { ToolCallRecorder } from "./recorder";
 const negativeFeedbackInputSchema = dateRangeSchema
   .merge(optionalFiltersSchema)
   .extend({
-    limit: sampleLimitSchema.optional().describe(
-      "Maximum number of feedback items to return (1-20, default 10).",
-    ),
+    limit: sampleLimitSchema
+      .optional()
+      .describe(
+        "Maximum number of feedback items to return (1-20, default 10).",
+      ),
   });
 
 export function createGetNegativeFeedbackTool(

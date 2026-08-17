@@ -42,7 +42,9 @@ describe("ProfileClient", () => {
         content.includes("assigned by your administrator"),
       ),
     ).toBeTruthy();
-    expect(screen.getByText(/password is the only detail you can update/i)).toBeTruthy();
+    expect(
+      screen.getByText(/password is the only detail you can update/i),
+    ).toBeTruthy();
   });
 
   it("shows the self-service change-password card and security scope", () => {
@@ -56,9 +58,7 @@ describe("ProfileClient", () => {
   it("groups granted permissions into human-readable domains", () => {
     render(<ProfileClient {...ADMIN_PROPS} />);
 
-    expect(
-      screen.getByText(/What you are allowed to do/),
-    ).toBeTruthy();
+    expect(screen.getByText(/What you are allowed to do/)).toBeTruthy();
     expect(screen.getByText("Analytics & AI")).toBeTruthy();
     expect(screen.getByText("View analytics")).toBeTruthy();
     expect(screen.getByText("AI insights")).toBeTruthy();
@@ -161,8 +161,6 @@ describe("ChangePasswordForm", () => {
     expect(
       await screen.findByText(/your current password is incorrect/i),
     ).toBeTruthy();
-    expect(
-      screen.queryByText(/your password has been updated/i),
-    ).toBeNull();
+    expect(screen.queryByText(/your password has been updated/i)).toBeNull();
   });
 });

@@ -78,7 +78,7 @@ export function PeriodSelector({
                 onChange({ ...value, startDate: e.target.value })
               }
               disabled={disabled}
-              className="h-9.5 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-xs transition focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-9.5 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-xs transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-60"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -89,11 +89,9 @@ export function PeriodSelector({
             <input
               type="date"
               value={value.endDate}
-              onChange={(e) =>
-                onChange({ ...value, endDate: e.target.value })
-              }
+              onChange={(e) => onChange({ ...value, endDate: e.target.value })}
               disabled={disabled}
-              className="h-9.5 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-xs transition focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-9.5 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-xs transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-60"
             />
           </label>
         </div>

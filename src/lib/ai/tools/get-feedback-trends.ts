@@ -30,11 +30,7 @@ satisfaction decline near the end of the period?"). Aggregation is deterministic
     execute: async ({ startDate, endDate, granularity }) => {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const result = await analytics.getFeedbackTrends(
-        start,
-        end,
-        granularity,
-      );
+      const result = await analytics.getFeedbackTrends(start, end, granularity);
       record?.(
         "getFeedbackTrends",
         `Feedback trends (${granularity}) for the period`,

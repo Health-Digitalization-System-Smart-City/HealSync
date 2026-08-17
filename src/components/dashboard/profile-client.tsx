@@ -253,8 +253,8 @@ export function ProfileClient({
               <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
               <p>
                 Server-side authorization is enforced on every request — your
-                granted permissions below are verified independently, never
-                just hidden in the UI.
+                granted permissions below are verified independently, never just
+                hidden in the UI.
               </p>
             </div>
           </CardContent>

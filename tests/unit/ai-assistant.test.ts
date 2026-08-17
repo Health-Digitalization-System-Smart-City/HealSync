@@ -5,10 +5,7 @@ import {
   type AssistantGenerateFn,
   type AssistantQuestionInput,
 } from "@/lib/ai/assistant";
-import {
-  AiProviderError,
-  AiValidationError,
-} from "@/lib/ai/errors";
+import { AiProviderError, AiValidationError } from "@/lib/ai/errors";
 import {
   AI_ASSISTANT_SYSTEM_PROMPT,
   buildAssistantUserPrompt,
@@ -33,7 +30,8 @@ const VALID_ANSWER = {
   keyPoints: [
     {
       title: "Branch 2",
-      explanation: "Satisfaction rate of 40%, down 8 points vs the previous period.",
+      explanation:
+        "Satisfaction rate of 40%, down 8 points vs the previous period.",
       type: "negative" as const,
     },
   ],
@@ -82,11 +80,14 @@ function makeAnalytics(overrides: Partial<AnalyticsPort> = {}): AnalyticsPort {
   };
 }
 
-function makeGenerate(result: unknown, capture?: (input: {
-  system: string;
-  prompt: string;
-  tools: ReturnType<typeof createInsightTools>;
-}) => void): AssistantGenerateFn {
+function makeGenerate(
+  result: unknown,
+  capture?: (input: {
+    system: string;
+    prompt: string;
+    tools: ReturnType<typeof createInsightTools>;
+  }) => void,
+): AssistantGenerateFn {
   return async (input) => {
     capture?.(input);
     return { object: result };
@@ -185,7 +186,10 @@ describe("askAiInsightsQuestion", () => {
     const generate = makeGenerate({});
 
     await expect(
-      askAiInsightsQuestion(QUESTION_INPUT, { analytics: makeAnalytics(), generate }),
+      askAiInsightsQuestion(QUESTION_INPUT, {
+        analytics: makeAnalytics(),
+        generate,
+      }),
     ).rejects.toThrow(AiValidationError);
   });
 
@@ -196,7 +200,10 @@ describe("askAiInsightsQuestion", () => {
     });
 
     await expect(
-      askAiInsightsQuestion(QUESTION_INPUT, { analytics: makeAnalytics(), generate }),
+      askAiInsightsQuestion(QUESTION_INPUT, {
+        analytics: makeAnalytics(),
+        generate,
+      }),
     ).rejects.toThrow(AiValidationError);
   });
 
@@ -206,7 +213,10 @@ describe("askAiInsightsQuestion", () => {
     };
 
     await expect(
-      askAiInsightsQuestion(QUESTION_INPUT, { analytics: makeAnalytics(), generate }),
+      askAiInsightsQuestion(QUESTION_INPUT, {
+        analytics: makeAnalytics(),
+        generate,
+      }),
     ).rejects.toThrow(AiProviderError);
   });
 
@@ -216,7 +226,10 @@ describe("askAiInsightsQuestion", () => {
     };
 
     await expect(
-      askAiInsightsQuestion(QUESTION_INPUT, { analytics: makeAnalytics(), generate }),
+      askAiInsightsQuestion(QUESTION_INPUT, {
+        analytics: makeAnalytics(),
+        generate,
+      }),
     ).rejects.toThrow(AiValidationError);
   });
 });
@@ -234,7 +247,9 @@ describe("assistant multi-tool support", () => {
   it("analyzes the fixture result as a full AiAssistantResult", () => {
     const result: AiAssistantResult = {
       ...VALID_ANSWER,
-      sources: [{ tool: "getBranchPerformance", description: "Per-branch data" }],
+      sources: [
+        { tool: "getBranchPerformance", description: "Per-branch data" },
+      ],
     };
     expect(result.sources[0].tool).toBe("getBranchPerformance");
   });

@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  AiProviderError,
-} from "@/lib/ai/errors";
+import { AiProviderError } from "@/lib/ai/errors";
 import {
   periodAIInsightSchema,
   type PeriodAIInsight,
@@ -31,7 +29,8 @@ const VALID_PERIOD_INSIGHT: PeriodAIInsight = {
     {
       type: "negative",
       title: "Waiting time",
-      explanation: "Waiting-time complaints were the most common negative theme.",
+      explanation:
+        "Waiting-time complaints were the most common negative theme.",
       evidenceCount: 18,
     },
   ],
@@ -48,7 +47,9 @@ const VALID_PERIOD_INSIGHT: PeriodAIInsight = {
   ],
 };
 
-function periodData(overrides: Partial<PeriodAnalysisInput> = {}): PeriodAnalysisInput {
+function periodData(
+  overrides: Partial<PeriodAnalysisInput> = {},
+): PeriodAnalysisInput {
   return {
     periodLabel: "Last 30 Days",
     startDate: "2026-07-17T00:00:00.000Z",
@@ -157,7 +158,9 @@ function makeContext(overrides: Partial<PeriodInsightsContext> = {}) {
   };
 }
 
-function periodInput(overrides: Partial<{ startDate: string; endDate: string }> = {}) {
+function periodInput(
+  overrides: Partial<{ startDate: string; endDate: string }> = {},
+) {
   return { period: "30_days" as const, ...overrides };
 }
 
@@ -172,9 +175,11 @@ async function expectNoFeedback(result: PeriodInsightsResult) {
 describe("getPeriodInsights — no feedback", () => {
   it("returns no-feedback without calling the AI or persisting", async () => {
     const { ctx, cache, analyze, collect } = makeContext({
-      collect: vi.fn(async () => periodData({
-        clinic: { ...periodData().clinic, feedbackCount: 0 },
-      })),
+      collect: vi.fn(async () =>
+        periodData({
+          clinic: { ...periodData().clinic, feedbackCount: 0 },
+        }),
+      ),
     });
 
     const service = createPeriodInsightsService(ctx);

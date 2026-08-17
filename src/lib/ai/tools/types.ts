@@ -44,10 +44,7 @@ export type AnalyticsPort = {
     end: Date,
     granularity: TrendGranularity,
   ) => Promise<FeedbackTrendItem[]>;
-  getFeedbackThemes: (
-    start: Date,
-    end: Date,
-  ) => Promise<FeedbackThemesResult>;
+  getFeedbackThemes: (start: Date, end: Date) => Promise<FeedbackThemesResult>;
   getNegativeFeedback: (
     input: NegativeFeedbackInput,
   ) => Promise<NegativeFeedbackItem[]>;
