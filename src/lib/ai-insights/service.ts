@@ -147,14 +147,28 @@ function decodeCached(stored: StoredAIInsight): DailyAIInsightResult | null {
     );
     return null;
   }
-  const metadata =
-    stored.content.metadata ??
-    ({
-      feedbackCount: stored.feedbackCount,
-      generatedAt: stored.generatedAt.toISOString(),
-      period: "today",
-    } as const);
+  const metadata: DailyAIInsightResult["metadata"] = isDailyMetadata(
+    stored.content.metadata,
+  )
+    ? stored.content.metadata
+    : {
+        feedbackCount: stored.feedbackCount,
+        generatedAt: stored.generatedAt.toISOString(),
+        period: "today",
+      };
   return { ...parsed.data, metadata };
+}
+
+/** True when the stored metadata belongs to a daily insight. */
+function isDailyMetadata(
+  value: unknown,
+): value is DailyAIInsightResult["metadata"] {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "period" in value &&
+    (value as { period?: unknown }).period === "today"
+  );
 }
 
 function toSuccess(

@@ -111,6 +111,7 @@ describe("RBAC Permissions & Navigation UX", () => {
       expect(titles).toContain("Tasks");
       expect(titles).toContain("Feedback");
       expect(titles).toContain("Analytics");
+      expect(titles).toContain("AI Insights");
       expect(titles).toContain("Branches");
       expect(titles).toContain("Services");
       expect(titles).toContain("Users");
@@ -125,6 +126,7 @@ describe("RBAC Permissions & Navigation UX", () => {
       expect(titles).toContain("Tasks");
       expect(titles).toContain("Feedback");
       expect(titles).toContain("Analytics");
+      expect(titles).toContain("AI Insights");
       expect(titles).toContain("Branches");
       expect(titles).toContain("Services");
       expect(titles).toContain("Profile & Security");
@@ -141,6 +143,7 @@ describe("RBAC Permissions & Navigation UX", () => {
       expect(titles).toContain("Tasks");
       expect(titles).toContain("Feedback");
       expect(titles).toContain("Analytics");
+      expect(titles).toContain("AI Insights");
       expect(titles).toContain("Profile & Security");
 
       // Management routes are hidden for Analyst

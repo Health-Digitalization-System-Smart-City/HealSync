@@ -82,3 +82,29 @@ export type DailyInsightsEmpty = {
 };
 
 export type DailyInsightsResult = DailyInsightsSuccess | DailyInsightsEmpty;
+
+// ---------------------------------------------------------------------------
+// Phase 2 — period analysis (the AI Insights page)
+// ---------------------------------------------------------------------------
+
+/** Everything the AI needs to summarize a period — all deterministic facts. */
+export type PeriodAnalysisInput = {
+  /** Human label of the period, e.g. "Aug 1 – Aug 15, 2026". */
+  periodLabel: string;
+  startDate: string; // ISO
+  endDate: string; // ISO
+  /** Deterministic clinic metrics (PostgreSQL-computed). */
+  clinic: import("@/lib/analytics/insights-types").ClinicSummary;
+  branches: import("@/lib/analytics/insights-types").BranchPerformanceItem[];
+  services: import("@/lib/analytics/insights-types").ServicePerformanceItem[];
+  themes: import("@/lib/analytics/insights-types").ThemeAggregateItem[];
+  /** Coverage for the theme aggregation (may be partial). */
+  themesCoverage: {
+    analyzedFeedbackCount: number;
+    feedbackCountInPeriod: number;
+  };
+  /** Bounded, de-identified negative feedback sample. */
+  negativeSamples: import("@/lib/analytics/insights-types").NegativeFeedbackItem[];
+  /** Current vs previous period comparison (PostgreSQL-computed). */
+  comparison: import("@/lib/analytics/insights-types").PeriodComparison;
+};

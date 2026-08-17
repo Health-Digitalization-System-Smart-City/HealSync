@@ -24,6 +24,7 @@ export type NavIcon =
   | "tasks"
   | "feedback"
   | "analytics"
+  | "ai"
   | "branches"
   | "services"
   | "users"
@@ -77,6 +78,13 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: "analytics",
     section: "Intelligence",
     permission: PERMISSIONS.ANALYTICS_READ,
+  },
+  {
+    title: "AI Insights",
+    href: "/dashboard/ai-insights",
+    icon: "ai",
+    section: "Intelligence",
+    permission: PERMISSIONS.ANALYTICS_AI,
   },
   {
     title: "Branches",

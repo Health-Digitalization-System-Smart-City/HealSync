@@ -194,6 +194,7 @@ browser to compute statistics (API.md §19, Architecture.md §9).
 | 7.1 | `[x]` AI provider abstraction — swappable provider interface (`src/lib/ai/provider.ts` + `model.ts`) + `AI_PROVIDER` / `AI_MODEL` / `AI_API_KEY` env (Architecture.md §10, PRD §33 decision 12) | Server | — |
 | 7.2 | `[x]` `generateFeedbackInsights` — auth → `analytics.ai` → validate scope → fetch feedback **excluding phone numbers** → send minimal data → validate AI response → structured result, persisted in `AIInsight` (API.md §20–21, security.md §20) | Server | 1.3, 6.1 |
 | 7.3 | `[x]` AI insights UI — clearly labeled "AI Insight" panel (summary, findings, themes, recommendations), never presented as fact, with loading/no-feedback/error states (PRD §20.3) | UI | 7.2 |
+| 7.4 | `[x]` AI Insights page (`/dashboard/ai-insights`, Phase 2) — period presets (Today / 7 / 30 days / 12 months / Custom), deterministic analytics (clinic/branch/service/themes/comparison) computed by PostgreSQL, cached `period_summary` AI narrative, and the tool-based Ask AI assistant (7 predefined tools; LLM never touches Prisma) | Server + UI | 7.2 |
 
 ---
 

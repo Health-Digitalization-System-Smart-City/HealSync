@@ -16,7 +16,10 @@ import {
   isPositiveRating,
 } from "@/lib/feedback/ratings";
 import type { FeedbackRating } from "@/lib/feedback/types";
-import type { DailyAIInsightResult } from "@/lib/ai/schema";
+import type {
+  DailyAIInsightResult,
+  PeriodAIInsightResult,
+} from "@/lib/ai/schema";
 import type {
   AIFeedbackItem,
   BreakdownItem,
@@ -303,13 +306,15 @@ export async function collectTodayFeedback(
 // Persistence (validated results only)
 // ---------------------------------------------------------------------------
 
+export type InsightContent = DailyAIInsightResult | PeriodAIInsightResult;
+
 export type StoredAIInsight = {
   id: string;
   type: string;
   periodStart: Date;
   periodEnd: Date;
   feedbackCount: number;
-  content: DailyAIInsightResult;
+  content: InsightContent;
   model: string | null;
   generatedAt: Date;
   updatedAt: Date;
@@ -328,12 +333,12 @@ export async function findCachedInsight(
   return toStoredInsight(row);
 }
 
-export async function upsertInsight(input: {
+export async function upsertInsight<T extends InsightContent>(input: {
   type: string;
   periodStart: Date;
   periodEnd: Date;
   feedbackCount: number;
-  content: DailyAIInsightResult;
+  content: T;
   model: string | null;
 }): Promise<StoredAIInsight> {
   const existing = await db.aIInsight.findFirst({
@@ -385,7 +390,7 @@ function toStoredInsight(row: {
     periodStart: row.periodStart,
     periodEnd: row.periodEnd,
     feedbackCount: row.feedbackCount,
-    content: row.content as DailyAIInsightResult,
+    content: row.content as InsightContent,
     model: row.model,
     generatedAt: row.generatedAt,
     updatedAt: row.updatedAt,

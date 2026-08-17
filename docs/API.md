@@ -904,6 +904,37 @@ The action should:
 
 ---
 
+# 20.1. AI Insights Page (Phase 2)
+
+`/dashboard/ai-insights` is available to Admin, Manager, and Analyst
+(`analytics.ai`, enforced server-side on the page and on every action).
+
+Actions:
+
+```text
+getAiInsightsPageData({ period, startDate?, endDate? })
+generateAiInsight({ period, startDate?, endDate?, refresh? })
+askAiInsights({ question, periodLabel, startDate, endDate })
+```
+
+- `getAiInsightsPageData` returns deterministic analytics (clinic summary,
+  branch/service performance, aggregated themes, period comparison) plus the
+  cached AI summary when available. It never generates.
+- `generateAiInsight` generates (or returns) the cached `period_summary`
+  analysis; forced refreshes are throttled by `AI_REFRESH_COOLDOWN_MS`.
+- `askAiInsights` answers natural-language questions through seven predefined
+  tools (`getClinicSummary`, `getBranchPerformance`, `getServicePerformance`,
+  `getFeedbackTrends`, `getFeedbackThemes`, `getNegativeFeedback`,
+  `comparePeriods`). The LLM never accesses Prisma directly; PostgreSQL
+  computes every statistic (Architecture.md §7). Rate-limited per user
+  (`AI_ASK_MAX_REQUESTS_PER_MINUTE`), question length capped
+  (`AI_ASK_MAX_LENGTH`).
+
+Privacy: tool results and prompt inputs are de-identified — never phone
+numbers, patient names, or IDs (security.md §20).
+
+---
+
 # 21. AI Response Contract
 
 AI output should use structured data rather than arbitrary text where possible.
