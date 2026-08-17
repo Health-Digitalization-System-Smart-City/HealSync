@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { Menu, X } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,40 @@ import { UserMenu } from "@/components/dashboard/user-menu";
 import { DashboardBreadcrumbs } from "@/components/dashboard/breadcrumbs";
 import type { NavItem } from "@/components/dashboard/nav-config";
 import { ROLES, type Role } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 
 export type DashboardUser = {
   name: string;
   email: string;
   role: Role;
 };
+
+/** Where the desktop collapse preference is persisted across visits. */
+const SIDEBAR_STORAGE_KEY = "healsync:sidebar-collapsed";
+
+/** Custom event used to re-render the same tab after a local toggle. */
+const SIDEBAR_STORAGE_EVENT = "healsync:sidebar-collapsed-change";
+
+function readCollapsed(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "1";
+}
+
+function subscribeToCollapsed(onChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(SIDEBAR_STORAGE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(SIDEBAR_STORAGE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function persistCollapsed(value: boolean) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SIDEBAR_STORAGE_KEY, value ? "1" : "0");
+  window.dispatchEvent(new Event(SIDEBAR_STORAGE_EVENT));
+}
 
 export function AppShell({
   children,
@@ -35,19 +63,57 @@ export function AppShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Persisted collapse preference. useSyncExternalStore keeps the server and
+  // first client render in sync (no hydration mismatch) and re-renders when
+  // the value changes — either from this tab or, via the `storage` event,
+  // from another tab.
+  const collapsed = useSyncExternalStore(
+    subscribeToCollapsed,
+    readCollapsed,
+    () => false,
+  );
+  const toggleCollapsed = () => persistCollapsed(!collapsed);
+
+  // Ctrl/Cmd+B toggles the sidebar for keyboard-first users.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        persistCollapsed(!collapsed);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [collapsed]);
+
   return (
     <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
       <div className="bg-muted/20 flex min-h-dvh w-full">
-        {/* Desktop sidebar */}
-        <aside className="border-border/80 bg-sidebar hidden w-64 shrink-0 border-r lg:flex lg:flex-col">
-          <div className="border-border/70 flex h-15 items-center border-b px-4">
-            <SidebarBrand />
+        {/* Desktop sidebar — sticks to the viewport so it scrolls
+            independently of the page; its own nav area scrolls on overflow. */}
+        <aside
+          className={cn(
+            "bg-sidebar border-border/80 sticky top-0 hidden h-dvh shrink-0 flex-col border-r transition-[width] duration-200 ease-in-out lg:flex",
+            collapsed ? "w-[4.5rem]" : "w-64",
+          )}
+        >
+          <div
+            className={cn(
+              "border-border/70 flex h-15 shrink-0 items-center border-b",
+              collapsed ? "justify-center px-2" : "px-4",
+            )}
+          >
+            <SidebarBrand collapsed={collapsed} />
           </div>
-          <div className="flex flex-1 flex-col overflow-y-auto p-3.5">
-            <SidebarNav items={navItems} branchCount={branchCount} />
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-3.5">
+            <SidebarNav
+              items={navItems}
+              branchCount={branchCount}
+              collapsed={collapsed}
+            />
           </div>
-          <div className="border-border/70 bg-muted/20 border-t p-3">
-            <SidebarFooter {...user} />
+          <div className="border-border/70 bg-muted/20 shrink-0 border-t p-3">
+            <SidebarFooter {...user} collapsed={collapsed} />
           </div>
         </aside>
 
@@ -55,8 +121,8 @@ export function AppShell({
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Header */}
           <header className="border-border/80 bg-background/90 sticky top-0 z-30 flex h-15 shrink-0 items-center justify-between gap-3 border-b px-4 backdrop-blur-md sm:px-6">
-            {/* Left: Mobile menu toggle + breadcrumbs */}
-            <div className="flex items-center gap-3">
+            {/* Left: mobile menu + sidebar collapse + breadcrumbs */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <Dialog.Trigger
                 render={
                   <Button
@@ -69,6 +135,24 @@ export function AppShell({
                   </Button>
                 }
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden lg:inline-flex"
+                onClick={toggleCollapsed}
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                title={
+                  collapsed
+                    ? "Expand sidebar (Ctrl+B)"
+                    : "Collapse sidebar (Ctrl+B)"
+                }
+              >
+                {collapsed ? (
+                  <PanelLeftOpen className="size-4.5" aria-hidden />
+                ) : (
+                  <PanelLeftClose className="size-4.5" aria-hidden />
+                )}
+              </Button>
               <DashboardBreadcrumbs />
             </div>
 

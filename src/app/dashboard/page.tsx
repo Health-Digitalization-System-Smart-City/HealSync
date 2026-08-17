@@ -17,7 +17,7 @@ import { PageIntro } from "@/components/page-intro";
 import { SatisfactionBar } from "@/components/dashboard/satisfaction-bar";
 import { AiInsightsSection } from "@/components/ai-insights/ai-insights-section";
 import { AiInsightsSkeleton } from "@/components/ai-insights/ai-insights-skeleton";
-import { requirePermissionResult } from "@/lib/auth/session";
+import { requireAuth, requirePermissionResult } from "@/lib/auth/session";
 import { PERMISSIONS } from "@/lib/permissions";
 import { getRatingLabel } from "@/lib/feedback/ratings";
 import { listRecentFeedbackFromDb, viewerFromUser } from "@/lib/feedback/db";
@@ -117,6 +117,11 @@ export default async function DashboardPage() {
   let overview = EMPTY_OVERVIEW;
   let recent: FeedbackView[] = [];
 
+  // Greeting personalization — getSession is cached per request, so this is
+  // free even though the layout already authenticated the user.
+  const session = await requireAuth();
+  const firstName = session.user.name?.trim().split(/\s+/)[0] ?? "";
+
   try {
     const auth = await requirePermissionResult(PERMISSIONS.FEEDBACK_READ);
     overview = await getDashboardOverviewData();
@@ -132,10 +137,10 @@ export default async function DashboardPage() {
   const insight = sentimentInsight(overview);
   const insightTone =
     insight.tone === "good"
-      ? "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/60"
+      ? "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/60 dark:border-emerald-500/25 dark:from-emerald-500/10 dark:to-teal-500/5"
       : insight.tone === "mixed"
-        ? "border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50/60"
-        : "border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/60";
+        ? "border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50/60 dark:border-blue-500/25 dark:from-blue-500/10 dark:to-sky-500/5"
+        : "border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/60 dark:border-amber-500/25 dark:from-amber-500/10 dark:to-orange-500/5";
   const insightIcon =
     insight.tone === "good"
       ? "bg-emerald-500 text-white"
@@ -146,7 +151,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageIntro
-        title="Welcome back"
+        title={firstName ? `Welcome back, ${firstName}` : "Welcome back"}
         description="Live overview of patient feedback and clinic performance across HealSync branches."
       />
 
@@ -201,23 +206,23 @@ export default async function DashboardPage() {
                 <HeartPulse className="size-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                <p className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
                   Patient sentiment at a glance
                 </p>
-                <h2 className="mt-1 text-lg font-bold text-slate-900">
+                <h2 className="text-foreground mt-1 text-lg font-bold">
                   {insight.headline}
                 </h2>
-                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                <p className="text-muted-foreground mt-1 max-w-2xl text-sm leading-relaxed">
                   {insight.detail}
                 </p>
               </div>
             </div>
 
             <div className="w-full max-w-md shrink-0">
-              <div className="rounded-xl border border-white/60 bg-white/70 p-4 shadow-xs backdrop-blur-sm">
-                <div className="mb-2.5 flex items-center justify-between text-xs font-semibold text-slate-600">
+              <div className="bg-card/80 border-border/60 rounded-xl border p-4 shadow-xs backdrop-blur-sm">
+                <div className="text-muted-foreground mb-2.5 flex items-center justify-between text-xs font-semibold">
                   <span>Sentiment split</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-foreground font-bold">
                     {overview.totalFeedback.toLocaleString()} total
                   </span>
                 </div>
@@ -235,23 +240,23 @@ export default async function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Feedback Feed */}
-        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <MessageSquare className="size-4 text-blue-600" />
+        <div className="border-border/80 bg-card flex flex-col overflow-hidden rounded-xl border shadow-sm">
+          <div className="bg-muted/40 border-border/70 flex items-center justify-between border-b px-6 py-4">
+            <h2 className="text-foreground flex items-center gap-2 text-base font-bold">
+              <MessageSquare className="text-primary size-4" />
               Recent Patient Feedback
             </h2>
             <Link
               href="/dashboard/feedback"
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="text-primary hover:text-primary/80 text-xs font-semibold"
             >
               View all →
             </Link>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-border/60 divide-y">
             {recent.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">
+              <p className="text-muted-foreground p-6 text-sm">
                 No patient feedback yet. Feedback submitted through the public
                 form will appear here.
               </p>
@@ -259,17 +264,17 @@ export default async function DashboardPage() {
               recent.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4.5 transition hover:bg-slate-50/70"
+                  className="hover:bg-muted/40 p-4.5 transition"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-800">
+                    <p className="text-foreground text-sm font-semibold">
                       {item.comment?.trim() || "No comment provided"}
                     </p>
-                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                    <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
                       {getRatingLabel(item.rating)} ({item.ratingScore}/7)
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {item.branchName} · {item.serviceName} ·{" "}
                     {formatRelativeTime(item.createdAt)}
                   </p>
@@ -280,10 +285,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
-            <h2 className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <Sparkles className="size-4 text-emerald-600" />
+        <div className="border-border/80 bg-card flex flex-col overflow-hidden rounded-xl border shadow-sm">
+          <div className="bg-muted/40 border-border/70 flex items-center justify-between border-b px-6 py-4">
+            <h2 className="text-foreground flex items-center gap-2 text-base font-bold">
+              <Sparkles className="text-primary size-4" />
               Quick Navigation
             </h2>
           </div>
@@ -295,16 +300,16 @@ export default async function DashboardPage() {
                 <Link
                   key={action.href}
                   href={action.href}
-                  className="group flex flex-col justify-between rounded-xl border border-slate-200/80 bg-slate-50/40 p-4 transition hover:border-blue-300 hover:bg-white hover:shadow-sm"
+                  className="group border-border/70 bg-muted/30 hover:border-primary/40 hover:bg-card flex flex-col justify-between rounded-xl border p-4 transition hover:shadow-md"
                 >
                   <div>
-                    <span className="mb-2.5 flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-xs group-hover:border-blue-200">
-                      <Icon className="size-4 text-blue-600" />
+                    <span className="border-border bg-card group-hover:border-primary/30 mb-2.5 flex size-9 items-center justify-center rounded-lg border shadow-xs transition-colors">
+                      <Icon className="text-primary size-4" />
                     </span>
-                    <h3 className="text-sm font-bold text-slate-900 transition group-hover:text-blue-600">
+                    <h3 className="text-foreground group-hover:text-primary text-sm font-bold transition">
                       {action.name}
                     </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                       {action.description}
                     </p>
                   </div>

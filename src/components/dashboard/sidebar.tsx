@@ -15,6 +15,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { Tooltip } from "@base-ui/react/tooltip";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +43,48 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   profile: UserCheck,
 };
 
-export function SidebarBrand() {
+/**
+ * Tooltip used by the collapsed (icon-only) sidebar rail so every hidden
+ * label stays discoverable on hover. Rendered through a portal so it never
+ * gets clipped by the sidebar's own scroll area.
+ */
+function RailTooltip({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger render={children} />
+      <Tooltip.Portal>
+        <Tooltip.Positioner side="right" sideOffset={10} className="z-50">
+          <Tooltip.Popup className="bg-foreground text-background origin-left rounded-lg px-2.5 py-1.5 text-xs font-medium whitespace-nowrap shadow-lg transition-[scale,opacity] duration-150 ease-out data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0">
+            {label}
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
+
+export function SidebarBrand({ collapsed = false }: { collapsed?: boolean }) {
+  if (collapsed) {
+    return (
+      <Link
+        href="/dashboard"
+        aria-label="HealSync dashboard"
+        title="HealSync dashboard"
+        className="group flex items-center"
+      >
+        <span className="bg-primary text-primary-foreground flex size-8.5 items-center justify-center rounded-lg shadow-xs transition-transform group-hover:scale-105">
+          <Activity className="size-4.5" aria-hidden />
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <div className="flex w-full items-center justify-between">
       <Link href="/dashboard" className="group flex items-center gap-2.5 px-1">
@@ -67,12 +109,88 @@ export function SidebarBrand() {
   );
 }
 
+function NavItemLink({
+  item,
+  isActive,
+  collapsed,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  collapsed: boolean;
+}) {
+  const Icon = ICONS[item.icon];
+
+  const link = (
+    <Link
+      href={item.href}
+      aria-current={isActive ? "page" : undefined}
+      aria-label={collapsed ? item.title : undefined}
+      title={collapsed ? item.title : undefined}
+      className={cn(
+        "group relative flex items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-all",
+        collapsed ? "justify-center px-0 py-2.5" : "justify-between",
+        isActive
+          ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground font-semibold"
+          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
+      )}
+    >
+      <span
+        className={cn("flex items-center gap-2.5", collapsed && "relative")}
+      >
+        <Icon
+          className={cn(
+            "size-4 shrink-0 transition-colors",
+            isActive
+              ? "text-primary dark:text-primary-foreground"
+              : "text-muted-foreground group-hover:text-foreground",
+          )}
+          aria-hidden
+        />
+        {!collapsed && <span className="truncate">{item.title}</span>}
+
+        {item.badge && collapsed ? (
+          <span
+            className={cn(
+              "absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold",
+              isActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground",
+            )}
+            aria-hidden
+          >
+            {item.badge}
+          </span>
+        ) : null}
+      </span>
+
+      {item.badge && !collapsed ? (
+        <span
+          className={cn(
+            "py-0.2 rounded-full px-1.5 text-[10px] font-semibold",
+            isActive
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground",
+          )}
+        >
+          {item.badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+
+  if (!collapsed) return link;
+
+  return <RailTooltip label={item.title}>{link}</RailTooltip>;
+}
+
 export function SidebarNav({
   items,
   branchCount,
+  collapsed = false,
 }: {
   items: readonly NavItem[];
   branchCount: number;
+  collapsed?: boolean;
 }) {
   const pathname = usePathname();
   const sections = getNavSections(items);
@@ -84,12 +202,13 @@ export function SidebarNav({
     >
       {sections.map(({ section, items: sectionItems }) => (
         <div key={section} className="flex flex-col gap-1">
-          <div className="text-muted-foreground/70 px-2.5 pb-1 text-[11px] font-semibold tracking-wider uppercase">
-            {section}
-          </div>
+          {!collapsed && (
+            <div className="text-muted-foreground/70 px-2.5 pb-1 text-[11px] font-semibold tracking-wider uppercase">
+              {section}
+            </div>
+          )}
           <div className="flex flex-col gap-0.5">
             {sectionItems.map((item) => {
-              const Icon = ICONS[item.icon];
               const isActive =
                 item.href === "/dashboard"
                   ? pathname === "/dashboard"
@@ -97,60 +216,49 @@ export function SidebarNav({
                     pathname.startsWith(item.href + "/");
 
               return (
-                <Link
+                <NavItemLink
                   key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "group relative flex items-center justify-between rounded-lg px-2.5 py-2 text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground font-semibold"
-                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
-                  )}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon
-                      className={cn(
-                        "size-4 shrink-0 transition-colors",
-                        isActive
-                          ? "text-primary dark:text-primary-foreground"
-                          : "text-muted-foreground group-hover:text-foreground",
-                      )}
-                      aria-hidden
-                    />
-                    <span className="truncate">{item.title}</span>
-                  </div>
-                  {item.badge ? (
-                    <span
-                      className={cn(
-                        "py-0.2 rounded-full px-1.5 text-[10px] font-semibold",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground",
-                      )}
-                    >
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </Link>
+                  item={item}
+                  isActive={isActive}
+                  collapsed={collapsed}
+                />
               );
             })}
           </div>
         </div>
       ))}
 
-      <div className="border-border/70 bg-muted/40 mt-auto rounded-lg border p-3">
-        <div className="text-foreground flex items-center gap-2 text-xs font-medium">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
-          </span>
-          <span>{branchCount} Clinics Connected</span>
+      {collapsed ? (
+        <div className="mt-auto">
+          <RailTooltip label={`${branchCount} Clinics Connected`}>
+            <div
+              className="border-border/70 bg-muted/40 flex flex-col items-center gap-1.5 rounded-lg border p-2"
+              aria-label={`${branchCount} Clinics Connected`}
+            >
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+              </span>
+              <span className="text-foreground text-[10px] font-semibold">
+                {branchCount}
+              </span>
+            </div>
+          </RailTooltip>
         </div>
-        <p className="text-muted-foreground mt-1 text-[11px]">
-          Real-time patient feedback & SLA monitoring active.
-        </p>
-      </div>
+      ) : (
+        <div className="border-border/70 bg-muted/40 mt-auto rounded-lg border p-3">
+          <div className="text-foreground flex items-center gap-2 text-xs font-medium">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+            </span>
+            <span>{branchCount} Clinics Connected</span>
+          </div>
+          <p className="text-muted-foreground mt-1 text-[11px]">
+            Real-time patient feedback & SLA monitoring active.
+          </p>
+        </div>
+      )}
     </nav>
   );
 }
@@ -159,25 +267,46 @@ export function SidebarFooter({
   name,
   email,
   role,
+  collapsed = false,
 }: {
   name: string;
   email: string;
   role: Role;
+  collapsed?: boolean;
 }) {
+  const avatar = (
+    <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors">
+      {name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || "U"}
+    </div>
+  );
+
+  if (collapsed) {
+    return (
+      <RailTooltip label={`${name} · ${role}`}>
+        <Link
+          href="/dashboard/profile"
+          aria-label={`${name}, ${role} — view profile`}
+          title={`${name} · ${role}`}
+          className="group flex justify-center rounded-lg p-1 transition-colors"
+        >
+          {avatar}
+        </Link>
+      </RailTooltip>
+    );
+  }
+
   return (
     <Link
       href="/dashboard/profile"
       className="group hover:bg-accent flex items-center gap-3 rounded-lg p-1.5 transition-colors"
     >
-      <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors">
-        {name
-          .split(" ")
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase() || "U"}
-      </div>
+      {avatar}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-1">
           <span className="text-foreground group-hover:text-foreground truncate text-xs font-semibold">

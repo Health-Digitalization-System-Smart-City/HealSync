@@ -31,7 +31,7 @@ export function SatisfactionBar({
   return (
     <div className={cn("w-full", className)}>
       <div
-        className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100"
+        className="bg-muted flex h-2.5 w-full overflow-hidden rounded-full"
         role="img"
         aria-label={`${positive} satisfied, ${neutral} neutral, ${negative} needs attention`}
       >
@@ -42,7 +42,7 @@ export function SatisfactionBar({
         />
         <div
           style={{ width: `${neutralPct}%` }}
-          className="bg-slate-300 transition-all duration-500"
+          className="bg-slate-300 transition-all duration-500 dark:bg-slate-600"
           title={`Neutral: ${neutral}`}
         />
         <div
@@ -53,25 +53,28 @@ export function SatisfactionBar({
       </div>
 
       {showLegend && (
-        <div className="mt-2 flex items-center justify-between text-[11px] font-medium text-slate-500">
+        <div className="text-muted-foreground mt-2 flex items-center justify-between text-[11px] font-medium">
           <span className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
             Satisfied
-            <strong className="text-emerald-700">
+            <strong className="text-emerald-700 dark:text-emerald-400">
               {positive.toLocaleString()}
             </strong>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-slate-300" aria-hidden />
+            <span
+              className="size-2 rounded-full bg-slate-300 dark:bg-slate-600"
+              aria-hidden
+            />
             Neutral
-            <strong className="text-slate-600">
+            <strong className="text-foreground">
               {neutral.toLocaleString()}
             </strong>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-amber-500" aria-hidden />
             Attention
-            <strong className="text-amber-700">
+            <strong className="text-amber-700 dark:text-amber-400">
               {negative.toLocaleString()}
             </strong>
           </span>
