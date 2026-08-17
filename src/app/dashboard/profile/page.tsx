@@ -23,10 +23,10 @@ export default async function ProfilePage() {
   const role = isRole(rawRole) ? rawRole : ROLES.ANALYST;
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Profile & Security"
-        description="Your account, what you're allowed to do, and how to keep it secure. Your password is the only detail you can change yourself."
+        description="Your personal account details and what your role allows you to do across HealSync."
       />
       <ProfileClient
         user={{

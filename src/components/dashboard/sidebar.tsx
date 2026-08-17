@@ -275,7 +275,7 @@ export function SidebarFooter({
   collapsed?: boolean;
 }) {
   const avatar = (
-    <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors">
+    <div className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-xs leading-none font-bold transition-colors">
       {name
         .split(" ")
         .filter(Boolean)

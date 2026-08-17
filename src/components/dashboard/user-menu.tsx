@@ -15,7 +15,7 @@ import { Menu } from "@base-ui/react/menu";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/client";
 import { Badge } from "@/components/ui/badge";
-import { getPermissions, ROLES, type Role } from "@/lib/permissions";
+import { ROLES, type Role } from "@/lib/permissions";
 
 function initials(name: string) {
   return name
@@ -38,7 +38,6 @@ export function UserMenu({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const permissions = getPermissions(role);
 
   async function handleSignOut() {
     setPending(true);
@@ -60,7 +59,7 @@ export function UserMenu({
         aria-label="Open user menu"
         className="border-border/80 bg-card text-foreground hover:bg-muted/70 focus-visible:ring-ring flex items-center gap-2.5 rounded-full border p-1 pr-3 text-xs font-semibold shadow-2xs transition-all select-none focus-visible:ring-2"
       >
-        <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-xs font-bold">
+        <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-xs leading-none font-bold">
           {initials(name)}
         </div>
         <div className="hidden flex-col text-left sm:flex">
@@ -101,7 +100,7 @@ export function UserMenu({
               </span>
               <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-[11px]">
                 <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
-                <span>{permissions.length} server permissions active</span>
+                <span>Your access is managed by your administrator</span>
               </div>
             </div>
 

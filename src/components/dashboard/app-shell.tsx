@@ -185,8 +185,11 @@ export function AppShell({
             </div>
           </header>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-x-hidden">{children}</main>
+          {/* Page Content — centered, padded page shell so every dashboard
+              page (and its loading state) gets consistent edge gaps. */}
+          <main className="mx-auto w-full max-w-7xl flex-1 overflow-x-hidden px-4 py-4 sm:px-6 sm:py-6">
+            {children}
+          </main>
         </div>
       </div>
 

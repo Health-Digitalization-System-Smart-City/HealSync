@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 //
-// Profile & Security page: identity display, permission groups, and the
-// self-service change-password form. The Better Auth client is mocked — these
-// tests verify the UI renders each state correctly, not Better Auth itself.
+// Profile & Security page: identity display, plain-language role capabilities,
+// and the self-service change-password form. The Better Auth client is mocked
+// — these tests verify the UI renders each state correctly, not Better Auth
+// itself.
 
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -47,29 +48,36 @@ describe("ProfileClient", () => {
     ).toBeTruthy();
   });
 
-  it("shows the self-service change-password card and security scope", () => {
+  it("shows the self-service change-password card", () => {
     render(<ProfileClient {...ADMIN_PROPS} />);
 
     expect(screen.getByText("Change your password")).toBeTruthy();
-    expect(screen.getByText("Session & Security")).toBeTruthy();
-    expect(screen.getByText("Password only")).toBeTruthy();
+    expect(
+      screen.getByText(/it's never shown to anyone, not even administrators/i),
+    ).toBeTruthy();
   });
 
-  it("groups granted permissions into human-readable domains", () => {
+  it("lists the admin role's capabilities in plain language, without system internals", () => {
     render(<ProfileClient {...ADMIN_PROPS} />);
 
-    expect(screen.getByText(/What you are allowed to do/)).toBeTruthy();
+    expect(screen.getByText("What your Admin role can do")).toBeTruthy();
+    expect(screen.getByText("Patient feedback")).toBeTruthy();
+    expect(screen.getByText("Review patient feedback")).toBeTruthy();
+    expect(screen.getByText("See patient contact details")).toBeTruthy();
     expect(screen.getByText("Analytics & AI")).toBeTruthy();
-    expect(screen.getByText("View analytics")).toBeTruthy();
-    expect(screen.getByText("AI insights")).toBeTruthy();
-    expect(screen.getByText("Feedback")).toBeTruthy();
-    expect(screen.getByText("View patient phone numbers")).toBeTruthy();
-    expect(screen.getByText("User management")).toBeTruthy();
-    // The admin role's exact permission count (20 in src/lib/permissions).
-    expect(screen.getByText(/\(20\)/)).toBeTruthy();
+    expect(screen.getByText("Use AI insights")).toBeTruthy();
+    expect(screen.getByText("Clinic branches")).toBeTruthy();
+    expect(screen.getByText("Add new branches")).toBeTruthy();
+    expect(screen.getByText("Users & access")).toBeTruthy();
+    expect(screen.getByText("Disable accounts")).toBeTruthy();
+
+    // No system-internal claims on the page.
+    expect(screen.queryByText(/RBAC/i)).toBeNull();
+    expect(screen.queryByText(/TLS/i)).toBeNull();
+    expect(screen.queryByText(/Better Auth/i)).toBeNull();
   });
 
-  it("renders a limited permission set for an Analyst", () => {
+  it("shows a smaller capability set for an Analyst", () => {
     render(
       <ProfileClient
         {...ADMIN_PROPS}
@@ -77,11 +85,15 @@ describe("ProfileClient", () => {
       />,
     );
 
-    expect(screen.getByText(/\(4\)/)).toBeTruthy();
-    expect(screen.getByText("View analytics")).toBeTruthy();
-    // Analyst has no user-management or feedback-edit permissions.
-    expect(screen.queryByText("User management")).toBeNull();
-    expect(screen.queryByText("Delete feedback")).toBeNull();
+    expect(screen.getByText("What your Analyst role can do")).toBeTruthy();
+    expect(screen.getByText("Review patient feedback")).toBeTruthy();
+    expect(screen.getByText("Use AI insights")).toBeTruthy();
+
+    // Analyst has no branch, service, user, or feedback-edit capabilities.
+    expect(screen.queryByText("Clinic branches")).toBeNull();
+    expect(screen.queryByText("Medical services")).toBeNull();
+    expect(screen.queryByText("Users & access")).toBeNull();
+    expect(screen.queryByText("Update and respond to feedback")).toBeNull();
   });
 });
 

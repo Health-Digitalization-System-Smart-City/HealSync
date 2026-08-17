@@ -1,14 +1,20 @@
 "use client";
 
 import {
+  BarChart3,
+  Building2,
+  CalendarDays,
   CheckCircle2,
+  CheckSquare,
+  Clock,
   KeyRound,
   Lock,
   Mail,
-  ShieldCheck,
-  UserCheck,
-  CalendarDays,
-  Clock,
+  MessageSquareText,
+  Stethoscope,
+  UserRound,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -26,48 +32,106 @@ import {
   type Permission,
   type Role,
 } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 
-/** Human-readable name for each permission. */
-const PERMISSION_LABELS: Record<Permission, string> = {
-  "analytics.read": "View analytics",
-  "analytics.ai": "AI insights",
-  "feedback.read": "View feedback",
-  "feedback.update": "Update feedback",
-  "feedback.delete": "Delete feedback",
-  "feedback.phone": "View patient phone numbers",
-  "branch.read": "View branches",
-  "branch.create": "Create branches",
-  "branch.update": "Update branches",
-  "branch.delete": "Delete branches",
-  "service.read": "View services",
-  "service.create": "Create services",
-  "service.update": "Update services",
-  "service.delete": "Delete services",
-  "user.read": "View users",
-  "user.create": "Create users",
-  "user.update": "Update users",
-  "user.disable": "Disable users",
-  "task.read": "View tasks",
-  "task.manage": "Manage tasks",
-};
-
-/** Permission domain → friendly group title. */
-const PERMISSION_GROUPS: Array<{ prefix: string; title: string }> = [
-  { prefix: "analytics", title: "Analytics & AI" },
-  { prefix: "feedback", title: "Feedback" },
-  { prefix: "branch", title: "Branches" },
-  { prefix: "service", title: "Services" },
-  { prefix: "user", title: "User management" },
-  { prefix: "task", title: "Tasks" },
+/**
+ * Plain-language capabilities, grouped by area. Each item only shows up when
+ * the user's role actually grants the underlying permission — so an Analyst
+ * sees a short read-only list while an Admin sees full management powers.
+ * No system jargon: this is what the person can do, not how the platform is
+ * built underneath.
+ */
+const CAPABILITY_GROUPS: Array<{
+  key: string;
+  title: string;
+  icon: LucideIcon;
+  items: { permission: Permission; label: string }[];
+}> = [
+  {
+    key: "feedback",
+    title: "Patient feedback",
+    icon: MessageSquareText,
+    items: [
+      { permission: "feedback.read", label: "Review patient feedback" },
+      {
+        permission: "feedback.update",
+        label: "Update and respond to feedback",
+      },
+      { permission: "feedback.delete", label: "Remove feedback" },
+      { permission: "feedback.phone", label: "See patient contact details" },
+    ],
+  },
+  {
+    key: "analytics",
+    title: "Analytics & AI",
+    icon: BarChart3,
+    items: [
+      { permission: "analytics.read", label: "Explore analytics and trends" },
+      { permission: "analytics.ai", label: "Use AI insights" },
+    ],
+  },
+  {
+    key: "branch",
+    title: "Clinic branches",
+    icon: Building2,
+    items: [
+      { permission: "branch.read", label: "Monitor clinic branches" },
+      { permission: "branch.create", label: "Add new branches" },
+      { permission: "branch.update", label: "Edit branch details" },
+      { permission: "branch.delete", label: "Close branches" },
+    ],
+  },
+  {
+    key: "service",
+    title: "Medical services",
+    icon: Stethoscope,
+    items: [
+      { permission: "service.read", label: "Monitor medical services" },
+      { permission: "service.create", label: "Add new services" },
+      { permission: "service.update", label: "Edit service details" },
+      { permission: "service.delete", label: "Stop offering services" },
+    ],
+  },
+  {
+    key: "user",
+    title: "Users & access",
+    icon: Users,
+    items: [
+      { permission: "user.read", label: "View staff accounts" },
+      { permission: "user.create", label: "Create staff accounts" },
+      { permission: "user.update", label: "Change roles and details" },
+      { permission: "user.disable", label: "Disable accounts" },
+    ],
+  },
+  {
+    key: "task",
+    title: "Tasks & workflows",
+    icon: CheckSquare,
+    items: [
+      { permission: "task.read", label: "Track operational tasks" },
+      { permission: "task.manage", label: "Assign and manage tasks" },
+    ],
+  },
 ];
 
-function groupPermissions(permissions: readonly Permission[]) {
-  return PERMISSION_GROUPS.map((group) => ({
+function grantedCapabilityGroups(role: Role) {
+  const permissions = getPermissions(role);
+  return CAPABILITY_GROUPS.map((group) => ({
     ...group,
-    permissions: permissions
-      .filter((p) => p.startsWith(`${group.prefix}.`))
-      .map((p) => PERMISSION_LABELS[p] ?? p),
-  })).filter((group) => group.permissions.length > 0);
+    items: group.items.filter((item) => permissions.includes(item.permission)),
+  })).filter((group) => group.items.length > 0);
+}
+
+function initials(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "U"
+  );
 }
 
 function formatDate(iso: string | null): string {
@@ -93,6 +157,36 @@ function formatLastLogin(iso: string | null): string {
   }).format(date);
 }
 
+/**
+ * One consistent visual unit for every piece of personal info (email, dates,
+ * role, …) so the page reads as a cohesive set rather than ad-hoc rows.
+ */
+function DetailTile({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="border-border/70 bg-muted/30 flex min-w-0 items-center gap-3 rounded-xl border p-3">
+      <span className="bg-primary/10 text-primary flex size-8.5 shrink-0 items-center justify-center rounded-lg">
+        <Icon className="size-4" aria-hidden />
+      </span>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+          {label}
+        </p>
+        <p className="text-foreground truncate text-sm font-semibold">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function ProfileClient({
   user,
   createdAt,
@@ -109,207 +203,209 @@ export function ProfileClient({
   lastLoginAt: string | null;
   isActive: boolean;
 }) {
-  const permissions = getPermissions(user.role);
-  const groups = groupPermissions(permissions);
+  const groups = grantedCapabilityGroups(user.role);
 
   return (
-    <div className="animate-in fade-in-50 flex flex-col gap-6 duration-300">
-      {/* Identity */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-fuchsia-500 text-xl font-bold text-white shadow-sm">
-                {user.name
-                  .split(" ")
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase() || "U"}
-              </div>
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        {/* ── Left column: personal account ─────────────────────────── */}
+        <div className="flex min-w-0 flex-col gap-6">
+          {/* Identity */}
+          <Card className="relative overflow-hidden">
+            {/* Soft decorative gradient behind the hero */}
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-br from-teal-500/15 via-emerald-400/10 to-transparent"
+              aria-hidden
+            />
 
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-xl font-bold text-slate-900">
-                    {user.name}
-                  </h2>
-                  <Badge
-                    variant={
-                      user.role === ROLES.ADMIN
-                        ? "default"
-                        : user.role === ROLES.MANAGER
-                          ? "secondary"
-                          : "outline"
-                    }
-                    className="text-xs font-bold tracking-wider uppercase"
-                  >
-                    {user.role}
-                  </Badge>
+            <CardContent className="relative p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="ring-primary/10 flex size-18 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-400 text-2xl leading-none font-bold text-white shadow-md ring-4">
+                    {initials(user.name)}
+                  </div>
+
+                  <div className="min-w-0 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-foreground text-2xl font-bold tracking-tight">
+                        {user.name}
+                      </h2>
+                      <Badge
+                        variant={
+                          user.role === ROLES.ADMIN
+                            ? "default"
+                            : user.role === ROLES.MANAGER
+                              ? "secondary"
+                              : "outline"
+                        }
+                        className="text-xs font-bold tracking-wider uppercase"
+                      >
+                        {user.role}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-sm">
+                      {user.role} · HealSync dashboard
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <Mail className="size-3.5" aria-hidden />
-                  <span>{user.email}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <UserCheck className="size-3.5" aria-hidden />
-                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+
+                {/* Status pill */}
+                <div
+                  className={cn(
+                    "flex w-fit items-center gap-2 self-start rounded-full border px-3 py-1 text-xs font-medium sm:self-auto",
+                    isActive
+                      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                  )}
+                >
+                  <span className="relative flex size-1.5">
+                    <span
+                      className={cn(
+                        "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+                        isActive ? "bg-emerald-400" : "bg-amber-400",
+                      )}
+                    ></span>
+                    <span
+                      className={cn(
+                        "relative inline-flex size-1.5 rounded-full",
+                        isActive ? "bg-emerald-500" : "bg-amber-500",
+                      )}
+                    ></span>
+                  </span>
+                  <span>
                     {isActive ? "Active account" : "Account disabled"}
                   </span>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500 sm:flex-col sm:items-end sm:gap-2">
-              <div>
-                <p className="font-semibold text-slate-700">Member since</p>
-                <p className="mt-0.5 flex items-center gap-1">
-                  <CalendarDays className="size-3.5" aria-hidden />
-                  {formatDate(createdAt)}
+              {/* Personal info — one consistent tile per detail */}
+              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <DetailTile icon={Mail} label="Email" value={user.email} />
+                <DetailTile
+                  icon={CalendarDays}
+                  label="Member since"
+                  value={formatDate(createdAt)}
+                />
+                <DetailTile
+                  icon={Clock}
+                  label="Last login"
+                  value={formatLastLogin(lastLoginAt)}
+                />
+                <DetailTile icon={UserRound} label="Role" value={user.role} />
+              </div>
+
+              {/* Admin-managed notice */}
+              <div className="border-border/70 bg-muted/40 text-muted-foreground mt-5 flex items-start gap-2 rounded-lg border px-3 py-2.5 text-xs">
+                <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                <p>
+                  Your{" "}
+                  <strong className="text-foreground">
+                    name, email, and role
+                  </strong>{" "}
+                  are assigned by your administrator and cannot be changed here.
+                  Your password is the only detail you can update yourself — see
+                  below.
                 </p>
               </div>
-              <div>
-                <p className="font-semibold text-slate-700">Last login</p>
-                <p className="mt-0.5 flex items-center gap-1">
-                  <Clock className="size-3.5" aria-hidden />
-                  {formatLastLogin(lastLoginAt)}
+            </CardContent>
+          </Card>
+
+          {/* Change password — the only self-service edit */}
+          <Card className="border-violet-200/60 dark:border-violet-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-xs">
+                  <KeyRound className="size-4" aria-hidden />
+                </span>
+                <CardTitle>Change your password</CardTitle>
+              </div>
+              <CardDescription>
+                Your password is private to you — it&apos;s never shown to
+                anyone, not even administrators. Updating it signs out your
+                other devices.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ── Right column: role capabilities + privacy ──────────────── */}
+        <div className="flex min-w-0 flex-col gap-6">
+          {/* What this role can do */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <UserRound className="text-primary size-5" aria-hidden />
+                <CardTitle>What your {user.role} role can do</CardTitle>
+              </div>
+              <CardDescription>
+                Your access is set by your administrator based on your role.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3.5">
+              {groups.length === 0 ? (
+                <p className="border-border text-muted-foreground rounded-lg border border-dashed px-4 py-6 text-center text-xs">
+                  No capabilities are granted to this role.
                 </p>
-              </div>
-            </div>
-          </div>
+              ) : (
+                groups.map((group) => {
+                  const Icon = group.icon;
+                  return (
+                    <div
+                      key={group.key}
+                      className="border-border/70 bg-muted/30 rounded-xl border p-3.5"
+                    >
+                      <div className="mb-2.5 flex items-center gap-2">
+                        <span className="bg-primary/10 text-primary flex size-6.5 shrink-0 items-center justify-center rounded-md">
+                          <Icon className="size-3.5" aria-hidden />
+                        </span>
+                        <p className="text-foreground text-xs font-bold">
+                          {group.title}
+                        </p>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {group.items.map((item) => (
+                          <li
+                            key={item.permission}
+                            className="text-muted-foreground flex items-start gap-2 text-xs"
+                          >
+                            <CheckCircle2
+                              className="mt-0.5 size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                              aria-hidden
+                            />
+                            <span>{item.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Admin-managed notice */}
-          <div className="mt-5 flex items-start gap-2 rounded-lg border border-slate-100 bg-slate-50/70 px-3 py-2.5 text-xs text-slate-500">
-            <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            <p>
-              Your <strong>name, email, and role</strong> are assigned by your
-              administrator and cannot be changed here. Your password is the
-              only detail you can update yourself — see below.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Change password — the only self-service edit */}
-        <Card className="border-violet-100">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white shadow-xs">
-                <KeyRound className="size-4" aria-hidden />
-              </span>
-              <CardTitle>Change your password</CardTitle>
-            </div>
-            <CardDescription>
-              Your account was created by an administrator, so this is the only
-              profile detail you can edit. Changing it signs out other devices.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChangePasswordForm />
-          </CardContent>
-        </Card>
-
-        {/* Security status */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="size-5 text-emerald-600 dark:text-emerald-400" />
-              <CardTitle>Session & Security</CardTitle>
-            </div>
-            <CardDescription>
-              How your account is protected and what you are able to do.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3.5">
-            <div className="space-y-2 rounded-lg bg-slate-50/70 p-3 text-xs">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-slate-500">Auth provider</span>
-                <span className="text-right font-semibold text-slate-800">
-                  Better Auth · secure session cookie
+          {/* Private to you */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
+                  <Lock className="size-4" aria-hidden />
                 </span>
+                <CardTitle>Private to you</CardTitle>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-slate-500">Role</span>
-                <span className="text-right font-semibold text-slate-800">
-                  {user.role} · fixed by administrator
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-slate-500">Encryption</span>
-                <span className="text-right font-semibold text-slate-800">
-                  TLS 1.3 / HSTS
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-slate-500">Self-service scope</span>
-                <span className="text-right font-semibold text-slate-800">
-                  Password only
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2 rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-300">
-              <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              <p>
-                Server-side authorization is enforced on every request — your
-                granted permissions below are verified independently, never just
-                hidden in the UI.
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                The details on this page — your email, role, and account
+                activity — are personal to you. Your password is encrypted and
+                never displayed, and only you can change it.
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Permissions — what the user is allowed to do */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-400" />
-            <CardTitle>
-              What you are allowed to do ({permissions.length})
-            </CardTitle>
-          </div>
-          <CardDescription>
-            The access granted to your <strong>{user.role}</strong> role by the
-            server RBAC matrix.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {groups.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-xs text-slate-400">
-              No permissions are granted to this role.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {groups.map((group) => (
-                <div
-                  key={group.prefix}
-                  className="rounded-xl border border-slate-100 bg-slate-50/50 p-4"
-                >
-                  <p className="mb-2.5 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    {group.title}
-                  </p>
-                  <ul className="space-y-2">
-                    {group.permissions.map((label) => (
-                      <li
-                        key={label}
-                        className="flex items-start gap-2 text-xs text-slate-700"
-                      >
-                        <CheckCircle2
-                          className="mt-0.5 size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
-                          aria-hidden
-                        />
-                        <span>{label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

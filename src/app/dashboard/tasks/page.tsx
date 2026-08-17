@@ -17,7 +17,7 @@ export default async function TasksPage() {
   const role = isRole(rawRole) ? rawRole : ROLES.ANALYST;
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Operational Tasks & Workflows"
         description="Track patient feedback follow-ups, triage speed audits, sanitization checks, and branch action items."
