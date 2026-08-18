@@ -99,7 +99,7 @@ function PhoneMockup() {
                 <HeartPulse className="h-4 w-4" aria-hidden />
               </span>
               <span className="text-sm font-bold text-neutral-800">
-                HealSync
+                HealSync Helathcare
               </span>
             </div>
             <span className="rounded-full bg-teal-100 px-2.5 py-1 text-[10px] font-semibold text-teal-800">
