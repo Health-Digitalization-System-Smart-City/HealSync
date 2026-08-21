@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { FeedbackLanguageProvider } from "@/features/feedback/components/feedback-i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,12 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "HealSync",
   title: {
     default: "HealSync",
     template: "%s · HealSync",
   },
   description:
     "Share your healthcare experience with HealSync and help our clinics improve patient care.",
+  appleWebApp: {
+    capable: true,
+    title: "HealSync",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -32,7 +42,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
-        {children}
+        <FeedbackLanguageProvider>{children}</FeedbackLanguageProvider>
       </body>
     </html>
   );

@@ -14,6 +14,7 @@ import {
   LoadingState,
 } from "@/features/feedback/components/form/form-states";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export function ServiceStep({
   headingRef,
@@ -38,16 +39,17 @@ export function ServiceStep({
   onChooseDifferentBranch: () => void;
   onBack: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   return (
     <div>
       <div className="space-y-6 p-5 sm:p-6">
         <StepHeader
           headingRef={headingRef}
           icon={Stethoscope}
-          title="Select Service"
+          title={t("serviceTitle")}
           description={
             <>
-              Select the service or department you visited at{" "}
+              {t("serviceDescription")}{" "}
               <span className="text-foreground font-semibold">
                 {branchName}
               </span>
@@ -59,23 +61,20 @@ export function ServiceStep({
 
         {status === "loading" ? (
           <LoadingState
-            label="Loading available services…"
-            hint="Fetching the services offered at this branch."
+            label={t("loadingServices")}
+            hint={t("loadingServicesHint")}
           />
         ) : status === "error" ? (
           <ErrorState
-            title="Couldn't load services"
-            message={
-              error ??
-              "There was a problem loading services for this branch. Please try again."
-            }
+            title={t("serviceLoadError")}
+            message={error ?? t("serviceLoadErrorText")}
             onRetry={onRetry}
           />
         ) : services.length === 0 ? (
           <EmptyState
-            title="No services available at this branch"
-            message="This branch doesn't offer any services right now. Please choose a different branch or try again later."
-            actionLabel="Choose a different branch"
+            title={t("noServices")}
+            message={t("noServicesText")}
+            actionLabel={t("differentBranch")}
             onAction={onChooseDifferentBranch}
           />
         ) : (

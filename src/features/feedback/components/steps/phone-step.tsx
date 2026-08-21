@@ -9,6 +9,7 @@ import { Phone } from "lucide-react";
 
 import { FormField } from "@/features/feedback/components/form/form-field";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export function PhoneStep({
   headingRef,
@@ -25,6 +26,7 @@ export function PhoneStep({
   onBlur: () => void;
   onSubmit: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   return (
     <form
       onSubmit={(event) => {
@@ -37,21 +39,21 @@ export function PhoneStep({
         <StepHeader
           headingRef={headingRef}
           icon={Phone}
-          title="Phone Number"
-          description="Enter your phone number to proceed with your feedback."
+          title={t("phoneTitle")}
+          description={t("phoneDescription")}
         />
         <FormField
           id="phoneNumber"
-          label="Patient Phone Number"
+          label={t("phoneLabel")}
           required
           errors={errors}
-          hint="Your phone number is kept confidential and only used for verified patient feedback records."
+          hint={t("phoneHint")}
         >
           <Input
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            placeholder="e.g. 0912345678 or +251912345678"
+            placeholder={t("phonePlaceholder")}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             onBlur={onBlur}
@@ -63,7 +65,7 @@ export function PhoneStep({
       </div>
       <CardFooter className="px-5 pt-0 pb-5 sm:px-6 sm:pb-6">
         <Button type="submit" size="lg" className="w-full gap-2 sm:w-auto">
-          Continue to Branch Selection
+          {t("continueBranch")}
           <svg
             viewBox="0 0 24 24"
             fill="none"

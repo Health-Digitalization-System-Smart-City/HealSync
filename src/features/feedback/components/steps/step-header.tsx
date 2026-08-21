@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 /**
  * Shared step header: a focusable `<h2>` (focus target when steps change) plus
@@ -23,6 +24,7 @@ export function StepHeader({
   description: React.ReactNode;
   onBack?: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   return (
     <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-3">
@@ -54,7 +56,7 @@ export function StepHeader({
             >
               <path d="m15 18-6-6 6-6" />
             </svg>
-            <span className="hidden sm:inline">Back</span>
+            <span className="hidden sm:inline">{t("back")}</span>
           </Button>
         ) : null}
       </div>

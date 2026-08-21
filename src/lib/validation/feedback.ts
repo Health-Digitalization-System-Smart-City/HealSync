@@ -59,6 +59,7 @@ export type FeedbackRating = z.infer<typeof FeedbackRatingEnum>;
 const phoneNumberRegex = /^(\+251|0)?[79]\d{8}$|^(\+\d{1,3})?\d{8,14}$/;
 
 export const FEEDBACK_COMMENT_MAX_LENGTH = 1000;
+export const feedbackLocaleSchema = z.enum(["en", "am", "om"]);
 
 export const phoneNumberSchema = z
   .string()
@@ -84,6 +85,7 @@ export const submitFeedbackSchema = z.object({
   serviceId: z.string().min(1, "Please select a service or department"),
   rating: FeedbackRatingEnum,
   comment: feedbackCommentSchema,
+  locale: feedbackLocaleSchema.default("en"),
 });
 
 export type SubmitFeedbackInput = z.infer<typeof submitFeedbackSchema>;

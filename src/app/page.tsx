@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ArrowRight,
   Building2,
@@ -17,6 +19,8 @@ import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 const steps = [
   {
@@ -180,6 +184,7 @@ function PhoneMockup() {
 }
 
 export default function Home() {
+  const { t } = useFeedbackI18n();
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-slate-900">
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-[#F8FAFC]/85 backdrop-blur-xl">
@@ -199,30 +204,33 @@ export default function Home() {
               href="#how"
               className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800"
             >
-              How it works
+              {t("homeHow")}
             </a>
             <a
               href="#why"
               className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800"
             >
-              Why it matters
+              {t("homeWhy")}
             </a>
           </nav>
 
           <div className="flex items-center gap-2">
+            <div>
+              <LanguageSelector />
+            </div>
             <Link
               href="/login"
-              aria-label="Staff login"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800 sm:hidden"
+              aria-label={t("staffLogin")}
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800 md:inline-flex"
             >
               <LogIn className="h-4 w-4" aria-hidden />
             </Link>
             <Link
               href="/login"
-              className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-teal-800 sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-teal-800 md:inline-flex"
             >
               <LogIn className="h-4 w-4" aria-hidden />
-              Staff login
+              {t("staffLogin")}
             </Link>
             <Link
               href="/feedback"
@@ -231,7 +239,7 @@ export default function Home() {
                 "rounded-full bg-teal-700 font-semibold text-white shadow-sm shadow-teal-700/20 transition-all hover:-translate-y-0.5 hover:bg-teal-800 hover:shadow-md hover:shadow-teal-700/25",
               )}
             >
-              Give feedback
+              {t("giveFeedback")}
             </Link>
           </div>
         </div>
@@ -256,17 +264,16 @@ export default function Home() {
             <div className="animate-fade-up">
               <Eyebrow>
                 <Sparkles className="size-3.5" aria-hidden />
-                Patient-first feedback
+                {t("patientFirst")}
               </Eyebrow>
             </div>
 
             <h1 className="animate-fade-up text-4xl leading-[1.05] font-bold tracking-tight text-balance text-slate-900 [animation-delay:100ms] sm:text-5xl lg:text-6xl">
-              Tell us how your visit went.
+              {t("homeTitle")}
             </h1>
 
             <p className="animate-fade-up max-w-xl text-lg leading-8 text-pretty text-slate-600 [animation-delay:200ms]">
-              Scan the QR code at your clinic, answer a few simple questions,
-              and submit feedback in about a minute. No account needed.
+              {t("homeIntro")}
             </p>
 
             <div className="animate-fade-up flex flex-wrap items-center gap-3 [animation-delay:300ms]">
@@ -275,7 +282,7 @@ export default function Home() {
                 className="group inline-flex h-12 items-center gap-2 rounded-full bg-teal-700 px-7 text-base font-semibold text-white shadow-sm shadow-teal-700/20 transition-all hover:-translate-y-0.5 hover:bg-teal-800 hover:shadow-md hover:shadow-teal-700/25"
               >
                 <MessageSquareHeart className="size-5" aria-hidden />
-                Share your feedback
+                {t("shareFeedback")}
                 <ArrowRight
                   className="size-4 transition-transform group-hover:translate-x-0.5"
                   aria-hidden
@@ -288,7 +295,7 @@ export default function Home() {
                   "h-12 rounded-full border-slate-300 bg-white px-6 font-semibold text-slate-700 shadow-none backdrop-blur transition-all hover:border-teal-300 hover:bg-teal-50 hover:text-teal-800",
                 )}
               >
-                See how it works
+                {t("seeHow")}
               </a>
             </div>
 
@@ -315,7 +322,7 @@ export default function Home() {
       >
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow>How it works</Eyebrow>
+            <Eyebrow>{t("homeHow")}</Eyebrow>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-slate-900 sm:text-4xl">
               Four simple steps from scan to submit
             </h2>
@@ -356,7 +363,7 @@ export default function Home() {
       <section id="why" className="scroll-mt-24 bg-[#F8FAFC]">
         <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow>Why it matters</Eyebrow>
+            <Eyebrow>{t("homeWhy")}</Eyebrow>
             <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance text-slate-900 sm:text-4xl">
               Calm, private, and easy to use
             </h2>
@@ -404,18 +411,17 @@ export default function Home() {
                 <HeartPulse className="h-7 w-7 text-white" aria-hidden />
               </span>
               <h2 className="mt-6 text-3xl font-bold tracking-tight text-balance text-white sm:text-4xl">
-                Ready to share your experience?
+                {t("ready")}
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-lg text-pretty text-teal-50/90">
-                Your feedback helps us improve the next visit for you and for
-                everyone else who comes after.
+                {t("readyText")}
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   href="/feedback"
                   className="group inline-flex h-12 items-center gap-2 rounded-full bg-white px-8 text-base font-semibold text-teal-800 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  Give feedback now
+                  {t("feedbackNow")}
                   <ArrowRight
                     className="size-4 transition-transform group-hover:translate-x-0.5"
                     aria-hidden
@@ -423,7 +429,7 @@ export default function Home() {
                 </Link>
               </div>
               <p className="mt-4 text-sm text-teal-100/85">
-                No account needed · Private and secure
+                {t("noAccountPrivate")}
               </p>
             </div>
           </div>
@@ -441,9 +447,7 @@ export default function Home() {
                 HealSync
               </span>
             </div>
-            <p className="text-sm text-slate-500">
-              Feedback platform for private healthcare clinics.
-            </p>
+            <p className="text-sm text-slate-500">{t("homeFooter")}</p>
           </div>
           <div className="flex flex-col items-center gap-4 md:items-end">
             <div className="flex items-center gap-2">
@@ -451,7 +455,7 @@ export default function Home() {
                 href="/feedback"
                 className="text-sm font-medium text-slate-600 transition-colors hover:text-teal-800"
               >
-                Patient feedback
+                {t("patientFeedback")}
               </Link>
               <span aria-hidden className="text-slate-300">
                 ·
@@ -461,11 +465,11 @@ export default function Home() {
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-teal-800"
               >
                 <LogIn className="h-3.5 w-3.5" aria-hidden />
-                Staff login
+                {t("staffLogin")}
               </Link>
             </div>
             <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} HealSync. All rights reserved.
+              © {new Date().getFullYear()} HealSync. {t("rights")}
             </p>
           </div>
         </div>

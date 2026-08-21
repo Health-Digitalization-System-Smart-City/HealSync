@@ -23,6 +23,7 @@ import { FormAlert } from "@/components/form-alert";
 import { FormField } from "@/features/feedback/components/form/form-field";
 import { SelectionCard } from "@/features/feedback/components/form/selection-card";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 interface RatingOption {
   value: FeedbackRating;
@@ -104,6 +105,17 @@ const RATING_OPTIONS: RatingOption[] = [
   },
 ];
 
+const RATING_MESSAGE_KEYS = [
+  ["verySatisfied", "verySatisfiedText"],
+  ["satisfied", "satisfiedText"],
+  ["mostlySatisfied", "mostlySatisfiedText"],
+  ["good", "goodText"],
+  ["neutral", "neutralText"],
+  ["notSatisfied", "notSatisfiedText"],
+  ["poor", "poorText"],
+  ["veryPoor", "veryPoorText"],
+] as const;
+
 export function RatingStep({
   headingRef,
   rating,
@@ -131,8 +143,14 @@ export function RatingStep({
   onBack: () => void;
   onSubmit: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   const hasRatingErrors = ratingErrors.length > 0;
   const isNearLimit = comment.length >= FEEDBACK_COMMENT_MAX_LENGTH;
+  const ratingOptions = RATING_OPTIONS.map((option, index) => ({
+    ...option,
+    label: t(RATING_MESSAGE_KEYS[index][0]),
+    description: t(RATING_MESSAGE_KEYS[index][1]),
+  }));
 
   return (
     <form
@@ -146,14 +164,14 @@ export function RatingStep({
         <StepHeader
           headingRef={headingRef}
           icon={MessageSquare}
-          title="Rate Your Experience"
+          title={t("rateTitle")}
           description={
             <>
-              Providing feedback for{" "}
+              {t("rateDescriptionStart")}{" "}
               <span className="text-foreground font-semibold">
                 {serviceName}
               </span>{" "}
-              at{" "}
+              {t("rateDescriptionAt")}{" "}
               <span className="text-foreground font-semibold">
                 {branchName}
               </span>
@@ -167,13 +185,13 @@ export function RatingStep({
           aria-describedby={hasRatingErrors ? "rating-error" : undefined}
         >
           <legend className="text-sm font-medium">
-            Overall Rating{" "}
+            {t("overallRating")}{" "}
             <span className="text-destructive" aria-hidden="true">
               *
             </span>
           </legend>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {RATING_OPTIONS.map((option) => {
+            {ratingOptions.map((option) => {
               const Icon = option.icon;
               const isSelected = rating === option.value;
               return (
@@ -213,7 +231,7 @@ export function RatingStep({
 
         <FormField
           id="comment"
-          label="Written Feedback"
+          label={t("writtenFeedback")}
           optional
           counter={`${comment.length} / ${FEEDBACK_COMMENT_MAX_LENGTH}`}
           errors={commentErrors}
@@ -222,7 +240,7 @@ export function RatingStep({
           <Textarea
             rows={4}
             maxLength={FEEDBACK_COMMENT_MAX_LENGTH}
-            placeholder="Tell us what went well or what we could do better…"
+            placeholder={t("commentPlaceholder")}
             value={comment}
             onChange={(event) => onCommentChange(event.target.value)}
             error={commentErrors.length > 0}
@@ -231,7 +249,7 @@ export function RatingStep({
         </FormField>
         <p className="sr-only" aria-live="polite">
           {isNearLimit
-            ? `Comment limit of ${FEEDBACK_COMMENT_MAX_LENGTH} characters reached.`
+            ? t("commentLimit", { count: FEEDBACK_COMMENT_MAX_LENGTH })
             : ""}
         </p>
       </div>
@@ -243,7 +261,7 @@ export function RatingStep({
           disabled={isSubmitting}
           className="w-full sm:w-auto"
         >
-          Back to Services
+          {t("backServices")}
         </Button>
         <Button
           type="submit"
@@ -258,11 +276,11 @@ export function RatingStep({
                 className="text-primary-foreground h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
                 aria-hidden="true"
               />
-              Submitting…
+              {t("submitting")}
             </>
           ) : (
             <>
-              Submit Feedback
+              {t("submit")}
               <svg
                 viewBox="0 0 24 24"
                 fill="none"

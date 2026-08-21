@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { AuthSupportPanel } from "@/features/auth/components/auth-support-panel";
 
 import { authClient } from "@/lib/auth/client";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
 
 const assurances = [
   "Secure sign in",
@@ -106,6 +107,7 @@ export function LoginForm() {
                 HealSync dashboard sign in
               </h1>
             </div>
+            <LanguageSelector />
           </div>
 
           <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
