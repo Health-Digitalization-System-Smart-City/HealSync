@@ -32,8 +32,7 @@ const messages = {
     experienceIntro:
       "We value your health and experience. Please share your feedback to help us serve you better.",
     phoneTitle: "Phone Number",
-    phoneDescription:
-      "Enter your phone number to proceed with your feedback.",
+    phoneDescription: "Enter your phone number to proceed with your feedback.",
     phoneLabel: "Patient Phone Number",
     phoneHint:
       "Your phone number is kept confidential and only used for verified patient feedback records.",
@@ -52,8 +51,7 @@ const messages = {
     searchBranches: "Search branch name or code…",
     noMatchingBranches: "No matching branches",
     serviceTitle: "Select Service",
-    serviceDescription:
-      "Select the service or department you visited at",
+    serviceDescription: "Select the service or department you visited at",
     loadingServices: "Loading available services…",
     loadingServicesHint: "Fetching the services offered at this branch.",
     serviceLoadError: "Couldn't load services",
@@ -68,8 +66,7 @@ const messages = {
     rateDescriptionAt: "at",
     overallRating: "Overall Rating",
     writtenFeedback: "Written Feedback",
-    commentPlaceholder:
-      "Tell us what went well or what we could do better…",
+    commentPlaceholder: "Tell us what went well or what we could do better…",
     commentLimit: "Comment limit of {count} characters reached.",
     backServices: "Back to Services",
     submit: "Submit Feedback",
@@ -111,71 +108,56 @@ const messages = {
     patientExperience: "የታካሚ ተሞክሮ",
     feedback: "የHealSync አስተያየት",
     aboutMinute: "1 ደቂቃ ያህል",
-    intro:
-      "በክሊኒኮቻችን ውስጥ ክብካቤን፣ ተደራሽነትን እና ግንኙነትን እንድናሻሽል የጉብኝት ተሞክሮዎን ያጋሩ።",
+    intro: "በክሊኒኮቻችን ውስጥ ክብካቤን፣ ተደራሽነትን እና ግንኙነትን እንድናሻሽል የጉብኝት ተሞክሮዎን ያጋሩ።",
     fastClear: "ፈጣን እና ግልጽ",
-    fastClearText:
-      "አጭር መመሪያ ያለውን ጥናት በጥቂት መንካቶች ያጠናቅቁ።",
+    fastClearText: "አጭር መመሪያ ያለውን ጥናት በጥቂት መንካቶች ያጠናቅቁ።",
     private: "ግላዊነትን ያማከለ",
-    privateText:
-      "ክብካቤን ለማሻሻል የሚያስፈልጉ ዝርዝሮች ብቻ ይሰበሰባሉ።",
+    privateText: "ክብካቤን ለማሻሻል የሚያስፈልጉ ዝርዝሮች ብቻ ይሰበሰባሉ።",
     perspective: "አመለካከትዎ አስፈላጊ ነው",
-    perspectiveText:
-      "አስተያየትዎ የታካሚውን ጉዞ እንድናሻሽል ይረዳናል።",
+    perspectiveText: "አስተያየትዎ የታካሚውን ጉዞ እንድናሻሽል ይረዳናል።",
     quickSurvey: "ፈጣን 4-ደረጃ ጥናት",
     noAccount: "መለያ አያስፈልግም",
     secure: "ግላዊ እና ደህንነቱ የተጠበቀ",
     experienceMatters: "የክብካቤ ተሞክሮዎ አስፈላጊ ነው",
-    experienceIntro:
-      "ጤናዎን እና ተሞክሮዎን እናከብራለን። በተሻለ ለማገልገል አስተያየትዎን ያጋሩ።",
+    experienceIntro: "ጤናዎን እና ተሞክሮዎን እናከብራለን። በተሻለ ለማገልገል አስተያየትዎን ያጋሩ።",
     phoneTitle: "ስልክ ቁጥር",
-    phoneDescription:
-      "ወደ አስተያየትዎ ለመቀጠል ስልክ ቁጥርዎን ያስገቡ።",
+    phoneDescription: "ወደ አስተያየትዎ ለመቀጠል ስልክ ቁጥርዎን ያስገቡ።",
     phoneLabel: "የታካሚ ስልክ ቁጥር",
-    phoneHint:
-      "ስልክ ቁጥርዎ ሚስጥራዊ ሆኖ ይጠበቃል፤ ለተረጋገጡ የታካሚ መዝገቦች ብቻ ይጠቀማል።",
+    phoneHint: "ስልክ ቁጥርዎ ሚስጥራዊ ሆኖ ይጠበቃል፤ ለተረጋገጡ የታካሚ መዝገቦች ብቻ ይጠቀማል።",
     phonePlaceholder: "ምሳሌ፦ 0912345678 ወይም +251912345678",
     continueBranch: "ወደ ቅርንጫፍ ምርጫ ቀጥል",
     branchTitle: "ቅርንጫፍ ይምረጡ",
     branchDescription: "የጎበኙትን የክሊኒክ ቅርንጫፍ ይምረጡ።",
     loadingBranches: "የክሊኒክ ቅርንጫፎች በመጫን ላይ…",
     branchLoadError: "ቅርንጫፎችን መጫን አልተቻለም",
-    branchLoadErrorText:
-      "የቅርንጫፎችን ዝርዝር ለመጫን ችግር ተፈጥሯል። እባክዎ ደግመው ይሞክሩ።",
+    branchLoadErrorText: "የቅርንጫፎችን ዝርዝር ለመጫን ችግር ተፈጥሯል። እባክዎ ደግመው ይሞክሩ።",
     noBranches: "ምንም ቅርንጫፍ የለም",
-    noBranchesText:
-      "በአሁኑ ጊዜ አስተያየት የሚቀበል የክሊኒክ ቅርንጫፍ የለም።",
+    noBranchesText: "በአሁኑ ጊዜ አስተያየት የሚቀበል የክሊኒክ ቅርንጫፍ የለም።",
     refresh: "አድስ",
     searchBranches: "የቅርንጫፍ ስም ወይም ኮድ ይፈልጉ…",
     noMatchingBranches: "ተዛማጅ ቅርንጫፍ የለም",
     serviceTitle: "አገልግሎት ይምረጡ",
-    serviceDescription:
-      "በዚህ ቅርንጫፍ የጎበኙትን አገልግሎት ወይም ክፍል ይምረጡ",
+    serviceDescription: "በዚህ ቅርንጫፍ የጎበኙትን አገልግሎት ወይም ክፍል ይምረጡ",
     loadingServices: "ያሉ አገልግሎቶች በመጫን ላይ…",
-    loadingServicesHint:
-      "በዚህ ቅርንጫፍ የሚሰጡ አገልግሎቶችን በማምጣት ላይ።",
+    loadingServicesHint: "በዚህ ቅርንጫፍ የሚሰጡ አገልግሎቶችን በማምጣት ላይ።",
     serviceLoadError: "አገልግሎቶችን መጫን አልተቻለም",
-    serviceLoadErrorText:
-      "ለዚህ ቅርንጫፍ አገልግሎቶችን በመጫን ላይ ችግር ተፈጥሯል።",
+    serviceLoadErrorText: "ለዚህ ቅርንጫፍ አገልግሎቶችን በመጫን ላይ ችግር ተፈጥሯል።",
     noServices: "በዚህ ቅርንጫፍ አገልግሎቶች የሉም",
-    noServicesText:
-      "ይህ ቅርንጫፍ በአሁኑ ጊዜ አገልግሎት አይሰጥም።",
+    noServicesText: "ይህ ቅርንጫፍ በአሁኑ ጊዜ አገልግሎት አይሰጥም።",
     differentBranch: "የተለየ ቅርንጫፍ ይምረጡ",
     rateTitle: "ተሞክሮዎን ይገምግሙ",
     rateDescriptionStart: "አስተያየት በመስጠት ላይ ስለ",
     rateDescriptionAt: "በ",
     overallRating: "አጠቃላይ ደረጃ",
     writtenFeedback: "የተጻፈ አስተያየት",
-    commentPlaceholder:
-      "ጥሩ የነበረውን ወይም ማሻሻል የምንችለውን ይንገሩን…",
+    commentPlaceholder: "ጥሩ የነበረውን ወይም ማሻሻል የምንችለውን ይንገሩን…",
     commentLimit: "የ{count} ፊደላት ገደብ ደርሷል።",
     backServices: "ወደ አገልግሎቶች ተመለስ",
     submit: "አስተያየት አስገባ",
     submitting: "በመላክ ላይ…",
     submitted: "አስተያየት ገብቷል",
     thankYou: "ለአስተያየትዎ እናመሰግናለን!",
-    thankYouText:
-      "ምላሽዎ በክሊኒክ ቅርንጫፎቻችን የክብካቤ ጥራትን በቀጣይነት እንድናሻሽል ይረዳናል።",
+    thankYouText: "ምላሽዎ በክሊኒክ ቅርንጫፎቻችን የክብካቤ ጥራትን በቀጣይነት እንድናሻሽል ይረዳናል።",
     reference: "የማጣቀሻ መለያ",
     branch: "ቅርንጫፍ",
     service: "አገልግሎት",
@@ -241,8 +223,7 @@ const messages = {
     branchLoadErrorText:
       "Tarree dameewwanii fe’uuf rakkoon uumameera. Mee irra deebi’ii yaalaa.",
     noBranches: "Dameen hin argamu",
-    noBranchesText:
-      "Yeroo ammaatti dameen kilinikaa yaada fudhatu hin jiru.",
+    noBranchesText: "Yeroo ammaatti dameen kilinikaa yaada fudhatu hin jiru.",
     refresh: "Haaromsi",
     searchBranches: "Maqaa ykn koodii damee barbaadi…",
     noMatchingBranches: "Dameen walsimu hin jiru",
@@ -250,14 +231,11 @@ const messages = {
     serviceDescription:
       "Damee kana keessatti tajaajila ykn kutaa daawwattan filadhaa",
     loadingServices: "Tajaajiloonni jiran fe’amaa jiru…",
-    loadingServicesHint:
-      "Tajaajiloota dameen kun kennu fidaa jirra.",
+    loadingServicesHint: "Tajaajiloota dameen kun kennu fidaa jirra.",
     serviceLoadError: "Tajaajiloota fe’uun hin danda’amne",
-    serviceLoadErrorText:
-      "Tajaajiloota damee kanaa fe’uuf rakkoon uumameera.",
+    serviceLoadErrorText: "Tajaajiloota damee kanaa fe’uuf rakkoon uumameera.",
     noServices: "Damee kana keessatti tajaajilli hin jiru",
-    noServicesText:
-      "Dameen kun yeroo ammaatti tajaajila hin kennu.",
+    noServicesText: "Dameen kun yeroo ammaatti tajaajila hin kennu.",
     differentBranch: "Damee biraa filadhaa",
     rateTitle: "Muuxannoo Keessan Madaalaa",
     rateDescriptionStart: "Yaada kennuu irratti",
@@ -330,8 +308,7 @@ const dashboardMessages = {
     breadcrumbs: "Breadcrumbs",
     branchesActive: "{count} Branches Active",
     clinicsConnected: "{count} Clinics Connected",
-    monitoringActive:
-      "Real-time patient feedback & SLA monitoring active.",
+    monitoringActive: "Real-time patient feedback & SLA monitoring active.",
     openNavigation: "Open navigation menu",
     closeNavigation: "Close navigation",
     expandSidebar: "Expand sidebar",
@@ -388,8 +365,7 @@ const dashboardMessages = {
     breadcrumbs: "የገጽ ዱካ",
     branchesActive: "{count} ቅርንጫፎች ንቁ ናቸው",
     clinicsConnected: "{count} ክሊኒኮች ተገናኝተዋል",
-    monitoringActive:
-      "የታካሚ አስተያየት እና SLA ክትትል ንቁ ነው።",
+    monitoringActive: "የታካሚ አስተያየት እና SLA ክትትል ንቁ ነው።",
     openNavigation: "የአሰሳ ምናሌ ክፈት",
     closeNavigation: "አሰሳን ዝጋ",
     expandSidebar: "የጎን አሞሌን ዘርጋ",
@@ -411,11 +387,9 @@ const dashboardMessages = {
       "በክሊኒክዎ ያለውን QR ኮድ ይቃኙ፣ ጥቂት ቀላል ጥያቄዎችን ይመልሱ እና በአንድ ደቂቃ ያህል ውስጥ አስተያየትዎን ያስገቡ። መለያ አያስፈልግም።",
     shareFeedback: "አስተያየትዎን ያጋሩ",
     seeHow: "እንዴት እንደሚሰራ ይመልከቱ",
-    noAccountPrivate:
-      "መለያ አያስፈልግም · ግላዊ እና ደህንነቱ የተጠበቀ",
+    noAccountPrivate: "መለያ አያስፈልግም · ግላዊ እና ደህንነቱ የተጠበቀ",
     ready: "ተሞክሮዎን ለማጋራት ዝግጁ ነዎት?",
-    readyText:
-      "አስተያየትዎ ለእርስዎ እና ከእርስዎ በኋላ ለሚመጡ ሰዎች ቀጣዩን ጉብኝት እንድናሻሽል ይረዳናል።",
+    readyText: "አስተያየትዎ ለእርስዎ እና ከእርስዎ በኋላ ለሚመጡ ሰዎች ቀጣዩን ጉብኝት እንድናሻሽል ይረዳናል።",
     feedbackNow: "አሁን አስተያየት ይስጡ",
     homeFooter: "ለግል የጤና ክሊኒኮች የአስተያየት መድረክ።",
     rights: "መብቶች በሙሉ የተጠበቁ ናቸው።",
@@ -465,8 +439,7 @@ const dashboardMessages = {
     staffLogin: "Seensa hojjetaa",
     giveFeedback: "Yaada kenni",
     patientFirst: "Yaada dhukkubsataa dursu",
-    homeTitle:
-      "Daawwannaan keessan akkam akka ture nuuf jedhu.",
+    homeTitle: "Daawwannaan keessan akkam akka ture nuuf jedhu.",
     homeIntro:
       "Koodii QR kilinika keessanii irratti argamu iskanii godhaa, gaaffiiwwan salphaa muraasa deebisaa, daqiiqaa tokko keessatti yaada galchaa. Akkaawuntiin hin barbaachisu.",
     shareFeedback: "Yaada keessan qoodaa",
@@ -477,15 +450,13 @@ const dashboardMessages = {
     readyText:
       "Yaadni keessan daawwannaa itti aanu isinii fi namoota isin booda dhufaniif fooyyessuuf nu gargaara.",
     feedbackNow: "Amma yaada kenni",
-    homeFooter:
-      "Waltajjii yaada kilinikiilee fayyaa dhuunfaa.",
+    homeFooter: "Waltajjii yaada kilinikiilee fayyaa dhuunfaa.",
     rights: "Mirgi hundi kan eegame dha.",
   },
 } as const;
 
 type MessageKey =
-  | keyof (typeof messages)["en"]
-  | keyof (typeof dashboardMessages)["en"];
+  keyof (typeof messages)["en"] | keyof (typeof dashboardMessages)["en"];
 
 type Values = Record<string, string | number>;
 
@@ -501,13 +472,10 @@ type FeedbackI18nValue = {
   t: (key: MessageKey, values?: Values) => string;
 };
 
-const FeedbackI18nContext =
-  React.createContext<FeedbackI18nValue | null>(null);
+const FeedbackI18nContext = React.createContext<FeedbackI18nValue | null>(null);
 
 function getSavedLocale(): FeedbackLocale {
-  const value = document.cookie.match(
-    /(?:^|; )healsync_locale=([^;]+)/,
-  )?.[1];
+  const value = document.cookie.match(/(?:^|; )healsync_locale=([^;]+)/)?.[1];
 
   return FEEDBACK_LOCALES.includes(value as FeedbackLocale)
     ? (value as FeedbackLocale)
@@ -521,8 +489,7 @@ export function FeedbackLanguageProvider({
 }) {
   // Start with the server-rendered fallback so a remembered language cannot
   // cause a hydration mismatch, then apply the browser preference.
-  const [locale, setLocale] =
-    React.useState<FeedbackLocale>("en");
+  const [locale, setLocale] = React.useState<FeedbackLocale>("en");
 
   React.useEffect(() => {
     // Intentional: initialize browser-only persisted state after hydration.
