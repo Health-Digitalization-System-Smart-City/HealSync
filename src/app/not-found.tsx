@@ -27,11 +27,16 @@ export default function NotFound() {
       {/* Top navigation header */}
       <header className="relative z-10 border-b border-slate-200/80 bg-[#F8FAFC]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+          >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-xs shadow-teal-700/20">
               <HeartPulse className="h-5 w-5" aria-hidden />
             </span>
-            <span className="text-lg font-bold tracking-tight text-slate-900">HealSync</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900">
+              HealSync
+            </span>
           </Link>
 
           <Link
@@ -50,12 +55,12 @@ export default function NotFound() {
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="surface-card w-full max-w-lg rounded-3xl border p-6 text-center shadow-lg sm:p-10">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-teal-800">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3.5 py-1 text-xs font-semibold tracking-wider text-teal-800 uppercase">
             <span>404 Error</span>
           </div>
 
           {/* Central Logo / Pulse Icon */}
-          <div className="relative mx-auto mt-6 flex size-20 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 ring-8 ring-teal-50/60 shadow-xs">
+          <div className="relative mx-auto mt-6 flex size-20 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 shadow-xs ring-8 ring-teal-50/60">
             <HeartPulse className="size-10" aria-hidden />
           </div>
 
@@ -64,8 +69,8 @@ export default function NotFound() {
             Oops! Page Not Found
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-            We couldn&apos;t find the page you were looking for. The link might be outdated,
-            mistyped, or the page may have been moved.
+            We couldn&apos;t find the page you were looking for. The link might
+            be outdated, mistyped, or the page may have been moved.
           </p>
 
           {/* Action Buttons */}
@@ -85,10 +90,13 @@ export default function NotFound() {
               href="/feedback"
               className={cn(
                 buttonVariants({ variant: "outline", size: "lg" }),
-                "gap-2 rounded-xl border-teal-200 bg-white font-semibold text-teal-800 hover:bg-teal-50 hover:text-teal-900 transition-all hover:-translate-y-0.5",
+                "gap-2 rounded-xl border-teal-200 bg-white font-semibold text-teal-800 transition-all hover:-translate-y-0.5 hover:bg-teal-50 hover:text-teal-900",
               )}
             >
-              <MessageSquareHeart className="size-4 text-teal-700" aria-hidden />
+              <MessageSquareHeart
+                className="size-4 text-teal-700"
+                aria-hidden
+              />
               <span>Give Feedback</span>
             </Link>
           </div>
@@ -111,17 +119,26 @@ export default function NotFound() {
       {/* Footer */}
       <footer className="relative z-10 border-t border-slate-200/80 bg-white/60 py-6 text-center text-xs text-slate-500 backdrop-blur-xs">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} HealSync Healthcare. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} HealSync Healthcare. All rights
+            reserved.
+          </p>
           <div className="flex items-center gap-4">
             <Link href="/" className="transition-colors hover:text-teal-800">
               Home
             </Link>
             <span>·</span>
-            <Link href="/feedback" className="transition-colors hover:text-teal-800">
+            <Link
+              href="/feedback"
+              className="transition-colors hover:text-teal-800"
+            >
               Feedback
             </Link>
             <span>·</span>
-            <Link href="/login" className="transition-colors hover:text-teal-800">
+            <Link
+              href="/login"
+              className="transition-colors hover:text-teal-800"
+            >
               Staff Portal
             </Link>
           </div>
