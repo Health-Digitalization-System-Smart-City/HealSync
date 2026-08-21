@@ -2,9 +2,11 @@
 
 import * as React from "react";
 
+import Link from "next/link";
 import {
   CheckCircle2,
   HeartPulse,
+  House,
   MessageSquareHeart,
   ShieldCheck,
   Sparkles,
@@ -101,6 +103,14 @@ function PatientFeedbackFormContent({ initialBranches }: FeedbackFormProps) {
               {t("aboutMinute")}
             </span>
             <LanguageSelector />
+            <Link
+              href="/"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+            >
+              <House className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">{t("home")}</span>
+              <span className="sr-only sm:hidden">{t("home")}</span>
+            </Link>
           </div>
 
           <div className="mt-4 rounded-2xl border border-teal-100 bg-teal-50/70 p-3.5 lg:p-4">
