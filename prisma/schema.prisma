@@ -237,6 +237,7 @@ model Feedback {
   serviceId       String
   rating          FeedbackRating
   comment         String? // optional, ≤ 1,000 chars (security.md §14), original text preserved
+  locale          String   @default("en") // language selected when the patient submitted feedback
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime? // soft delete (database.md §17); physical deletion only after retention period

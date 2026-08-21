@@ -25,6 +25,7 @@ import {
   type NavItem,
 } from "@/components/dashboard/nav-config";
 import { ROLES, type Role } from "@/lib/permissions";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 /**
  * Resolves serializable nav icon keys to their Lucide components. Kept in the
@@ -41,6 +42,32 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   services: Stethoscope,
   users: Users,
   profile: UserCheck,
+};
+
+const NAV_LABEL_KEYS: Record<
+  string,
+  Parameters<ReturnType<typeof useFeedbackI18n>["t"]>[0]
+> = {
+  "/dashboard": "navDashboard",
+  "/dashboard/tasks": "navTasks",
+  "/dashboard/feedback": "navFeedback",
+  "/dashboard/analytics": "navAnalytics",
+  "/dashboard/ai-insights": "navAi",
+  "/dashboard/branches": "navBranches",
+  "/dashboard/services": "navServices",
+  "/dashboard/users": "navUsers",
+  "/dashboard/profile": "navProfile",
+};
+
+const SECTION_LABEL_KEYS: Record<
+  string,
+  Parameters<ReturnType<typeof useFeedbackI18n>["t"]>[0]
+> = {
+  Core: "sectionCore",
+  Operations: "sectionOperations",
+  Intelligence: "sectionIntelligence",
+  Management: "sectionManagement",
+  Account: "sectionAccount",
 };
 
 /**
@@ -70,12 +97,13 @@ function RailTooltip({
 }
 
 export function SidebarBrand({ collapsed = false }: { collapsed?: boolean }) {
+  const { t } = useFeedbackI18n();
   if (collapsed) {
     return (
       <Link
         href="/dashboard"
-        aria-label="HealSync dashboard"
-        title="HealSync dashboard"
+        aria-label={t("dashboardHome")}
+        title={t("dashboardHome")}
         className="group flex items-center"
       >
         <span className="bg-primary text-primary-foreground flex size-8.5 items-center justify-center rounded-lg shadow-xs transition-transform group-hover:scale-105">
@@ -118,14 +146,16 @@ function NavItemLink({
   isActive: boolean;
   collapsed: boolean;
 }) {
+  const { t } = useFeedbackI18n();
   const Icon = ICONS[item.icon];
+  const title = t(NAV_LABEL_KEYS[item.href] ?? "navDashboard");
 
   const link = (
     <Link
       href={item.href}
       aria-current={isActive ? "page" : undefined}
-      aria-label={collapsed ? item.title : undefined}
-      title={collapsed ? item.title : undefined}
+      aria-label={collapsed ? title : undefined}
+      title={collapsed ? title : undefined}
       className={cn(
         "group relative flex items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-all",
         collapsed ? "justify-center px-0 py-2.5" : "justify-between",
@@ -146,7 +176,7 @@ function NavItemLink({
           )}
           aria-hidden
         />
-        {!collapsed && <span className="truncate">{item.title}</span>}
+        {!collapsed && <span className="truncate">{title}</span>}
 
         {item.badge && collapsed ? (
           <span
@@ -180,7 +210,7 @@ function NavItemLink({
 
   if (!collapsed) return link;
 
-  return <RailTooltip label={item.title}>{link}</RailTooltip>;
+  return <RailTooltip label={title}>{link}</RailTooltip>;
 }
 
 export function SidebarNav({
@@ -192,19 +222,20 @@ export function SidebarNav({
   branchCount: number;
   collapsed?: boolean;
 }) {
+  const { t } = useFeedbackI18n();
   const pathname = usePathname();
   const sections = getNavSections(items);
 
   return (
     <nav
       className="flex flex-1 flex-col gap-5 py-1"
-      aria-label="Dashboard navigation"
+      aria-label={t("dashboardNavigation")}
     >
       {sections.map(({ section, items: sectionItems }) => (
         <div key={section} className="flex flex-col gap-1">
           {!collapsed && (
             <div className="text-muted-foreground/70 px-2.5 pb-1 text-[11px] font-semibold tracking-wider uppercase">
-              {section}
+              {t(SECTION_LABEL_KEYS[section] ?? "sectionCore")}
             </div>
           )}
           <div className="flex flex-col gap-0.5">
@@ -230,10 +261,10 @@ export function SidebarNav({
 
       {collapsed ? (
         <div className="mt-auto">
-          <RailTooltip label={`${branchCount} Clinics Connected`}>
+          <RailTooltip label={t("clinicsConnected", { count: branchCount })}>
             <div
               className="border-border/70 bg-muted/40 flex flex-col items-center gap-1.5 rounded-lg border p-2"
-              aria-label={`${branchCount} Clinics Connected`}
+              aria-label={t("clinicsConnected", { count: branchCount })}
             >
               <span className="relative flex size-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
@@ -252,10 +283,10 @@ export function SidebarNav({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
             </span>
-            <span>{branchCount} Clinics Connected</span>
+            <span>{t("clinicsConnected", { count: branchCount })}</span>
           </div>
           <p className="text-muted-foreground mt-1 text-[11px]">
-            Real-time patient feedback & SLA monitoring active.
+            {t("monitoringActive")}
           </p>
         </div>
       )}

@@ -16,6 +16,7 @@ import {
   LoadingState,
 } from "@/features/feedback/components/form/form-states";
 import { StepHeader } from "@/features/feedback/components/steps/step-header";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export function BranchStep({
   headingRef,
@@ -40,6 +41,7 @@ export function BranchStep({
   onRetry: () => void;
   onBack: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   const query = search.trim().toLowerCase();
   const filteredBranches = branches.filter(
     (branch) =>
@@ -53,27 +55,24 @@ export function BranchStep({
         <StepHeader
           headingRef={headingRef}
           icon={Building2}
-          title="Select Branch"
-          description="Choose the clinic branch location you visited."
+          title={t("branchTitle")}
+          description={t("branchDescription")}
           onBack={onBack}
         />
 
         {status === "loading" ? (
-          <LoadingState label="Loading clinic branches…" />
+          <LoadingState label={t("loadingBranches")} />
         ) : status === "error" ? (
           <ErrorState
-            title="Couldn't load branches"
-            message={
-              error ??
-              "There was a problem loading the branch list. Please try again."
-            }
+            title={t("branchLoadError")}
+            message={error ?? t("branchLoadErrorText")}
             onRetry={onRetry}
           />
         ) : branches.length === 0 ? (
           <EmptyState
-            title="No branches available"
-            message="There are no clinic branches accepting feedback right now. Please try again later."
-            actionLabel="Refresh"
+            title={t("noBranches")}
+            message={t("noBranchesText")}
+            actionLabel={t("refresh")}
             onAction={onRetry}
           />
         ) : (
@@ -84,12 +83,12 @@ export function BranchStep({
             {branches.length > 5 ? (
               <div className="mb-3 space-y-2">
                 <Label htmlFor="branchSearch" className="sr-only">
-                  Search branches
+                  {t("searchBranches")}
                 </Label>
                 <Input
                   id="branchSearch"
                   type="search"
-                  placeholder="Search branch name or code…"
+                  placeholder={t("searchBranches")}
                   value={search}
                   onChange={(event) => onSearchChange(event.target.value)}
                   className="h-11 text-base"
@@ -99,8 +98,8 @@ export function BranchStep({
 
             {filteredBranches.length === 0 ? (
               <EmptyState
-                title="No matching branches"
-                message={`No branches match “${search}”. Try a different search term.`}
+                title={t("noMatchingBranches")}
+                message={`${t("noMatchingBranches")}: “${search}”.`}
               />
             ) : (
               <div className="grid max-h-[min(52vh,420px)] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">

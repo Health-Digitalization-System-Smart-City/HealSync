@@ -16,6 +16,8 @@ import { DashboardBreadcrumbs } from "@/components/dashboard/breadcrumbs";
 import type { NavItem } from "@/components/dashboard/nav-config";
 import { ROLES, type Role } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export type DashboardUser = {
   name: string;
@@ -61,6 +63,7 @@ export function AppShell({
   user: DashboardUser;
   branchCount: number;
 }) {
+  const { t } = useFeedbackI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Persisted collapse preference. useSyncExternalStore keeps the server and
@@ -129,7 +132,7 @@ export function AppShell({
                     variant="ghost"
                     size="icon"
                     className="lg:hidden"
-                    aria-label="Open navigation menu"
+                    aria-label={t("openNavigation")}
                   >
                     <Menu className="size-4.5" aria-hidden />
                   </Button>
@@ -140,11 +143,13 @@ export function AppShell({
                 size="icon"
                 className="hidden lg:inline-flex"
                 onClick={toggleCollapsed}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={
+                  collapsed ? t("expandSidebar") : t("collapseSidebar")
+                }
                 title={
                   collapsed
-                    ? "Expand sidebar (Ctrl+B)"
-                    : "Collapse sidebar (Ctrl+B)"
+                    ? `${t("expandSidebar")} (Ctrl+B)`
+                    : `${t("collapseSidebar")} (Ctrl+B)`
                 }
               >
                 {collapsed ? (
@@ -158,12 +163,15 @@ export function AppShell({
 
             {/* Right: Status pill, role indicator & user profile menu */}
             <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="hidden sm:block">
+                <LanguageSelector />
+              </div>
               <div className="py-0.8 hidden items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 text-xs font-medium text-emerald-700 md:flex dark:text-emerald-300">
                 <span className="relative flex size-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex size-1.5 rounded-full bg-emerald-500"></span>
                 </span>
-                <span>{branchCount} Branches Active</span>
+                <span>{t("branchesActive", { count: branchCount })}</span>
               </div>
 
               <div className="hidden sm:block">
@@ -177,7 +185,7 @@ export function AppShell({
                   }
                   className="font-mono text-[10px] font-bold tracking-wider uppercase"
                 >
-                  {user.role} role
+                  {t("role", { role: user.role })}
                 </Badge>
               </div>
 
@@ -200,7 +208,7 @@ export function AppShell({
           <div className="border-sidebar-border flex h-15 items-center justify-between border-b px-4">
             <SidebarBrand />
             <Dialog.Close
-              aria-label="Close navigation"
+              aria-label={t("closeNavigation")}
               className="text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring flex size-8 items-center justify-center rounded-lg transition-colors focus-visible:ring-2"
             >
               <X className="size-4" aria-hidden />

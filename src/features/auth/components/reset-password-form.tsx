@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { AuthSupportPanel } from "@/features/auth/components/auth-support-panel";
 
 import { authClient } from "@/lib/auth/client";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -103,6 +104,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
                 Password updated
               </h1>
             </div>
+            <LanguageSelector />
           </div>
 
           <div className="rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
@@ -147,6 +149,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
               Choose a new password
             </h1>
           </div>
+          <LanguageSelector />
         </div>
 
         <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">

@@ -3,12 +3,13 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export const FLOW_STEPS = [
-  { number: 1, label: "Phone" },
-  { number: 2, label: "Branch" },
-  { number: 3, label: "Service" },
-  { number: 4, label: "Rating" },
+  { number: 1, label: "phone" },
+  { number: 2, label: "branch" },
+  { number: 3, label: "service" },
+  { number: 4, label: "rating" },
 ] as const;
 
 export type FlowStepNumber = (typeof FLOW_STEPS)[number]["number"];
@@ -21,6 +22,7 @@ export function StepIndicator({
   /** Called when the user clicks a completed step to navigate back. */
   onSelect: (step: FlowStepNumber) => void;
 }) {
+  const { t } = useFeedbackI18n();
   return (
     <nav aria-label="Feedback progress" className="pt-2">
       <ol className="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -38,9 +40,10 @@ export function StepIndicator({
                 onClick={() => onSelect(step.number)}
                 disabled={isFuture}
                 aria-current={isCurrent ? "step" : undefined}
-                aria-label={`Step ${step.number} of 4: ${step.label}${
-                  isDone ? " (completed)" : ""
-                }`}
+                aria-label={`${t("step", {
+                  current: step.number,
+                  label: t(step.label),
+                }).replace(" · ", ": ")}${isDone ? " (completed)" : ""}`}
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold transition-all",
                   "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
@@ -86,8 +89,12 @@ export function StepIndicator({
         aria-live="polite"
         className="text-muted-foreground mt-2 text-center text-xs font-medium"
       >
-        Step {currentStep} of 4 ·{" "}
-        {FLOW_STEPS.find((s) => s.number === currentStep)?.label}
+        {t("step", {
+          current: currentStep,
+          label: t(
+            FLOW_STEPS.find((s) => s.number === currentStep)?.label ?? "phone",
+          ),
+        })}
       </p>
     </nav>
   );

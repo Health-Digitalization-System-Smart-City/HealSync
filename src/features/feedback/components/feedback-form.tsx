@@ -2,9 +2,11 @@
 
 import * as React from "react";
 
+import Link from "next/link";
 import {
   CheckCircle2,
   HeartPulse,
+  House,
   MessageSquareHeart,
   ShieldCheck,
   Sparkles,
@@ -20,21 +22,29 @@ import { PhoneStep } from "@/features/feedback/components/steps/phone-step";
 import { BranchStep } from "@/features/feedback/components/steps/branch-step";
 import { ServiceStep } from "@/features/feedback/components/steps/service-step";
 import { RatingStep } from "@/features/feedback/components/steps/rating-step";
+import {
+  FeedbackLanguageProvider,
+  useFeedbackI18n,
+} from "@/features/feedback/components/feedback-i18n";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
 
 interface FeedbackFormProps {
   initialBranches?: BranchData[];
 }
 
-const assuranceItems = [
-  "Quick 4-step survey",
-  "No account required",
-  "Private and secure",
-];
-
 export function PatientFeedbackForm({
   initialBranches = [],
 }: FeedbackFormProps) {
-  const { state, actions } = useFeedbackFlow(initialBranches);
+  return (
+    <FeedbackLanguageProvider>
+      <PatientFeedbackFormContent initialBranches={initialBranches} />
+    </FeedbackLanguageProvider>
+  );
+}
+
+function PatientFeedbackFormContent({ initialBranches }: FeedbackFormProps) {
+  const { locale, t } = useFeedbackI18n();
+  const { state, actions } = useFeedbackFlow(initialBranches, locale);
 
   const stepHeadingRef = React.useRef<HTMLHeadingElement>(null);
   const successHeadingRef = React.useRef<HTMLHeadingElement>(null);
@@ -83,22 +93,30 @@ export function PatientFeedbackForm({
             </span>
             <div>
               <p className="text-xs font-semibold tracking-[0.18em] text-teal-700 uppercase">
-                Patient experience
+                {t("patientExperience")}
               </p>
               <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                HealSync feedback
+                {t("feedback")}
               </h1>
             </div>
             <span className="ml-auto rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 lg:hidden">
-              About 1 minute
+              {t("aboutMinute")}
             </span>
+            <LanguageSelector />
+            <Link
+              href="/"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-800 focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              <House className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline">{t("home")}</span>
+              <span className="sr-only sm:hidden">{t("home")}</span>
+            </Link>
           </div>
 
           <div className="mt-4 rounded-2xl border border-teal-100 bg-teal-50/70 p-3.5 lg:p-4">
             <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
               <MessageSquareHeart className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
-              Share your visit experience so we can improve care, access, and
-              communication across our clinics.
+              {t("intro")}
             </p>
           </div>
 
@@ -106,18 +124,18 @@ export function PatientFeedbackForm({
             {[
               {
                 icon: Sparkles,
-                title: "Fast and clear",
-                text: "Complete a brief, guided survey in a few taps.",
+                title: t("fastClear"),
+                text: t("fastClearText"),
               },
               {
                 icon: ShieldCheck,
-                title: "Private by design",
-                text: "Only the details needed to improve care are collected.",
+                title: t("private"),
+                text: t("privateText"),
               },
               {
                 icon: Star,
-                title: "Your perspective matters",
-                text: "Feedback helps us improve the patient journey.",
+                title: t("perspective"),
+                text: t("perspectiveText"),
               },
             ].map(({ icon: Icon, title, text }) => (
               <div
@@ -140,7 +158,7 @@ export function PatientFeedbackForm({
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2 lg:mt-6">
-            {assuranceItems.map((item) => (
+            {[t("quickSurvey"), t("noAccount"), t("secure")].map((item) => (
               <span
                 key={item}
                 className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600"
@@ -158,11 +176,10 @@ export function PatientFeedbackForm({
         <div className="surface-card rounded-[1.5rem] p-4 sm:rounded-[2rem] sm:p-6 lg:p-8">
           <div className="mb-6 space-y-4 text-center sm:mb-8">
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Your care experience matters
+              {t("experienceMatters")}
             </h2>
             <p className="mx-auto max-w-xl text-sm leading-6 text-slate-600">
-              We value your health and experience. Please share your feedback to
-              help us serve you better.
+              {t("experienceIntro")}
             </p>
             <StepIndicator
               currentStep={state.step}

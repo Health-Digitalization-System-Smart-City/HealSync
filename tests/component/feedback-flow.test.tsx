@@ -74,6 +74,8 @@ async function advanceToRating(user: ReturnType<typeof userEvent.setup>) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  document.cookie = "healsync_locale=; path=/; max-age=0";
+  document.documentElement.lang = "en";
   // Default happy-path responses; individual tests override these.
   mocks.getBranches.mockResolvedValue(okBranches());
   mocks.getServiceByBranch.mockResolvedValue(okServices());
@@ -84,6 +86,25 @@ beforeEach(() => {
 });
 
 describe("PatientFeedbackForm — complete flow", () => {
+  it("switches the patient-facing survey to Amharic and submits its locale", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.selectOptions(screen.getByLabelText(/Language/i), "am");
+    expect(screen.getByRole("heading", { name: /ስልክ ቁጥር/i })).toBeVisible();
+
+    await user.type(screen.getByLabelText(/የታካሚ ስልክ ቁጥር/i), "0912345678");
+    await user.click(screen.getByRole("button", { name: /ወደ ቅርንጫፍ ምርጫ/i }));
+    await user.click(screen.getByRole("radio", { name: /Branch 01/i }));
+    await user.click(screen.getByRole("radio", { name: /Pharmacy/i }));
+    await user.click(screen.getByRole("radio", { name: /በጣም ረክቻለሁ/i }));
+    await user.click(screen.getByRole("button", { name: /አስተያየት አስገባ/i }));
+
+    expect(mocks.submitFeedback).toHaveBeenCalledWith(
+      expect.objectContaining({ locale: "am" }),
+    );
+  });
+
   it("submits the full flow and shows the success confirmation", async () => {
     const user = userEvent.setup();
     renderForm();

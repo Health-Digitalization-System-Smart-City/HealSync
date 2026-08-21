@@ -11,6 +11,7 @@ import {
   submitFeedbackSchema,
   type FeedbackRating,
 } from "@/lib/validation";
+import type { FeedbackLocale } from "@/features/feedback/components/feedback-i18n";
 
 export type FeedbackStep = 1 | 2 | 3 | 4;
 export type LoadStatus = "idle" | "loading" | "success" | "error";
@@ -227,7 +228,10 @@ export interface FeedbackFlowActions {
   resetFlow: () => void;
 }
 
-export function useFeedbackFlow(initialBranches: BranchData[] = []): {
+export function useFeedbackFlow(
+  initialBranches: BranchData[] = [],
+  locale: FeedbackLocale = "en",
+): {
   state: FeedbackFlowState;
   actions: FeedbackFlowActions;
 } {
@@ -337,6 +341,7 @@ export function useFeedbackFlow(initialBranches: BranchData[] = []): {
           serviceId: state.serviceId,
           rating: state.rating,
           comment: state.comment.trim() || undefined,
+          locale,
         });
         if (!parsed.success) {
           dispatch({
@@ -368,7 +373,7 @@ export function useFeedbackFlow(initialBranches: BranchData[] = []): {
       },
       resetFlow: () => dispatch({ type: "RESET" }),
     }),
-    [state],
+    [locale, state],
   );
 
   return { state, actions };

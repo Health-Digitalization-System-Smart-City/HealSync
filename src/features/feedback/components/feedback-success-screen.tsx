@@ -7,6 +7,7 @@ import { RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 export function FeedbackSuccessScreen({
   headingRef,
@@ -21,6 +22,7 @@ export function FeedbackSuccessScreen({
   serviceName: string;
   onReset: () => void;
 }) {
+  const { t } = useFeedbackI18n();
   return (
     <div
       role="status"
@@ -46,36 +48,35 @@ export function FeedbackSuccessScreen({
           variant="outline"
           className="mx-auto mb-2 gap-1 border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-600 dark:text-emerald-400"
         >
-          Feedback Submitted
+          {t("submitted")}
         </Badge>
         <h2
           ref={headingRef}
           tabIndex={-1}
           className="text-2xl font-bold tracking-tight outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
         >
-          Thank You for Your Feedback!
+          {t("thankYou")}
         </h2>
         <CardDescription className="mx-auto mt-2 max-w-md text-base">
-          Your response helps us continuously improve the quality of care across
-          our clinic branches.
+          {t("thankYouText")}
         </CardDescription>
       </CardHeader>
 
       <div className="bg-background/80 mx-6 space-y-2 rounded-lg border p-4 text-sm">
         <div className="text-muted-foreground flex items-center justify-between gap-4 border-b pb-2">
-          <span>Reference ID</span>
+          <span>{t("reference")}</span>
           <span className="text-foreground font-mono text-xs font-medium break-all">
-            {submissionId ? submissionId.slice(0, 13) : "N/A"}
+            {submissionId ? submissionId.slice(0, 13) : t("notAvailable")}
           </span>
         </div>
         <div className="text-muted-foreground flex items-center justify-between gap-4">
-          <span>Branch</span>
+          <span>{t("branch")}</span>
           <span className="text-foreground text-right font-medium">
             {branchName}
           </span>
         </div>
         <div className="text-muted-foreground flex items-center justify-between gap-4">
-          <span>Service</span>
+          <span>{t("service")}</span>
           <span className="text-foreground text-right font-medium">
             {serviceName}
           </span>
@@ -88,7 +89,7 @@ export function FeedbackSuccessScreen({
           className="h-11 w-full gap-2 text-base font-medium shadow-md"
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
-          Submit Another Response
+          {t("another")}
         </Button>
         <Link
           href="/"
@@ -97,7 +98,7 @@ export function FeedbackSuccessScreen({
             " h-11 w-full gap-2 text-base font-medium"
           }
         >
-          Return to Home
+          {t("home")}
         </Link>
       </CardFooter>
     </div>

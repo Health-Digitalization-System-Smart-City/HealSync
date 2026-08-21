@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth/client";
 import { Badge } from "@/components/ui/badge";
 import { ROLES, type Role } from "@/lib/permissions";
+import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
 function initials(name: string) {
   return name
@@ -36,6 +37,7 @@ export function UserMenu({
   email: string;
   role: Role;
 }) {
+  const { t } = useFeedbackI18n();
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -56,7 +58,7 @@ export function UserMenu({
   return (
     <Menu.Root>
       <Menu.Trigger
-        aria-label="Open user menu"
+        aria-label={t("openUserMenu")}
         className="border-border/80 bg-card text-foreground hover:bg-muted/70 focus-visible:ring-ring flex items-center gap-2.5 rounded-full border p-1 pr-3 text-xs font-semibold shadow-2xs transition-all select-none focus-visible:ring-2"
       >
         <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-full text-xs leading-none font-bold">
@@ -100,7 +102,7 @@ export function UserMenu({
               </span>
               <div className="text-muted-foreground mt-1 flex items-center gap-1.5 text-[11px]">
                 <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
-                <span>Your access is managed by your administrator</span>
+                <span>{t("accessManaged")}</span>
               </div>
             </div>
 
@@ -113,7 +115,7 @@ export function UserMenu({
             >
               <UserRound className="text-muted-foreground size-4" aria-hidden />
               <div className="flex flex-1 items-center justify-between">
-                <span>Profile & Security</span>
+                <span>{t("navProfile")}</span>
                 <ChevronRight className="text-muted-foreground/60 size-3.5" />
               </div>
             </Menu.Item>
@@ -125,7 +127,7 @@ export function UserMenu({
             >
               <Sparkles className="text-muted-foreground size-4" aria-hidden />
               <div className="flex flex-1 items-center justify-between">
-                <span>Dashboard Overview</span>
+                <span>{t("dashboardOverview")}</span>
               </div>
             </Menu.Item>
 
@@ -141,7 +143,7 @@ export function UserMenu({
               disabled={pending}
             >
               <LogOut className="size-4" aria-hidden />
-              <span>{pending ? "Signing out…" : "Sign out"}</span>
+              <span>{pending ? t("signingOut") : t("signOut")}</span>
             </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>

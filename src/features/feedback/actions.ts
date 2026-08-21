@@ -74,7 +74,7 @@ export async function submitFeedback(
       };
     }
 
-    const { phoneNumber, branchId, serviceId, rating, comment } =
+    const { phoneNumber, branchId, serviceId, rating, comment, locale } =
       parseResult.data;
 
     // 1. Normalize phone number & compute hash
@@ -149,6 +149,7 @@ export async function submitFeedback(
         serviceId,
         rating,
         comment: comment || null,
+        locale,
       },
       select: {
         id: true,

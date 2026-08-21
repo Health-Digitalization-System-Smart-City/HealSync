@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { AuthSupportPanel } from "@/features/auth/components/auth-support-panel";
 
 import { authClient } from "@/lib/auth/client";
+import { LanguageSelector } from "@/features/feedback/components/language-selector";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = React.useState("");
@@ -68,6 +69,7 @@ export function ForgotPasswordForm() {
                 Check your email
               </h1>
             </div>
+            <LanguageSelector />
           </div>
 
           <div className="rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
@@ -124,6 +126,7 @@ export function ForgotPasswordForm() {
               Reset your password
             </h1>
           </div>
+          <LanguageSelector />
         </div>
 
         <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
