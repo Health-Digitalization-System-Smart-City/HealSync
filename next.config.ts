@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     // Enables the `forbidden()` function and `forbidden.tsx` file for
     // server-side authorization (403) responses.
     authInterrupts: true,
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "@tanstack/react-query",
+      "@base-ui/react",
+      "clsx",
+      "tailwind-merge",
+    ],
   },
 };
 
