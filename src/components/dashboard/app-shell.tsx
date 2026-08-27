@@ -112,7 +112,9 @@ export function AppShell({
     handleActivity();
 
     const events = ["pointerdown", "keydown", "scroll", "touchstart"];
-    events.forEach((evt) => window.addEventListener(evt, handleActivity, { passive: true }));
+    events.forEach((evt) =>
+      window.addEventListener(evt, handleActivity, { passive: true }),
+    );
 
     return () => {
       clearTimeout(timer);
