@@ -22,7 +22,9 @@ export function SignOutButton() {
     } catch (error) {
       console.error("[auth] Sign out failed:", error);
     } finally {
-      window.location.href = "/";
+      router.replace("/");
+      router.refresh();
+      setIsSigningOut(false);
     }
   };
 

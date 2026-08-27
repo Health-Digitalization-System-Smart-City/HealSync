@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,7 @@ export function AppShell({
   branchCount: number;
 }) {
   const { t } = useFeedbackI18n();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Persisted collapse preference. useSyncExternalStore keeps the server and
@@ -85,7 +87,8 @@ export function AppShell({
     const hasActiveSession = sessionStorage.getItem("healsync:session-active");
     if (!hasActiveSession) {
       authClient.signOut().finally(() => {
-        window.location.href = "/login";
+        router.replace("/login");
+        router.refresh();
       });
       return;
     }
@@ -100,7 +103,8 @@ export function AppShell({
         console.warn("[auth] Idle inactivity timeout reached. Logging out.");
         sessionStorage.removeItem("healsync:session-active");
         authClient.signOut().finally(() => {
-          window.location.href = "/login";
+          router.replace("/login");
+          router.refresh();
         });
       }, INACTIVITY_TIMEOUT_MS);
     }
@@ -114,7 +118,7 @@ export function AppShell({
       clearTimeout(timer);
       events.forEach((evt) => window.removeEventListener(evt, handleActivity));
     };
-  }, []);
+  }, [router]);
 
   // Ctrl/Cmd+B toggles the sidebar for keyboard-first users.
   useEffect(() => {
