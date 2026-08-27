@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { DashboardBreadcrumbs } from "@/components/dashboard/breadcrumbs";
 import type { NavItem } from "@/components/dashboard/nav-config";
 import { ROLES, type Role } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth/client";
 import { LanguageSelector } from "@/features/feedback/components/language-selector";
 import { useFeedbackI18n } from "@/features/feedback/components/feedback-i18n";
 
@@ -64,6 +66,7 @@ export function AppShell({
   branchCount: number;
 }) {
   const { t } = useFeedbackI18n();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Persisted collapse preference. useSyncExternalStore keeps the server and
@@ -76,6 +79,48 @@ export function AppShell({
     () => false,
   );
   const toggleCollapsed = () => persistCollapsed(!collapsed);
+
+  // Active session gatekeeper: if website/tab was closed, require fresh login
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const hasActiveSession = sessionStorage.getItem("healsync:session-active");
+    if (!hasActiveSession) {
+      authClient.signOut().finally(() => {
+        router.replace("/login");
+        router.refresh();
+      });
+      return;
+    }
+
+    // 30-minute client inactivity timeout
+    const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+
+    function handleActivity() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        console.warn("[auth] Idle inactivity timeout reached. Logging out.");
+        sessionStorage.removeItem("healsync:session-active");
+        authClient.signOut().finally(() => {
+          router.replace("/login");
+          router.refresh();
+        });
+      }, INACTIVITY_TIMEOUT_MS);
+    }
+
+    handleActivity();
+
+    const events = ["pointerdown", "keydown", "scroll", "touchstart"];
+    events.forEach((evt) =>
+      window.addEventListener(evt, handleActivity, { passive: true }),
+    );
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach((evt) => window.removeEventListener(evt, handleActivity));
+    };
+  }, [router]);
 
   // Ctrl/Cmd+B toggles the sidebar for keyboard-first users.
   useEffect(() => {

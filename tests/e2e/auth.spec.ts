@@ -98,7 +98,7 @@ test.describe("Authentication & RBAC", () => {
     ).toBeVisible();
   });
 
-  test("a signed-in user can sign out back to the login page", async ({
+  test("a signed-in user can sign out back to the home page", async ({
     page,
   }) => {
     await page.goto("/login");
@@ -109,12 +109,12 @@ test.describe("Authentication & RBAC", () => {
 
     await page.getByRole("button", { name: /Sign out/i }).click();
 
-    await page.waitForURL("**/login");
+    await page.waitForURL("**/");
     await expect(
-      page.getByRole("heading", { name: /Sign in to the dashboard/i }),
+      page.getByRole("heading", { name: /Tell us how your visit went/i }),
     ).toBeVisible();
 
-    // The session is gone: the dashboard is protected again.
+    // The session is gone: accessing the dashboard redirects to login.
     await page.goto("/dashboard");
     await page.waitForURL("**/login");
   });
