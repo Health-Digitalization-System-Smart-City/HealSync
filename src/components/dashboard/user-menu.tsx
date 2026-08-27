@@ -43,13 +43,16 @@ export function UserMenu({
 
   async function handleSignOut() {
     setPending(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("healsync:session-active");
+    }
     try {
       await authClient.signOut();
-    } catch {
-      // ignore client signout errors and redirect
+    } catch (error) {
+      console.error("[auth] Sign out failed:", error);
+    } finally {
+      window.location.href = "/";
     }
-    router.push("/login");
-    router.refresh();
   }
 
   const menuItemClass =
@@ -139,7 +142,7 @@ export function UserMenu({
                 menuItemClass,
                 "text-destructive focus:bg-destructive/10 data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive",
               )}
-              onSelect={handleSignOut}
+              onClick={handleSignOut}
               disabled={pending}
             >
               <LogOut className="size-4" aria-hidden />

@@ -121,8 +121,8 @@ export const auth = betterAuth({
   },
 
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // refresh session expiry on active use within 24h
+    expiresIn: 60 * 30, // 30 minutes of inactivity
+    updateAge: 60 * 5, // refresh session window on active use every 5 minutes
   },
 
   // Per-IP rate limiting for /api/auth/* endpoints. The global budget (100

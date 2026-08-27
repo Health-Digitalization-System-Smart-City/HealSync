@@ -71,6 +71,11 @@ export function LoginForm() {
         return;
       }
 
+      // Mark active browser tab session for re-authentication on window/tab close
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("healsync:session-active", "1");
+      }
+
       // Navigate to the dashboard and refresh so server-rendered auth state
       // (route guards, nav) picks up the new session.
       router.push("/dashboard");

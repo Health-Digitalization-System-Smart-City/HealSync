@@ -25,11 +25,36 @@ import {
  * fail closed: the caller treats the user as unauthenticated instead of
  * crashing the page with a 500. The error is logged so it stays visible.
  */
+/** Maximum absolute lifetime of a session (24 hours) regardless of ongoing activity. */
+const MAX_SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000;
+
 export const getSession = cache(async () => {
   try {
-    return await auth.api.getSession({
-      headers: await headers(),
+    const requestHeaders = await headers();
+    const result = await auth.api.getSession({
+      headers: requestHeaders,
     });
+
+    if (!result) return null;
+
+    // Enforce 24h absolute session lifetime cap
+    const sessionCreatedAt = new Date(result.session.createdAt).getTime();
+    if (Date.now() - sessionCreatedAt > MAX_SESSION_LIFETIME_MS) {
+      console.warn(
+        `[auth] Session ${result.session.id} exceeded 24h max lifetime; invalidating.`,
+      );
+      await auth.api
+        .revokeSession({
+          headers: requestHeaders,
+          body: { token: result.session.token },
+        })
+        .catch(() => {
+          // ignore revocation errors if DB/session is already invalidated
+        });
+      return null;
+    }
+
+    return result;
   } catch (error) {
     console.error(
       "[auth] Session lookup failed; treating user as unauthenticated.",

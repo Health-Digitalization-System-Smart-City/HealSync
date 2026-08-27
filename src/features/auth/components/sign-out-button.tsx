@@ -14,12 +14,15 @@ export function SignOutButton() {
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("healsync:session-active");
+    }
     try {
       await authClient.signOut();
-      router.push("/login");
-      router.refresh();
+    } catch (error) {
+      console.error("[auth] Sign out failed:", error);
     } finally {
-      setIsSigningOut(false);
+      window.location.href = "/";
     }
   };
 
