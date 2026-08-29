@@ -53,10 +53,20 @@ export const FeedbackRatingEnum = z.enum(
 export type FeedbackRating = z.infer<typeof FeedbackRatingEnum>;
 
 /**
- * Phone number regex validation:
- * Supports international E.164 format (+251912345678) or local Ethiopian formats (0912345678 / 0712345678).
+ * Ethiopian phone number validation (E.164 §11 — Ethiopia country code +251).
+ *
+ * Accepted formats (all equivalent after normalisation):
+ *   - 0912345678   (local, leading 0)
+ *   - 912345678    (local, no leading 0)
+ *   - +251912345678  (E.164)
+ *
+ * Rules:
+ *   - After stripping spaces, dashes, and the leading 0 / +251 prefix, the
+ *     remaining subscriber number must be exactly 9 digits.
+ *   - The subscriber number must begin with 7 or 9 (Ethio Telecom and
+ *     Safaricom Ethiopia SIM ranges).
  */
-const phoneNumberRegex = /^(\+251|0)?[79]\d{8}$|^(\+\d{1,3})?\d{8,14}$/;
+const ETH_PHONE_REGEX = /^(?:\+251|251|0)?([79]\d{8})$/;
 
 export const FEEDBACK_COMMENT_MAX_LENGTH = 1000;
 export const feedbackLocaleSchema = z.enum(["en", "am", "om"]);
@@ -64,11 +74,14 @@ export const feedbackLocaleSchema = z.enum(["en", "am", "om"]);
 export const phoneNumberSchema = z
   .string()
   .trim()
-  .min(1, "Phone number is required")
-  .refine((val) => phoneNumberRegex.test(val.replace(/[\s-]/g, "")), {
-    message:
-      "Please enter a valid phone number (e.g., 0912345678 or +251912345678)",
-  });
+  .min(1, "Phone number is required.")
+  .refine(
+    (val) => ETH_PHONE_REGEX.test(val.replace(/[\s\-().]/g, "")),
+    {
+      message:
+        "Please enter a valid Ethiopian phone number (e.g. 0912345678 or 0712345678).",
+    },
+  );
 
 export const feedbackCommentSchema = z
   .string()
