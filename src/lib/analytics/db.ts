@@ -211,6 +211,8 @@ export type BranchOverview = {
   id: string;
   name: string;
   code: string | null;
+  address: string | null;
+  phone: string | null;
   isActive: boolean;
   totalFeedback: number;
   satisfactionRate: number; // 0..100
@@ -287,6 +289,8 @@ export async function listBranchesWithAnalytics(): Promise<BranchOverview[]> {
         id: true,
         name: true,
         code: true,
+        address: true,
+        phone: true,
         isActive: true,
         _count: {
           select: { branchServices: { where: { isActive: true } } },
@@ -327,6 +331,8 @@ export async function listBranchesWithAnalytics(): Promise<BranchOverview[]> {
       id: branch.id,
       name: branch.name,
       code: branch.code,
+      address: branch.address,
+      phone: branch.phone,
       isActive: branch.isActive,
       servicesCount: branch._count.branchServices,
       ...stats,
