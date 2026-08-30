@@ -77,7 +77,7 @@ export const phoneNumberSchema = z
   .min(1, "Phone number is required.")
   .refine((val) => ETH_PHONE_REGEX.test(val.replace(/[\s\-().]/g, "")), {
     message:
-      "Please enter a valid Ethiopian phone number (e.g. 0912345678 or 0712345678).",
+      "Please enter a valid phone number (e.g. 0912345678 or 0712345678).",
   });
 
 export const feedbackCommentSchema = z
