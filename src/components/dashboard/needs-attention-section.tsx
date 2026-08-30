@@ -7,13 +7,14 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
-  Clock,
   ExternalLink,
   ShieldAlert,
   Stethoscope,
-  TrendingDown,
 } from "lucide-react";
-import type { BranchComparisonItem, ServiceComparisonItem } from "@/lib/analytics/types";
+import type {
+  BranchComparisonItem,
+  ServiceComparisonItem,
+} from "@/lib/analytics/types";
 import { cn } from "@/lib/utils";
 
 export interface AttentionItem {
@@ -51,7 +52,8 @@ const SEVERITY_STYLES = {
     badge:
       "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300",
     icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/60 dark:border-amber-500/20",
-    border: "border-amber-200/70 hover:border-amber-300 dark:border-amber-500/20",
+    border:
+      "border-amber-200/70 hover:border-amber-300 dark:border-amber-500/20",
     label: "Requires Review",
   },
   info: {
@@ -67,8 +69,6 @@ export function NeedsAttentionSection({
   branches = [],
   services = [],
   negativeCount = 0,
-  totalCount = 0,
-  satisfactionRate = 0,
   onFilterBranch,
   onFilterService,
   className,
@@ -79,8 +79,16 @@ export function NeedsAttentionSection({
 
     // 1. Identify lowest scoring / highest negative branch
     const problematicBranches = branches
-      .filter((b) => b.totalFeedback >= 3 && (b.satisfactionRate < 65 || b.negativeCount >= 3))
-      .sort((a, b) => a.satisfactionRate - b.satisfactionRate || b.negativeCount - a.negativeCount);
+      .filter(
+        (b) =>
+          b.totalFeedback >= 3 &&
+          (b.satisfactionRate < 65 || b.negativeCount >= 3),
+      )
+      .sort(
+        (a, b) =>
+          a.satisfactionRate - b.satisfactionRate ||
+          b.negativeCount - a.negativeCount,
+      );
 
     if (problematicBranches.length > 0) {
       const b = problematicBranches[0];
@@ -98,8 +106,16 @@ export function NeedsAttentionSection({
 
     // 2. Identify clinical service with highest negative concentrations
     const problematicServices = services
-      .filter((s) => s.totalFeedback >= 3 && (s.satisfactionRate < 65 || s.negativeCount >= 3))
-      .sort((a, b) => a.satisfactionRate - b.satisfactionRate || b.negativeCount - a.negativeCount);
+      .filter(
+        (s) =>
+          s.totalFeedback >= 3 &&
+          (s.satisfactionRate < 65 || s.negativeCount >= 3),
+      )
+      .sort(
+        (a, b) =>
+          a.satisfactionRate - b.satisfactionRate ||
+          b.negativeCount - a.negativeCount,
+      );
 
     if (problematicServices.length > 0) {
       const s = problematicServices[0];
@@ -140,7 +156,7 @@ export function NeedsAttentionSection({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/60 pb-4">
+      <div className="border-border/60 flex items-center justify-between border-b pb-4">
         <div className="flex items-center gap-2">
           <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
             <ShieldAlert className="size-4" aria-hidden />
@@ -173,7 +189,8 @@ export function NeedsAttentionSection({
               All Clinical Metrics Within Healthy Thresholds
             </p>
             <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-              No branches or medical services currently fall below critical satisfaction rates.
+              No branches or medical services currently fall below critical
+              satisfaction rates.
             </p>
           </div>
         ) : (
@@ -184,12 +201,12 @@ export function NeedsAttentionSection({
               <div
                 key={item.id}
                 className={cn(
-                  "group flex flex-col justify-between gap-3 rounded-xl border bg-card p-4 transition-all duration-200 sm:flex-row sm:items-center",
+                  "group bg-card flex flex-col justify-between gap-3 rounded-xl border p-4 transition-all duration-200 sm:flex-row sm:items-center",
                   style.border,
                 )}
               >
                 {/* Left content */}
-                <div className="flex items-start gap-3 min-w-0">
+                <div className="flex min-w-0 items-start gap-3">
                   <span
                     className={cn(
                       "flex size-9 shrink-0 items-center justify-center rounded-xl border shadow-xs",
@@ -231,14 +248,14 @@ export function NeedsAttentionSection({
                 </div>
 
                 {/* Right Action */}
-                <div className="flex items-center shrink-0 sm:self-center">
+                <div className="flex shrink-0 items-center sm:self-center">
                   {item.actionHref ? (
                     <Link
                       href={item.actionHref}
                       className="border-border bg-card hover:bg-muted text-foreground inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold shadow-2xs transition"
                     >
                       <span>{item.actionLabel || "Inspect"}</span>
-                      <ExternalLink className="size-3 text-muted-foreground" />
+                      <ExternalLink className="text-muted-foreground size-3" />
                     </Link>
                   ) : item.onAction ? (
                     <button
@@ -247,7 +264,7 @@ export function NeedsAttentionSection({
                       className="border-border bg-card hover:bg-muted text-foreground inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold shadow-2xs transition"
                     >
                       <span>{item.actionLabel || "Drill Down"}</span>
-                      <ArrowRight className="size-3 text-primary" />
+                      <ArrowRight className="text-primary size-3" />
                     </button>
                   ) : null}
                 </div>
@@ -258,9 +275,14 @@ export function NeedsAttentionSection({
       </div>
 
       {/* Footer */}
-      <div className="border-border/60 mt-4 flex items-center justify-between border-t pt-3 text-[11px] text-muted-foreground">
-        <span>Deterministic prioritization based on low scores and negative volume</span>
-        <Link href="/dashboard/tasks" className="hover:text-foreground underline">
+      <div className="border-border/60 text-muted-foreground mt-4 flex items-center justify-between border-t pt-3 text-[11px]">
+        <span>
+          Deterministic prioritization based on low scores and negative volume
+        </span>
+        <Link
+          href="/dashboard/tasks"
+          className="hover:text-foreground underline"
+        >
           Create operational task
         </Link>
       </div>

@@ -6,13 +6,10 @@ import {
   Building2,
   Calendar,
   ChevronRight,
-  ExternalLink,
   MessageSquare,
-  Sparkles,
   Star,
   Stethoscope,
 } from "lucide-react";
-import { getRatingLabel } from "@/lib/feedback/ratings";
 import type { FeedbackView } from "@/lib/feedback/types";
 import { cn } from "@/lib/utils";
 
@@ -46,9 +43,9 @@ export function RecentFeedbackFeed({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+      <div className="border-border/60 flex items-center justify-between border-b px-5 py-4">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+          <span className="bg-primary/10 text-primary dark:bg-primary/20 flex size-7 items-center justify-center rounded-lg">
             <MessageSquare className="size-4" aria-hidden />
           </span>
           <div>
@@ -79,7 +76,8 @@ export function RecentFeedbackFeed({
               No Feedback Submissions Yet
             </p>
             <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-              Submissions from the public patient experience form will stream here in real-time.
+              Submissions from the public patient experience form will stream
+              here in real-time.
             </p>
           </div>
         ) : (
@@ -97,18 +95,20 @@ export function RecentFeedbackFeed({
                 <div className="flex items-start justify-between gap-3">
                   <p
                     className={cn(
-                      "text-sm font-medium leading-relaxed line-clamp-2",
+                      "line-clamp-2 text-sm leading-relaxed font-medium",
                       item.comment
                         ? "text-foreground font-semibold"
                         : "text-muted-foreground italic",
                     )}
                   >
-                    {item.comment ? `“${item.comment}”` : "No written comment provided"}
+                    {item.comment
+                      ? `“${item.comment}”`
+                      : "No written comment provided"}
                   </p>
 
                   <span
                     className={cn(
-                      "shrink-0 inline-flex items-center gap-1 rounded-lg border px-2 py-0.5 font-mono text-[11px] font-bold shadow-2xs",
+                      "inline-flex shrink-0 items-center gap-1 rounded-lg border px-2 py-0.5 font-mono text-[11px] font-bold shadow-2xs",
                       isPositive
                         ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
                         : isAttention
@@ -123,7 +123,7 @@ export function RecentFeedbackFeed({
 
                 {/* Metadata details */}
                 <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                  <span className="flex items-center gap-1 font-medium text-foreground">
+                  <span className="text-foreground flex items-center gap-1 font-medium">
                     <Building2 className="text-muted-foreground size-3" />
                     {item.branchName}
                   </span>
@@ -138,7 +138,7 @@ export function RecentFeedbackFeed({
                     {formatRelativeTime(item.createdAt)}
                   </span>
                   <span className="text-border">·</span>
-                  <span className="text-primary group-hover:underline text-[11px] font-semibold">
+                  <span className="text-primary text-[11px] font-semibold group-hover:underline">
                     Inspect details →
                   </span>
                 </div>
@@ -149,9 +149,14 @@ export function RecentFeedbackFeed({
       </div>
 
       {/* Footer */}
-      <div className="border-border/60 bg-muted/20 flex items-center justify-between border-t px-5 py-3 text-[11px] text-muted-foreground">
-        <span>Click any submission to view full clinical details or take notes</span>
-        <Link href="/dashboard/feedback" className="text-primary hover:underline">
+      <div className="border-border/60 bg-muted/20 text-muted-foreground flex items-center justify-between border-t px-5 py-3 text-[11px]">
+        <span>
+          Click any submission to view full clinical details or take notes
+        </span>
+        <Link
+          href="/dashboard/feedback"
+          className="text-primary hover:underline"
+        >
           Filter & export
         </Link>
       </div>

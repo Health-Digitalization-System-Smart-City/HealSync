@@ -33,12 +33,13 @@ import { NeedsAttentionSection } from "@/components/dashboard/needs-attention-se
 import { SatisfactionBar } from "@/components/dashboard/satisfaction-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import { cn } from "@/lib/utils";
 import {
   AnalyticsEmptyState,
   AnalyticsErrorState,
   AnalyticsSkeleton,
-} from "./analytics-states";
+} from "@/components/analytics/analytics-states";
 
 export default function AnalyticsDashboard() {
   const [filters, setFilters] = useState<DashboardFilterValues>(
@@ -186,7 +187,11 @@ export default function AnalyticsDashboard() {
             </span>
             <span className="text-muted-foreground/40">·</span>
             <span className="text-muted-foreground">
-              {data.totalCountInPeriod.toLocaleString()} responses
+              <AnimatedNumber
+                value={data.totalCountInPeriod}
+                suffix=" responses"
+                duration={1000}
+              />
             </span>
           </div>
         )}
@@ -290,6 +295,7 @@ export default function AnalyticsDashboard() {
                 <KPIMetricCard
                   label="Total Feedback"
                   value={summary.totalFeedback.toLocaleString()}
+                  numericValue={summary.totalFeedback}
                   icon={BarChart3}
                   accent="blue"
                   detail="Responses in selected period"
@@ -298,6 +304,8 @@ export default function AnalyticsDashboard() {
                 <KPIMetricCard
                   label="Satisfaction Rate"
                   value={`${summary.satisfactionRate}%`}
+                  numericValue={summary.satisfactionRate}
+                  suffix="%"
                   icon={Sparkles}
                   accent="emerald"
                   detail={`${summary.positiveFeedback.toLocaleString()} positive responses`}
@@ -321,6 +329,9 @@ export default function AnalyticsDashboard() {
                 <KPIMetricCard
                   label="Average Rating"
                   value={`${summary.avgRatingScore.toFixed(1)} / 7`}
+                  numericValue={summary.avgRatingScore}
+                  decimals={1}
+                  suffix=" / 7"
                   icon={Sparkles}
                   accent="teal"
                   detail="On standardized clinical scale"
@@ -329,6 +340,7 @@ export default function AnalyticsDashboard() {
                 <KPIMetricCard
                   label="Needs Attention"
                   value={summary.negativeFeedback.toLocaleString()}
+                  numericValue={summary.negativeFeedback}
                   icon={AlertTriangle}
                   accent="amber"
                   detail={`${summary.negativeRate}% require action`}
@@ -352,7 +364,11 @@ export default function AnalyticsDashboard() {
                     Patient Sentiment
                   </CardTitle>
                   <Badge variant="outline">
-                    {summary.totalFeedback.toLocaleString()} responses
+                    <AnimatedNumber
+                      value={summary.totalFeedback}
+                      suffix=" responses"
+                      duration={1000}
+                    />
                   </Badge>
                 </div>
               </CardHeader>
@@ -367,11 +383,14 @@ export default function AnalyticsDashboard() {
                   <div className="grid grid-cols-3 gap-4 pt-2">
                     <div className="rounded-lg bg-emerald-50 p-3 text-center dark:bg-emerald-950/20">
                       <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                        {Math.round(
-                          (summary.positiveFeedback / summary.totalFeedback) *
-                            100,
-                        )}
-                        %
+                        <AnimatedNumber
+                          value={Math.round(
+                            (summary.positiveFeedback / summary.totalFeedback) *
+                              100,
+                          )}
+                          suffix="%"
+                          duration={1200}
+                        />
                       </p>
                       <p className="text-muted-foreground mt-1 text-xs">
                         Positive (5-7 stars)
@@ -379,11 +398,15 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-950/20">
                       <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-                        {Math.round(
-                          (summary.neutralFeedback / summary.totalFeedback) *
-                            100,
-                        )}
-                        %
+                        <AnimatedNumber
+                          value={Math.round(
+                            (summary.neutralFeedback / summary.totalFeedback) *
+                              100,
+                          )}
+                          suffix="%"
+                          duration={1200}
+                          delay={100}
+                        />
                       </p>
                       <p className="text-muted-foreground mt-1 text-xs">
                         Neutral (3-4 stars)
@@ -391,11 +414,15 @@ export default function AnalyticsDashboard() {
                     </div>
                     <div className="rounded-lg bg-red-50 p-3 text-center dark:bg-red-950/20">
                       <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                        {Math.round(
-                          (summary.negativeFeedback / summary.totalFeedback) *
-                            100,
-                        )}
-                        %
+                        <AnimatedNumber
+                          value={Math.round(
+                            (summary.negativeFeedback / summary.totalFeedback) *
+                              100,
+                          )}
+                          suffix="%"
+                          duration={1200}
+                          delay={200}
+                        />
                       </p>
                       <p className="text-muted-foreground mt-1 text-xs">
                         Negative (0-2 stars)

@@ -17,7 +17,6 @@ import {
   Layers,
   LineChart as LineChartIcon,
   Smile,
-  Sparkles,
   TrendingUp,
 } from "lucide-react";
 import type { FeedbackTrendPoint } from "@/lib/analytics/types";
@@ -51,10 +50,12 @@ function CustomChartTooltip({ active, payload }: CustomTooltipProps) {
   return (
     <div className="border-border bg-popover/95 text-popover-foreground rounded-xl border p-3.5 shadow-xl backdrop-blur-md">
       <div className="border-border/60 flex items-center justify-between gap-3 border-b pb-2">
-        <div className="flex items-center gap-1.5 font-bold text-xs">
+        <div className="flex items-center gap-1.5 text-xs font-bold">
           <Calendar className="text-primary size-3.5" aria-hidden />
           <span>{point.date}</span>
-          <span className="text-muted-foreground font-normal">({point.label})</span>
+          <span className="text-muted-foreground font-normal">
+            ({point.label})
+          </span>
         </div>
         <span className="bg-primary/10 text-primary rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold">
           {point.total} Total
@@ -72,12 +73,12 @@ function CustomChartTooltip({ active, payload }: CustomTooltipProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/40 text-[11px]">
+        <div className="border-border/40 grid grid-cols-3 gap-2 border-t pt-1 text-[11px]">
           <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
             <span className="size-2 rounded-full bg-emerald-500" />
             <span>Pos: {point.positive}</span>
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-1">
             <span className="size-2 rounded-full bg-slate-400" />
             <span>Neu: {point.neutral}</span>
           </div>
@@ -98,7 +99,8 @@ export function SatisfactionTrendChart({
   onSelectPoint,
   className,
 }: SatisfactionTrendChartProps) {
-  const [metricMode, setMetricMode] = React.useState<MetricMode>("satisfaction");
+  const [metricMode, setMetricMode] =
+    React.useState<MetricMode>("satisfaction");
 
   if (!data || data.length === 0) {
     return (
@@ -115,7 +117,8 @@ export function SatisfactionTrendChart({
           No Trend Data for This Period
         </p>
         <p className="text-muted-foreground mt-1 max-w-sm text-xs">
-          Try expanding your date range filters or selecting all clinic branches to view trend patterns.
+          Try expanding your date range filters or selecting all clinic branches
+          to view trend patterns.
         </p>
       </div>
     );
@@ -123,7 +126,8 @@ export function SatisfactionTrendChart({
 
   // Calculate average satisfaction rate in dataset
   const avgSatisfaction = Math.round(
-    data.reduce((acc, curr) => acc + curr.satisfactionRate, 0) / (data.length || 1),
+    data.reduce((acc, curr) => acc + curr.satisfactionRate, 0) /
+      (data.length || 1),
   );
   const totalSubmissions = data.reduce((acc, curr) => acc + curr.total, 0);
 
@@ -135,10 +139,10 @@ export function SatisfactionTrendChart({
       )}
     >
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-4">
+      <div className="border-border/60 flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-primary/20">
+            <span className="bg-primary/10 text-primary dark:bg-primary/20 flex size-7 items-center justify-center rounded-lg">
               <TrendingUp className="size-4" aria-hidden />
             </span>
             <h3 className="text-foreground text-base font-bold tracking-tight">
@@ -151,9 +155,9 @@ export function SatisfactionTrendChart({
         {/* View metric toggle */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Quick Stat Pill */}
-          <div className="hidden items-center gap-2 rounded-lg border border-border/80 bg-muted/30 px-2.5 py-1 text-xs font-semibold md:flex">
+          <div className="border-border/80 bg-muted/30 hidden items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold md:flex">
             <span className="text-muted-foreground">Period Avg:</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
               {avgSatisfaction}%
             </span>
             <span className="text-muted-foreground/40">·</span>
@@ -212,7 +216,9 @@ export function SatisfactionTrendChart({
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               onClick={(state: unknown) => {
-                const chartState = state as { activePayload?: Array<{ payload: FeedbackTrendPoint }> };
+                const chartState = state as {
+                  activePayload?: Array<{ payload: FeedbackTrendPoint }>;
+                };
                 if (chartState?.activePayload?.[0]?.payload && onSelectPoint) {
                   onSelectPoint(chartState.activePayload[0].payload);
                 }
@@ -220,11 +226,23 @@ export function SatisfactionTrendChart({
             >
               <defs>
                 <linearGradient id="satTrendGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
+                  <stop
+                    offset="5%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.4}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--primary)"
+                    stopOpacity={0.0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="currentColor"
+                className="text-border/40"
+              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "currentColor" }}
@@ -247,7 +265,12 @@ export function SatisfactionTrendChart({
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#satTrendGrad)"
-                activeDot={{ r: 6, fill: "var(--primary)", stroke: "#ffffff", strokeWidth: 2 }}
+                activeDot={{
+                  r: 6,
+                  fill: "var(--primary)",
+                  stroke: "#ffffff",
+                  strokeWidth: 2,
+                }}
               />
             </AreaChart>
           ) : metricMode === "volume" ? (
@@ -255,7 +278,9 @@ export function SatisfactionTrendChart({
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               onClick={(state: unknown) => {
-                const chartState = state as { activePayload?: Array<{ payload: FeedbackTrendPoint }> };
+                const chartState = state as {
+                  activePayload?: Array<{ payload: FeedbackTrendPoint }>;
+                };
                 if (chartState?.activePayload?.[0]?.payload && onSelectPoint) {
                   onSelectPoint(chartState.activePayload[0].payload);
                 }
@@ -267,7 +292,11 @@ export function SatisfactionTrendChart({
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="currentColor"
+                className="text-border/40"
+              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "currentColor" }}
@@ -288,7 +317,12 @@ export function SatisfactionTrendChart({
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#volTrendGrad)"
-                activeDot={{ r: 6, fill: "#2563eb", stroke: "#ffffff", strokeWidth: 2 }}
+                activeDot={{
+                  r: 6,
+                  fill: "#2563eb",
+                  stroke: "#ffffff",
+                  strokeWidth: 2,
+                }}
               />
             </AreaChart>
           ) : (
@@ -296,13 +330,19 @@ export function SatisfactionTrendChart({
               data={data}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               onClick={(state: unknown) => {
-                const chartState = state as { activePayload?: Array<{ payload: FeedbackTrendPoint }> };
+                const chartState = state as {
+                  activePayload?: Array<{ payload: FeedbackTrendPoint }>;
+                };
                 if (chartState?.activePayload?.[0]?.payload && onSelectPoint) {
                   onSelectPoint(chartState.activePayload[0].payload);
                 }
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="currentColor"
+                className="text-border/40"
+              />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "currentColor" }}
@@ -316,9 +356,27 @@ export function SatisfactionTrendChart({
                 tickLine={false}
               />
               <Tooltip content={<CustomChartTooltip />} />
-              <Bar dataKey="positive" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} name="Positive" />
-              <Bar dataKey="neutral" stackId="a" fill="#94a3b8" radius={[0, 0, 0, 0]} name="Neutral" />
-              <Bar dataKey="negative" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Needs Attention" />
+              <Bar
+                dataKey="positive"
+                stackId="a"
+                fill="#10b981"
+                radius={[0, 0, 0, 0]}
+                name="Positive"
+              />
+              <Bar
+                dataKey="neutral"
+                stackId="a"
+                fill="#94a3b8"
+                radius={[0, 0, 0, 0]}
+                name="Neutral"
+              />
+              <Bar
+                dataKey="negative"
+                stackId="a"
+                fill="#f59e0b"
+                radius={[4, 4, 0, 0]}
+                name="Needs Attention"
+              />
             </BarChart>
           )}
         </ResponsiveContainer>

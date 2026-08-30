@@ -32,7 +32,8 @@ const messages = {
     experienceIntro:
       "We value your health and experience. Please share your feedback to help us serve you better.",
     phoneTitle: "Phone Number",
-    phoneDescription: "Enter your Ethiopian phone number to proceed with your feedback.",
+    phoneDescription:
+      "Enter your Ethiopian phone number to proceed with your feedback.",
     phoneLabel: "Patient Phone Number",
     phoneHint:
       "Your phone number is kept confidential and only used for verified patient feedback records.",

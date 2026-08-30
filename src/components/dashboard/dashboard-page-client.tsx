@@ -10,14 +10,9 @@ import {
 } from "@tanstack/react-query";
 import {
   AlertTriangle,
-  BarChart3,
-  Building2,
   CalendarCheck,
   HeartPulse,
   MessageSquare,
-  Sparkles,
-  Stethoscope,
-  TrendingDown,
   TrendingUp,
 } from "lucide-react";
 
@@ -48,8 +43,6 @@ import type {
 } from "@/lib/analytics/types";
 import type {
   BranchOption,
-  FeedbackListResult,
-  FeedbackRecord,
   FeedbackView,
   ServiceOption,
   UpdateFeedbackInput,
@@ -115,7 +108,10 @@ export function DashboardPageClient({
   const analyticsQuery = useQuery({
     queryKey: ["dashboard-analytics", queryParams],
     queryFn: () => fetchAnalyticsDashboard(queryParams),
-    initialData: filters.range === "all" && !filters.branchId && !filters.serviceId ? initialAnalytics : undefined,
+    initialData:
+      filters.range === "all" && !filters.branchId && !filters.serviceId
+        ? initialAnalytics
+        : undefined,
     placeholderData: keepPreviousData,
   });
 

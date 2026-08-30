@@ -1,35 +1,24 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
   Activity,
   ArrowRight,
   Building2,
-  Calendar,
-  ChevronRight,
-  ExternalLink,
-  Filter,
-  Info,
   LayoutGrid,
   List as ListIcon,
   Loader2,
-  MapPin,
   Pencil,
   Plus,
   Power,
   RotateCcw,
   Search,
   Star,
-  Stethoscope,
-  TrendingDown,
-  TrendingUp,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,7 +72,9 @@ export function ServicesView({
   const [dialog, setDialog] = React.useState<DialogState>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
+  const [fieldErrors, setFieldErrors] = React.useState<
+    Record<string, string[]>
+  >({});
 
   // Form State
   const [name, setName] = React.useState("");
@@ -95,29 +86,47 @@ export function ServicesView({
       .filter((service) => {
         const matchesSearch =
           service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (service.description && service.description.toLowerCase().includes(searchQuery.toLowerCase()));
+          (service.description &&
+            service.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()));
 
         let matchesStatus = true;
         if (statusFilter === "active") matchesStatus = service.isActive;
         else if (statusFilter === "inactive") matchesStatus = !service.isActive;
         else if (statusFilter === "attention") {
-          matchesStatus = service.isActive && service.satisfactionRate < 60 && service.totalFeedback > 0;
+          matchesStatus =
+            service.isActive &&
+            service.satisfactionRate < 60 &&
+            service.totalFeedback > 0;
         }
 
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
         if (sortBy === "satisfaction_desc") {
-          return b.satisfactionRate - a.satisfactionRate || b.totalFeedback - a.totalFeedback;
+          return (
+            b.satisfactionRate - a.satisfactionRate ||
+            b.totalFeedback - a.totalFeedback
+          );
         }
         if (sortBy === "satisfaction_asc") {
-          return a.satisfactionRate - b.satisfactionRate || a.totalFeedback - b.totalFeedback;
+          return (
+            a.satisfactionRate - b.satisfactionRate ||
+            a.totalFeedback - b.totalFeedback
+          );
         }
         if (sortBy === "feedback_desc") {
-          return b.totalFeedback - a.totalFeedback || b.satisfactionRate - a.satisfactionRate;
+          return (
+            b.totalFeedback - a.totalFeedback ||
+            b.satisfactionRate - a.satisfactionRate
+          );
         }
         if (sortBy === "feedback_asc") {
-          return a.totalFeedback - b.totalFeedback || a.satisfactionRate - b.satisfactionRate;
+          return (
+            a.totalFeedback - b.totalFeedback ||
+            a.satisfactionRate - b.satisfactionRate
+          );
         }
         return a.name.localeCompare(b.name);
       });
@@ -184,7 +193,11 @@ export function ServicesView({
   }
 
   async function handleSetActive(isActive: boolean) {
-    if (!dialog || (dialog.type !== "deactivate" && dialog.type !== "reactivate")) return;
+    if (
+      !dialog ||
+      (dialog.type !== "deactivate" && dialog.type !== "reactivate")
+    )
+      return;
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
@@ -312,9 +325,15 @@ export function ServicesView({
         </div>
 
         {/* Active scope indicator */}
-        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs">
+        <div className="text-muted-foreground border-border/50 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
           <div className="flex items-center gap-2">
-            <span>Showing <strong className="text-foreground">{filteredServices.length}</strong> of {services.length} medical services</span>
+            <span>
+              Showing{" "}
+              <strong className="text-foreground">
+                {filteredServices.length}
+              </strong>{" "}
+              of {services.length} medical services
+            </span>
             {searchQuery && (
               <span className="bg-muted text-foreground rounded-md px-1.5 py-0.5 text-[11px]">
                 Matching &quot;{searchQuery}&quot;
@@ -322,7 +341,9 @@ export function ServicesView({
             )}
           </div>
 
-          <span className="text-[11px]">Click any service to inspect department analytics</span>
+          <span className="text-[11px]">
+            Click any service to inspect department analytics
+          </span>
         </div>
       </div>
 
@@ -332,7 +353,9 @@ export function ServicesView({
           <div className="bg-muted flex size-12 items-center justify-center rounded-2xl">
             <Activity className="text-muted-foreground size-6" />
           </div>
-          <h3 className="text-foreground mt-3 text-base font-bold">No Matching Healthcare Services</h3>
+          <h3 className="text-foreground mt-3 text-base font-bold">
+            No Matching Healthcare Services
+          </h3>
           <p className="text-muted-foreground mt-1 max-w-sm text-xs">
             {services.length === 0
               ? "Add your first medical service or clinical department to organize patient satisfaction analytics."
@@ -372,7 +395,7 @@ export function ServicesView({
               <div
                 key={service.id}
                 onClick={() => router.push(`/dashboard/services/${service.id}`)}
-                className="group border-border/80 bg-card hover:border-primary/50 hover:shadow-md relative flex flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 cursor-pointer"
+                className="group border-border/80 bg-card hover:border-primary/50 relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 hover:shadow-md"
               >
                 {/* Status indicator bar */}
                 <div
@@ -392,8 +415,8 @@ export function ServicesView({
                 <div>
                   {/* Card Header: Medical Icon, Name, Scope, Status */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-primary/10 text-primary group-hover:scale-105 flex size-10 shrink-0 items-center justify-center rounded-xl transition-transform">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-105">
                         <Icon className="size-5" />
                       </div>
                       <div className="min-w-0">
@@ -411,13 +434,15 @@ export function ServicesView({
                         "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
                         service.isActive
                           ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                          : "border border-border bg-muted text-muted-foreground",
+                          : "border-border bg-muted text-muted-foreground border",
                       )}
                     >
                       <span
                         className={cn(
                           "size-1.5 rounded-full",
-                          service.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground",
+                          service.isActive
+                            ? "animate-pulse bg-emerald-500"
+                            : "bg-muted-foreground",
                         )}
                       />
                       {service.isActive ? "Active" : "Stopped"}
@@ -425,7 +450,7 @@ export function ServicesView({
                   </div>
 
                   {/* Primary Satisfaction & Feedback Stats */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/30 border border-border/50 p-3">
+                  <div className="bg-muted/30 border-border/50 mt-4 grid grid-cols-2 gap-2 rounded-xl border p-3">
                     <div>
                       <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                         Satisfaction
@@ -445,7 +470,11 @@ export function ServicesView({
                                   : "text-blue-600 dark:text-blue-400",
                             )}
                           >
-                            {isHigh ? "Excellent" : isLow ? "Attention" : "Solid"}
+                            {isHigh
+                              ? "Excellent"
+                              : isLow
+                                ? "Attention"
+                                : "Solid"}
                           </span>
                         )}
                       </div>
@@ -459,7 +488,9 @@ export function ServicesView({
                         <span className="text-foreground text-2xl font-bold tracking-tight">
                           {service.totalFeedback.toLocaleString()}
                         </span>
-                        <span className="text-muted-foreground text-xs">reviews</span>
+                        <span className="text-muted-foreground text-xs">
+                          reviews
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -475,7 +506,7 @@ export function ServicesView({
                   </div>
 
                   {/* Secondary Metadata */}
-                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-3 flex items-center justify-between text-xs">
                     <span className="flex items-center gap-1">
                       <Star className="size-3.5 fill-amber-400 text-amber-400" />
                       <strong className="text-foreground font-semibold">
@@ -485,7 +516,7 @@ export function ServicesView({
                     </span>
 
                     <span className="flex items-center gap-1">
-                      <Building2 className="size-3.5 text-primary" />
+                      <Building2 className="text-primary size-3.5" />
                       <strong className="text-foreground font-semibold">
                         {service.branchesCount}
                       </strong>
@@ -496,13 +527,16 @@ export function ServicesView({
 
                 {/* Footer Controls */}
                 <div className="border-border/60 mt-4 flex items-center justify-between border-t pt-3">
-                  <span className="text-primary group-hover:translate-x-0.5 inline-flex items-center gap-1 text-xs font-semibold transition-transform">
+                  <span className="text-primary inline-flex items-center gap-1 text-xs font-semibold transition-transform group-hover:translate-x-0.5">
                     <span>Inspect analytics</span>
                     <ArrowRight className="size-3" />
                   </span>
 
                   {canUpdate && (
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         type="button"
                         variant="ghost"
@@ -511,7 +545,7 @@ export function ServicesView({
                         onClick={(e) => openEdit(service, e)}
                         title="Edit service details"
                       >
-                        <Pencil className="size-3.5 mr-1" />
+                        <Pencil className="mr-1 size-3.5" />
                         Edit
                       </Button>
                       {service.isActive ? (
@@ -557,7 +591,9 @@ export function ServicesView({
                   <th className="px-4 py-3.5">Rating Score</th>
                   <th className="px-4 py-3.5">Feedback Volume</th>
                   <th className="px-4 py-3.5">Clinics Offering</th>
-                  <th className="px-5 py-3.5 text-right">Operational Actions</th>
+                  <th className="px-5 py-3.5 text-right">
+                    Operational Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-border/60 divide-y">
@@ -570,8 +606,10 @@ export function ServicesView({
                   return (
                     <tr
                       key={service.id}
-                      className="hover:bg-muted/40 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/dashboard/services/${service.id}`)}
+                      className="hover:bg-muted/40 cursor-pointer transition-colors"
+                      onClick={() =>
+                        router.push(`/dashboard/services/${service.id}`)
+                      }
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
@@ -579,10 +617,10 @@ export function ServicesView({
                             <Icon className="size-4" />
                           </div>
                           <div>
-                            <span className="text-foreground font-bold hover:text-primary block text-sm transition-colors">
+                            <span className="text-foreground hover:text-primary block text-sm font-bold transition-colors">
                               {service.name}
                             </span>
-                            <span className="text-muted-foreground truncate max-w-xs block text-[11px]">
+                            <span className="text-muted-foreground block max-w-xs truncate text-[11px]">
                               {service.description || "Clinical service"}
                             </span>
                           </div>
@@ -595,13 +633,15 @@ export function ServicesView({
                             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                             service.isActive
                               ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                              : "border border-border bg-muted text-muted-foreground",
+                              : "border-border bg-muted text-muted-foreground border",
                           )}
                         >
                           <span
                             className={cn(
                               "size-1.5 rounded-full",
-                              service.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground",
+                              service.isActive
+                                ? "animate-pulse bg-emerald-500"
+                                : "bg-muted-foreground",
                             )}
                           />
                           {service.isActive ? "Active" : "Stopped"}
@@ -612,7 +652,7 @@ export function ServicesView({
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "font-mono font-bold text-sm",
+                              "font-mono text-sm font-bold",
                               isHigh
                                 ? "text-emerald-600 dark:text-emerald-400"
                                 : isLow
@@ -639,21 +679,27 @@ export function ServicesView({
                         <span className="text-foreground font-bold">
                           {hasFeedback ? service.avgScore.toFixed(1) : "—"}
                         </span>
-                        <span className="text-muted-foreground text-[11px]"> / 7</span>
+                        <span className="text-muted-foreground text-[11px]">
+                          {" "}
+                          / 7
+                        </span>
                       </td>
 
-                      <td className="px-4 py-3.5 font-mono font-semibold text-foreground">
+                      <td className="text-foreground px-4 py-3.5 font-mono font-semibold">
                         {service.totalFeedback.toLocaleString()}
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span className="bg-muted text-foreground inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold text-[11px]">
-                          <Building2 className="size-3 text-primary" />
+                        <span className="bg-muted text-foreground inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold">
+                          <Building2 className="text-primary size-3" />
                           {service.branchesCount} Locations
                         </span>
                       </td>
 
-                      <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="px-5 py-3.5 text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             type="button"
@@ -708,13 +754,19 @@ export function ServicesView({
             </div>
 
             <div className="mt-4">
-              {errorMessage && <FormAlert messages={errorMessage} className="mb-4" />}
+              {errorMessage && (
+                <FormAlert messages={errorMessage} className="mb-4" />
+              )}
 
               {(dialog?.type === "create" || dialog?.type === "edit") && (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="service-name" className="text-xs font-semibold text-foreground">
-                      Service / Department Name <span className="text-destructive">*</span>
+                    <Label
+                      htmlFor="service-name"
+                      className="text-foreground text-xs font-semibold"
+                    >
+                      Service / Department Name{" "}
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="service-name"
@@ -728,7 +780,10 @@ export function ServicesView({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="service-description" className="text-xs font-semibold text-foreground">
+                    <Label
+                      htmlFor="service-description"
+                      className="text-foreground text-xs font-semibold"
+                    >
                       Clinical Description / Scope
                     </Label>
                     <textarea
@@ -773,7 +828,8 @@ export function ServicesView({
                 </form>
               )}
 
-              {(dialog?.type === "deactivate" || dialog?.type === "reactivate") && (
+              {(dialog?.type === "deactivate" ||
+                dialog?.type === "reactivate") && (
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {dialog.type === "deactivate"
@@ -793,11 +849,13 @@ export function ServicesView({
                       type="button"
                       size="sm"
                       disabled={isSubmitting}
-                      onClick={() => handleSetActive(dialog.type === "reactivate")}
+                      onClick={() =>
+                        handleSetActive(dialog.type === "reactivate")
+                      }
                       className={
                         dialog.type === "deactivate"
-                          ? "gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
-                          : "gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          ? "gap-1.5 bg-amber-600 text-white hover:bg-amber-700"
+                          : "gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
                       }
                     >
                       {isSubmitting ? (
@@ -807,7 +865,11 @@ export function ServicesView({
                       ) : (
                         <RotateCcw className="size-3.5" />
                       )}
-                      <span>{dialog.type === "deactivate" ? "Stop Offering" : "Reactivate Service"}</span>
+                      <span>
+                        {dialog.type === "deactivate"
+                          ? "Stop Offering"
+                          : "Reactivate Service"}
+                      </span>
                     </Button>
                   </div>
                 </div>

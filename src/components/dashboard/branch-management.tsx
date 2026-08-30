@@ -3,32 +3,20 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  Activity,
-  ArrowDownUp,
   ArrowRight,
   Building2,
-  Calendar,
-  ChevronRight,
-  ExternalLink,
-  Filter,
-  Grid,
-  Info,
   LayoutGrid,
   Link2,
   List as ListIcon,
   Loader2,
   MapPin,
-  MoreHorizontal,
   Pencil,
   Plus,
   Power,
   RotateCcw,
   Search,
-  SlidersHorizontal,
   Star,
   Stethoscope,
-  TrendingDown,
-  TrendingUp,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -100,12 +88,16 @@ export function BranchesView({
   const [dialog, setDialog] = React.useState<DialogState>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string[]>>({});
+  const [fieldErrors, setFieldErrors] = React.useState<
+    Record<string, string[]>
+  >({});
 
   // Form State
   const [name, setName] = React.useState("");
   const [code, setCode] = React.useState("");
-  const [selectedServiceIds, setSelectedServiceIds] = React.useState<string[]>([]);
+  const [selectedServiceIds, setSelectedServiceIds] = React.useState<string[]>(
+    [],
+  );
 
   // Filter and sort branches
   const filteredBranches = React.useMemo(() => {
@@ -113,29 +105,45 @@ export function BranchesView({
       .filter((branch) => {
         const matchesSearch =
           branch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (branch.code && branch.code.toLowerCase().includes(searchQuery.toLowerCase()));
+          (branch.code &&
+            branch.code.toLowerCase().includes(searchQuery.toLowerCase()));
 
         let matchesStatus = true;
         if (statusFilter === "active") matchesStatus = branch.isActive;
         else if (statusFilter === "inactive") matchesStatus = !branch.isActive;
         else if (statusFilter === "attention") {
-          matchesStatus = branch.isActive && branch.satisfactionRate < 60 && branch.totalFeedback > 0;
+          matchesStatus =
+            branch.isActive &&
+            branch.satisfactionRate < 60 &&
+            branch.totalFeedback > 0;
         }
 
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
         if (sortBy === "satisfaction_desc") {
-          return b.satisfactionRate - a.satisfactionRate || b.totalFeedback - a.totalFeedback;
+          return (
+            b.satisfactionRate - a.satisfactionRate ||
+            b.totalFeedback - a.totalFeedback
+          );
         }
         if (sortBy === "satisfaction_asc") {
-          return a.satisfactionRate - b.satisfactionRate || a.totalFeedback - b.totalFeedback;
+          return (
+            a.satisfactionRate - b.satisfactionRate ||
+            a.totalFeedback - b.totalFeedback
+          );
         }
         if (sortBy === "feedback_desc") {
-          return b.totalFeedback - a.totalFeedback || b.satisfactionRate - a.satisfactionRate;
+          return (
+            b.totalFeedback - a.totalFeedback ||
+            b.satisfactionRate - a.satisfactionRate
+          );
         }
         if (sortBy === "feedback_asc") {
-          return a.totalFeedback - b.totalFeedback || a.satisfactionRate - b.satisfactionRate;
+          return (
+            a.totalFeedback - b.totalFeedback ||
+            a.satisfactionRate - b.satisfactionRate
+          );
         }
         return a.name.localeCompare(b.name);
       });
@@ -165,18 +173,6 @@ export function BranchesView({
     setErrorMessage(null);
     setFieldErrors({});
     setDialog({ type: "services", branch });
-  }
-
-  function openDeactivate(branch: BranchOverview, e?: React.MouseEvent) {
-    e?.stopPropagation();
-    setErrorMessage(null);
-    setDialog({ type: "deactivate", branch });
-  }
-
-  function openReactivate(branch: BranchOverview, e?: React.MouseEvent) {
-    e?.stopPropagation();
-    setErrorMessage(null);
-    setDialog({ type: "reactivate", branch });
   }
 
   // Submit handlers
@@ -251,7 +247,11 @@ export function BranchesView({
   }
 
   async function handleSetActive(isActive: boolean) {
-    if (!dialog || (dialog.type !== "deactivate" && dialog.type !== "reactivate")) return;
+    if (
+      !dialog ||
+      (dialog.type !== "deactivate" && dialog.type !== "reactivate")
+    )
+      return;
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
@@ -389,9 +389,15 @@ export function BranchesView({
         </div>
 
         {/* Active scope indicator & count */}
-        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t border-border/50 pt-3 text-xs">
+        <div className="text-muted-foreground border-border/50 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
           <div className="flex items-center gap-2">
-            <span>Showing <strong className="text-foreground">{filteredBranches.length}</strong> of {branches.length} clinic locations</span>
+            <span>
+              Showing{" "}
+              <strong className="text-foreground">
+                {filteredBranches.length}
+              </strong>{" "}
+              of {branches.length} clinic locations
+            </span>
             {searchQuery && (
               <span className="bg-muted text-foreground rounded-md px-1.5 py-0.5 text-[11px]">
                 Matching &quot;{searchQuery}&quot;
@@ -399,7 +405,9 @@ export function BranchesView({
             )}
           </div>
 
-          <span className="text-[11px]">Click any branch to inspect operational analytics</span>
+          <span className="text-[11px]">
+            Click any branch to inspect operational analytics
+          </span>
         </div>
       </div>
 
@@ -409,7 +417,9 @@ export function BranchesView({
           <div className="bg-muted flex size-12 items-center justify-center rounded-2xl">
             <Building2 className="text-muted-foreground size-6" />
           </div>
-          <h3 className="text-foreground mt-3 text-base font-bold">No Matching Clinic Branches</h3>
+          <h3 className="text-foreground mt-3 text-base font-bold">
+            No Matching Clinic Branches
+          </h3>
           <p className="text-muted-foreground mt-1 max-w-sm text-xs">
             {branches.length === 0
               ? "Add your first clinic branch location to start tracking patient satisfaction."
@@ -439,7 +449,7 @@ export function BranchesView({
       ) : viewMode === "grid" ? (
         /* Operational Grid View */
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {filteredBranches.map((branch, index) => {
+          {filteredBranches.map((branch) => {
             const hasFeedback = branch.totalFeedback > 0;
             const isHigh = branch.satisfactionRate >= 75 && hasFeedback;
             const isLow = branch.satisfactionRate < 60 && hasFeedback;
@@ -448,7 +458,7 @@ export function BranchesView({
               <Link
                 key={branch.id}
                 href={`/dashboard/branches/${branch.id}`}
-                className="group border-border/80 bg-card hover:border-primary/50 hover:shadow-md relative flex flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 cursor-pointer"
+                className="group border-border/80 bg-card hover:border-primary/50 relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border p-5 shadow-xs transition-all duration-200 hover:shadow-md"
               >
                 {/* Status indicator bar */}
                 <div
@@ -468,9 +478,10 @@ export function BranchesView({
                 <div>
                   {/* Card Header: Initials Avatar, Name, Code, Status */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-primary/10 text-primary group-hover:scale-105 flex size-10 shrink-0 items-center justify-center rounded-xl font-mono text-xs font-bold transition-transform">
-                        {branch.code?.slice(0, 3) || branch.name.slice(0, 2).toUpperCase()}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl font-mono text-xs font-bold transition-transform group-hover:scale-105">
+                        {branch.code?.slice(0, 3) ||
+                          branch.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -479,7 +490,7 @@ export function BranchesView({
                           </h3>
                         </div>
                         <p className="text-muted-foreground flex items-center gap-1 font-mono text-xs">
-                          <MapPin className="size-3 text-muted-foreground/70" />
+                          <MapPin className="text-muted-foreground/70 size-3" />
                           <span>{branch.code || "Main Campus"}</span>
                         </p>
                       </div>
@@ -490,13 +501,15 @@ export function BranchesView({
                         "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
                         branch.isActive
                           ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                          : "border border-border bg-muted text-muted-foreground",
+                          : "border-border bg-muted text-muted-foreground border",
                       )}
                     >
                       <span
                         className={cn(
                           "size-1.5 rounded-full",
-                          branch.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground",
+                          branch.isActive
+                            ? "animate-pulse bg-emerald-500"
+                            : "bg-muted-foreground",
                         )}
                       />
                       {branch.isActive ? "Active" : "Closed"}
@@ -504,7 +517,7 @@ export function BranchesView({
                   </div>
 
                   {/* Primary Satisfaction & Feedback Stats */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/30 border border-border/50 p-3">
+                  <div className="bg-muted/30 border-border/50 mt-4 grid grid-cols-2 gap-2 rounded-xl border p-3">
                     <div>
                       <span className="text-muted-foreground block text-[11px] font-semibold tracking-wider uppercase">
                         Satisfaction
@@ -524,7 +537,11 @@ export function BranchesView({
                                   : "text-blue-600 dark:text-blue-400",
                             )}
                           >
-                            {isHigh ? "Excellent" : isLow ? "Attention" : "Solid"}
+                            {isHigh
+                              ? "Excellent"
+                              : isLow
+                                ? "Attention"
+                                : "Solid"}
                           </span>
                         )}
                       </div>
@@ -538,7 +555,9 @@ export function BranchesView({
                         <span className="text-foreground text-2xl font-bold tracking-tight">
                           {branch.totalFeedback.toLocaleString()}
                         </span>
-                        <span className="text-muted-foreground text-xs">reviews</span>
+                        <span className="text-muted-foreground text-xs">
+                          reviews
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -554,7 +573,7 @@ export function BranchesView({
                   </div>
 
                   {/* Secondary Operational Metadata */}
-                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-3 flex items-center justify-between text-xs">
                     <span className="flex items-center gap-1">
                       <Star className="size-3.5 fill-amber-400 text-amber-400" />
                       <strong className="text-foreground font-semibold">
@@ -564,7 +583,7 @@ export function BranchesView({
                     </span>
 
                     <span className="flex items-center gap-1">
-                      <Stethoscope className="size-3.5 text-primary" />
+                      <Stethoscope className="text-primary size-3.5" />
                       <strong className="text-foreground font-semibold">
                         {branch.servicesCount}
                       </strong>
@@ -575,13 +594,16 @@ export function BranchesView({
 
                 {/* Footer Controls */}
                 <div className="border-border/60 mt-4 flex items-center justify-between border-t pt-3">
-                  <span className="text-primary group-hover:translate-x-0.5 inline-flex items-center gap-1 text-xs font-semibold transition-transform">
+                  <span className="text-primary inline-flex items-center gap-1 text-xs font-semibold transition-transform group-hover:translate-x-0.5">
                     <span>Inspect analytics</span>
                     <ArrowRight className="size-3" />
                   </span>
 
                   {canUpdate && (
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         type="button"
                         variant="ghost"
@@ -590,7 +612,7 @@ export function BranchesView({
                         onClick={(e) => openServices(branch, e)}
                         title="Link clinical services"
                       >
-                        <Link2 className="size-3.5 mr-1" />
+                        <Link2 className="mr-1 size-3.5" />
                         Services
                       </Button>
                       <Button
@@ -623,7 +645,9 @@ export function BranchesView({
                   <th className="px-4 py-3.5">Rating Score</th>
                   <th className="px-4 py-3.5">Feedback Volume</th>
                   <th className="px-4 py-3.5">Services Linked</th>
-                  <th className="px-5 py-3.5 text-right">Operational Actions</th>
+                  <th className="px-5 py-3.5 text-right">
+                    Operational Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-border/60 divide-y">
@@ -635,16 +659,19 @@ export function BranchesView({
                   return (
                     <tr
                       key={branch.id}
-                      className="hover:bg-muted/40 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/dashboard/branches/${branch.id}`)}
+                      className="hover:bg-muted/40 cursor-pointer transition-colors"
+                      onClick={() =>
+                        router.push(`/dashboard/branches/${branch.id}`)
+                      }
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg font-mono font-bold text-[11px]">
-                            {branch.code?.slice(0, 3) || branch.name.slice(0, 2).toUpperCase()}
+                          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-[11px] font-bold">
+                            {branch.code?.slice(0, 3) ||
+                              branch.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <span className="text-foreground font-bold hover:text-primary block text-sm transition-colors">
+                            <span className="text-foreground hover:text-primary block text-sm font-bold transition-colors">
                               {branch.name}
                             </span>
                             <span className="text-muted-foreground font-mono text-[11px]">
@@ -660,13 +687,15 @@ export function BranchesView({
                             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
                             branch.isActive
                               ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                              : "border border-border bg-muted text-muted-foreground",
+                              : "border-border bg-muted text-muted-foreground border",
                           )}
                         >
                           <span
                             className={cn(
                               "size-1.5 rounded-full",
-                              branch.isActive ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground",
+                              branch.isActive
+                                ? "animate-pulse bg-emerald-500"
+                                : "bg-muted-foreground",
                             )}
                           />
                           {branch.isActive ? "Active" : "Closed"}
@@ -677,7 +706,7 @@ export function BranchesView({
                         <div className="flex items-center gap-2">
                           <span
                             className={cn(
-                              "font-mono font-bold text-sm",
+                              "font-mono text-sm font-bold",
                               isHigh
                                 ? "text-emerald-600 dark:text-emerald-400"
                                 : isLow
@@ -704,21 +733,27 @@ export function BranchesView({
                         <span className="text-foreground font-bold">
                           {hasFeedback ? branch.avgScore.toFixed(1) : "—"}
                         </span>
-                        <span className="text-muted-foreground text-[11px]"> / 7</span>
+                        <span className="text-muted-foreground text-[11px]">
+                          {" "}
+                          / 7
+                        </span>
                       </td>
 
-                      <td className="px-4 py-3.5 font-mono font-semibold text-foreground">
+                      <td className="text-foreground px-4 py-3.5 font-mono font-semibold">
                         {branch.totalFeedback.toLocaleString()}
                       </td>
 
                       <td className="px-4 py-3.5">
-                        <span className="bg-muted text-foreground inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold text-[11px]">
-                          <Stethoscope className="size-3 text-primary" />
+                        <span className="bg-muted text-foreground inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold">
+                          <Stethoscope className="text-primary size-3" />
                           {branch.servicesCount} Departments
                         </span>
                       </td>
 
-                      <td className="px-5 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="px-5 py-3.5 text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             type="button"
@@ -784,15 +819,22 @@ export function BranchesView({
             </div>
 
             <div className="mt-4">
-              {errorMessage && <FormAlert messages={errorMessage} className="mb-4" />}
+              {errorMessage && (
+                <FormAlert messages={errorMessage} className="mb-4" />
+              )}
 
               {(dialog?.type === "create" || dialog?.type === "edit") && (
                 <form
-                  onSubmit={dialog.type === "create" ? handleCreate : handleEdit}
+                  onSubmit={
+                    dialog.type === "create" ? handleCreate : handleEdit
+                  }
                   className="space-y-4"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="branch-name" className="text-xs font-semibold text-foreground">
+                    <Label
+                      htmlFor="branch-name"
+                      className="text-foreground text-xs font-semibold"
+                    >
                       Branch Name <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -807,7 +849,10 @@ export function BranchesView({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="branch-code" className="text-xs font-semibold text-foreground">
+                    <Label
+                      htmlFor="branch-code"
+                      className="text-foreground text-xs font-semibold"
+                    >
                       Branch Code / Identifier
                     </Label>
                     <Input
@@ -818,7 +863,8 @@ export function BranchesView({
                       error={Boolean(fieldErrors.code?.length)}
                     />
                     <p className="text-muted-foreground text-[11px]">
-                      Unique operational identifier displayed on patient triage and review forms.
+                      Unique operational identifier displayed on patient triage
+                      and review forms.
                     </p>
                     <FormAlert messages={fieldErrors.code} compact />
                   </div>
@@ -857,17 +903,18 @@ export function BranchesView({
               {dialog?.type === "services" && (
                 <form onSubmit={handleSaveServices} className="space-y-4">
                   <p className="text-muted-foreground text-xs leading-relaxed">
-                    Select clinical departments authorized to receive patient feedback at this clinic location.
+                    Select clinical departments authorized to receive patient
+                    feedback at this clinic location.
                   </p>
 
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                  <div className="max-h-60 space-y-2 overflow-y-auto">
                     {services.map((service) => {
                       const checked = selectedServiceIds.includes(service.id);
                       return (
                         <label
                           key={service.id}
                           className={cn(
-                            "flex items-center gap-3 rounded-xl border p-3 transition cursor-pointer",
+                            "flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition",
                             checked
                               ? "border-primary/50 bg-primary/5 shadow-2xs"
                               : "border-border hover:bg-muted/40",
@@ -875,7 +922,7 @@ export function BranchesView({
                         >
                           <input
                             type="checkbox"
-                            className="size-4 accent-primary"
+                            className="accent-primary size-4"
                             checked={checked}
                             disabled={!service.isActive}
                             onChange={() => toggleService(service.id)}
@@ -931,7 +978,8 @@ export function BranchesView({
                 </form>
               )}
 
-              {(dialog?.type === "deactivate" || dialog?.type === "reactivate") && (
+              {(dialog?.type === "deactivate" ||
+                dialog?.type === "reactivate") && (
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {dialog.type === "deactivate"
@@ -951,11 +999,13 @@ export function BranchesView({
                       type="button"
                       size="sm"
                       disabled={isSubmitting}
-                      onClick={() => handleSetActive(dialog.type === "reactivate")}
+                      onClick={() =>
+                        handleSetActive(dialog.type === "reactivate")
+                      }
                       className={
                         dialog.type === "deactivate"
-                          ? "gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
-                          : "gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          ? "gap-1.5 bg-amber-600 text-white hover:bg-amber-700"
+                          : "gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
                       }
                     >
                       {isSubmitting ? (
@@ -965,7 +1015,11 @@ export function BranchesView({
                       ) : (
                         <RotateCcw className="size-3.5" />
                       )}
-                      <span>{dialog.type === "deactivate" ? "Deactivate Branch" : "Reactivate Branch"}</span>
+                      <span>
+                        {dialog.type === "deactivate"
+                          ? "Deactivate Branch"
+                          : "Reactivate Branch"}
+                      </span>
                     </Button>
                   </div>
                 </div>

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Calendar, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface TrendData {
   date: string;
@@ -55,7 +54,7 @@ export function FeedbackTrendChart({ data }: { data: TrendData[] }) {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   return (
@@ -167,7 +166,7 @@ export function FeedbackTrendChart({ data }: { data: TrendData[] }) {
 
       {/* Interactive Tooltip Card */}
       {activePoint && (
-        <div className="absolute top-2 right-2 animate-in fade-in rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-slate-800 shadow-lg">
+        <div className="animate-in fade-in absolute top-2 right-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-slate-800 shadow-lg">
           <div className="flex items-center gap-1.5 font-bold text-blue-950">
             <Calendar className="size-3.5 text-blue-600" />
             {formatDate(activePoint.date)}
@@ -175,11 +174,15 @@ export function FeedbackTrendChart({ data }: { data: TrendData[] }) {
           <div className="mt-2 grid grid-cols-2 gap-2">
             <div>
               <span className="text-slate-600">Feedback:</span>
-              <strong className="ml-1 text-slate-900">{activePoint.count}</strong>
+              <strong className="ml-1 text-slate-900">
+                {activePoint.count}
+              </strong>
             </div>
             <div>
               <span className="text-slate-600">Satisfaction:</span>
-              <strong className="ml-1 text-slate-900">{activePoint.satisfactionRate}%</strong>
+              <strong className="ml-1 text-slate-900">
+                {activePoint.satisfactionRate}%
+              </strong>
             </div>
           </div>
         </div>
