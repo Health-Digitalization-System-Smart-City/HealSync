@@ -13,7 +13,7 @@ import { requireAuth } from "@/lib/auth/session";
 export const metadata: Metadata = {
   title: {
     default: "Dashboard",
-    template: "%s · HealSync",
+    template: "%s · Smart Feedback",
   },
 };
 

@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "HealSync Healthcare",
-    short_name: "HealSync",
+    name: "Smart Feedback",
+    short_name: "Smart Feedback",
     description:
-      "Share your healthcare experience with HealSync and help clinics improve patient care.",
+      "Share your healthcare experience with Smart Feedback and help clinics improve patient care.",
     start_url: "/",
     display: "standalone",
     background_color: "#f8fafc",

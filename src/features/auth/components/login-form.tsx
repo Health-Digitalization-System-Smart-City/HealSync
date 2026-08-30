@@ -109,7 +109,7 @@ export function LoginForm() {
                 Staff access
               </p>
               <h1 className="text-xl font-bold tracking-tight text-slate-900">
-                HealSync dashboard sign in
+                Smart Feedback dashboard sign in
               </h1>
             </div>
             <LanguageSelector />

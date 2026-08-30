@@ -20,7 +20,7 @@ export const DAILY_ANALYSIS_PROMPT_VERSION = "daily-feedback-analysis/v1";
 /** How many submissions count as "small" for the data-acknowledgment rule. */
 export const SMALL_DATASET_THRESHOLD = 10;
 
-export const DAILY_ANALYSIS_SYSTEM_PROMPT = `You are HealSync's AI Insights analyst. HealSync is a patient
+export const DAILY_ANALYSIS_SYSTEM_PROMPT = `You are Smart Feedback's AI Insights analyst. Smart Feedback is a patient
 feedback platform for healthcare clinics. You analyze ONE day of patient
 feedback (service experience and patient satisfaction) for clinic management.
 

@@ -10,6 +10,7 @@ import { writeAudit } from "@/lib/audit";
 import { getServiceByBranchSchema } from "@/lib/validation";
 import {
   createServiceSchema,
+  deleteServiceSchema,
   setServiceActiveSchema,
   updateServiceSchema,
 } from "@/lib/validation/services";
@@ -255,6 +256,69 @@ export async function setServiceActive(
     return fail(
       "DATABASE_ERROR",
       "Unable to update the service status. Please try again.",
+    );
+  }
+}
+
+/**
+ * Permanently deletes a service. Requires `service.delete`; audited.
+ *
+ * The service must have no feedback submissions — the database enforces
+ * Restrict on the Feedback → Service relation. If feedback exists, the
+ * caller should deactivate instead.
+ */
+export async function deleteService(
+  input: unknown,
+): Promise<ActionResponse<{ id: string }>> {
+  const auth = await requirePermissionResult(PERMISSIONS.SERVICE_DELETE);
+  if (!auth.success) return auth;
+
+  const parsed = deleteServiceSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("VALIDATION_ERROR", "Invalid service.");
+  }
+
+  const { id } = parsed.data;
+
+  try {
+    const existing = await db.service.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { feedback: true, branchServices: true } },
+      },
+    });
+    if (!existing) return fail("NOT_FOUND", "Service not found.");
+
+    if (existing._count.feedback > 0) {
+      return fail(
+        "VALIDATION_ERROR",
+        `Cannot delete \"${existing.name}\" because it has ${existing._count.feedback} feedback submission${existing._count.feedback === 1 ? "" : "s"}. Deactivate the service instead to preserve historical data.`,
+      );
+    }
+
+    await db.$transaction([
+      db.branchService.deleteMany({ where: { serviceId: id } }),
+      db.service.delete({ where: { id } }),
+    ]);
+
+    await writeAudit({
+      actorId: auth.data.user.id,
+      action: "delete",
+      entityType: "service",
+      entityId: id,
+      metadata: { name: existing.name },
+    });
+
+    revalidatePath("/dashboard/services");
+    revalidatePath("/dashboard/branches");
+    return ok({ id });
+  } catch (error) {
+    console.error("Failed to delete service:", error);
+    return fail(
+      "DATABASE_ERROR",
+      "Unable to delete the service. Please try again.",
     );
   }
 }

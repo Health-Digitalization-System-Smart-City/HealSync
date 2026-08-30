@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/auth/permissions";
 import { AiInsightsWorkspace } from "@/components/ai-insights/ai-insights-workspace";
 
 export const metadata: Metadata = {
-  title: "AI Insights · HealSync",
+  title: "AI Insights · Smart Feedback",
   description:
     "AI-powered understanding of patient feedback and clinic performance across time periods.",
 };
@@ -35,33 +35,20 @@ export default async function AiInsightsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Premium header */}
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/80 via-violet-50/50 to-fuchsia-50/40 p-6 shadow-sm dark:border-indigo-500/20 dark:from-indigo-500/10 dark:via-violet-500/5 dark:to-fuchsia-500/5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <Badge
-              variant="secondary"
-              className="w-fit gap-2 border-indigo-200 bg-indigo-50 px-3 py-1 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-indigo-500" aria-hidden />
-              Intelligence
-            </Badge>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
-              AI Insights
-            </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              Ask questions about your clinic&apos;s feedback — powered by AI
-              analysis of real patient data.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300">
-              <span className="size-1.5 rounded-full bg-emerald-500" />
-              AI Active
-            </span>
-          </div>
-        </div>
+    <div className="space-y-4">
+      {/* Compact header */}
+      <div className="flex items-center gap-3">
+        <Badge
+          variant="secondary"
+          className="gap-2 border-indigo-200 bg-indigo-50 px-3 py-1 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-indigo-500" aria-hidden />
+          Intelligence
+        </Badge>
+        <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          AI Active
+        </span>
       </div>
 
       <AiInsightsWorkspace />

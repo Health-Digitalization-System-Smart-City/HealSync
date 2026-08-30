@@ -9,7 +9,8 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "HealSync <no-reply@healsync.com>";
+const EMAIL_FROM =
+  process.env.EMAIL_FROM ?? "Smart Feedback <no-reply@smartfeedback.com>";
 
 export interface SendPasswordResetEmailInput {
   email: string;
@@ -34,12 +35,12 @@ export async function sendPasswordResetEmail({
   await resend.emails.send({
     from: EMAIL_FROM,
     to: email,
-    subject: "Reset your HealSync password",
+    subject: "Reset your Smart Feedback password",
     html: `
       <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-        <h2 style="margin-top: 0;">Reset your HealSync password</h2>
+        <h2 style="margin-top: 0;">Reset your Smart Feedback password</h2>
         <p>Hi ${name},</p>
-        <p>We received a request to reset the password for your HealSync dashboard account.</p>
+        <p>We received a request to reset the password for your Smart Feedback dashboard account.</p>
         <p>
           <a href="${resetUrl}" style="display: inline-block; background: #059669; color: #fff; padding: 10px 18px; border-radius: 8px; text-decoration: none;">
             Reset password

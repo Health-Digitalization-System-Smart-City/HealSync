@@ -1,4 +1,4 @@
-// Seed — HealSync development/staging database
+// Seed — Smart Feedback development/staging database
 //
 // Populates the initial data required by the application per
 // docs/DATABASE.md §28:
@@ -153,7 +153,7 @@ const SERVICES: { name: string; description: string }[] = [
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  console.log("🌱 HealSync seed — starting");
+  console.log("🌱 Smart Feedback seed — starting");
 
   // ── 1. Roles ──────────────────────────────────────────────────────────
 
@@ -534,7 +534,7 @@ async function main(): Promise<void> {
     );
   }
 
-  console.log("✅ HealSync seed — complete");
+  console.log("✅ Smart Feedback seed — complete");
 }
 
 main()

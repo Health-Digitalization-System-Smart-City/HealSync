@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowRight,
   Building2,
   LayoutGrid,
@@ -17,6 +18,7 @@ import {
   Search,
   Star,
   Stethoscope,
+  Trash2,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -30,6 +32,7 @@ import { FormAlert } from "@/components/form-alert";
 import { SatisfactionBar } from "@/components/dashboard/satisfaction-bar";
 import {
   createBranch,
+  deleteBranch,
   setBranchActive,
   setBranchServices,
   updateBranch,
@@ -50,6 +53,7 @@ type DialogState =
   | { type: "services"; branch: BranchOverview }
   | { type: "deactivate"; branch: BranchOverview }
   | { type: "reactivate"; branch: BranchOverview }
+  | { type: "delete"; branch: BranchOverview }
   | null;
 
 export interface BranchesViewProps {
@@ -58,6 +62,7 @@ export interface BranchesViewProps {
   branchServiceIds: Record<string, string[]>;
   canCreate: boolean;
   canUpdate: boolean;
+  canDelete?: boolean;
 }
 
 type SortOption =
@@ -75,6 +80,7 @@ export function BranchesView({
   branchServiceIds,
   canCreate,
   canUpdate,
+  canDelete = false,
 }: BranchesViewProps) {
   const router = useRouter();
 
@@ -175,6 +181,24 @@ export function BranchesView({
     setDialog({ type: "services", branch });
   }
 
+  function openDeactivate(branch: BranchOverview, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    setErrorMessage(null);
+    setDialog({ type: "deactivate", branch });
+  }
+
+  function openReactivate(branch: BranchOverview, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    setErrorMessage(null);
+    setDialog({ type: "reactivate", branch });
+  }
+
+  function openDelete(branch: BranchOverview, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    setErrorMessage(null);
+    setDialog({ type: "delete", branch });
+  }
+
   // Submit handlers
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -272,6 +296,25 @@ export function BranchesView({
     }
   }
 
+  async function handleDelete() {
+    if (!dialog || dialog.type !== "delete") return;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const res = await deleteBranch({ id: dialog.branch.id });
+      if (!res.success) {
+        setErrorMessage(res.error.message);
+        return;
+      }
+      setDialog(null);
+      router.refresh();
+    } catch {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   function toggleService(serviceId: string) {
     setSelectedServiceIds((current) =>
       current.includes(serviceId)
@@ -291,7 +334,9 @@ export function BranchesView({
             ? `Deactivate ${dialog.branch.name}?`
             : dialog?.type === "reactivate"
               ? `Reactivate ${dialog.branch.name}?`
-              : "";
+              : dialog?.type === "delete"
+                ? `Delete ${dialog.branch.name}?`
+                : "";
 
   return (
     <div className="space-y-6">
@@ -599,7 +644,7 @@ export function BranchesView({
                     <ArrowRight className="size-3" />
                   </span>
 
-                  {canUpdate && (
+                  {(canUpdate || canDelete) && (
                     <div
                       className="flex items-center gap-1"
                       onClick={(e) => e.stopPropagation()}
@@ -615,16 +660,55 @@ export function BranchesView({
                         <Link2 className="mr-1 size-3.5" />
                         Services
                       </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7.5 px-2 text-xs"
-                        onClick={(e) => openEdit(branch, e)}
-                        title="Edit branch details"
-                      >
-                        <Pencil className="size-3.5" />
-                      </Button>
+                      {canUpdate && (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7.5 px-2 text-xs"
+                            onClick={(e) => openEdit(branch, e)}
+                            title="Edit branch details"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                          {branch.isActive ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7.5 px-2 text-xs text-amber-600 hover:text-amber-700"
+                              onClick={(e) => openDeactivate(branch, e)}
+                              title="Deactivate branch"
+                            >
+                              <Power className="size-3.5" />
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7.5 px-2 text-xs text-emerald-600 hover:text-emerald-700"
+                              onClick={(e) => openReactivate(branch, e)}
+                              title="Reactivate branch"
+                            >
+                              <RotateCcw className="size-3.5" />
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      {canDelete && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7.5 px-2 text-xs text-rose-600 hover:text-rose-700"
+                          onClick={(e) => openDelete(branch, e)}
+                          title="Delete branch permanently"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -783,7 +867,42 @@ export function BranchesView({
                               >
                                 <Pencil className="size-3.5" />
                               </Button>
+                              {branch.isActive ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 text-xs text-amber-600 hover:text-amber-700"
+                                  onClick={(e) => openDeactivate(branch, e)}
+                                  title="Deactivate"
+                                >
+                                  <Power className="size-3.5" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 text-xs text-emerald-600 hover:text-emerald-700"
+                                  onClick={(e) => openReactivate(branch, e)}
+                                  title="Reactivate"
+                                >
+                                  <RotateCcw className="size-3.5" />
+                                </Button>
+                              )}
                             </>
+                          )}
+                          {canDelete && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-xs text-rose-600 hover:text-rose-700"
+                              onClick={(e) => openDelete(branch, e)}
+                              title="Delete"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -983,8 +1102,8 @@ export function BranchesView({
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {dialog.type === "deactivate"
-                      ? `"${dialog.branch.name}" will stop accepting new patient submissions. Historical feedback analytics and service configurations are permanently retained.`
-                      : `"${dialog.branch.name}" will immediately resume accepting patient feedback across all previously linked medical services.`}
+                      ? `\"${dialog.branch.name}\" will stop accepting new patient submissions. Historical feedback analytics and service configurations are permanently retained.`
+                      : `\"${dialog.branch.name}\" will immediately resume accepting patient feedback across all previously linked medical services.`}
                   </p>
                   <div className="border-border flex justify-end gap-2 border-t pt-4">
                     <Button
@@ -1020,6 +1139,49 @@ export function BranchesView({
                           ? "Deactivate Branch"
                           : "Reactivate Branch"}
                       </span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {dialog?.type === "delete" && (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-500/30 dark:bg-rose-500/10">
+                    <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-rose-800 dark:text-rose-300">
+                        This action cannot be undone
+                      </p>
+                      <p className="text-sm leading-relaxed text-rose-700 dark:text-rose-400">
+                        Deleting &quot;{dialog.branch.name}&quot; will
+                        permanently remove the branch, all linked services, and
+                        all associated data. If this branch has feedback
+                        submissions, you must deactivate it instead.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-border flex justify-end gap-2 border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDialog(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isSubmitting}
+                      onClick={handleDelete}
+                      className="gap-1.5 bg-rose-600 text-white hover:bg-rose-700"
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                      <span>Delete Branch Permanently</span>
                     </Button>
                   </div>
                 </div>

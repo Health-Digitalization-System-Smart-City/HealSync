@@ -15,7 +15,7 @@ const messages = {
   en: {
     language: "Language",
     patientExperience: "Patient experience",
-    feedback: "HealSync feedback",
+    feedback: "Smart Feedback",
     aboutMinute: "About 1 minute",
     intro:
       "Share your visit experience so we can improve care, access, and communication across our clinics.",
@@ -110,7 +110,7 @@ const messages = {
   am: {
     language: "ቋንቋ",
     patientExperience: "የታካሚ ተሞክሮ",
-    feedback: "የHealSync አስተያየት",
+    feedback: "የSmart Feedback አስተያየት",
     aboutMinute: "1 ደቂቃ ያህል",
     intro: "በክሊኒኮቻችን ውስጥ ክብካቤን፣ ተደራሽነትን እና ግንኙነትን እንድናሻሽል የጉብኝት ተሞክሮዎን ያጋሩ።",
     fastClear: "ፈጣን እና ግልጽ",
@@ -196,7 +196,7 @@ const messages = {
   om: {
     language: "Afaan",
     patientExperience: "Muuxannoo dhukkubsataa",
-    feedback: "Yaada HealSync",
+    feedback: "Yaada Smart Feedback",
     aboutMinute: "Daqiiqaa 1 keessaa",
     intro:
       "Kunuunsa, argama tajaajilaa fi qunnamtii kilinikiilee keenya keessatti fooyyessuuf muuxannoo daawwannaa keessanii nuuf qoodaa.",
@@ -320,7 +320,7 @@ const dashboardMessages = {
     closeNavigation: "Close navigation",
     expandSidebar: "Expand sidebar",
     collapseSidebar: "Collapse sidebar",
-    dashboardHome: "HealSync dashboard",
+    dashboardHome: "Smart Feedback dashboard",
     openUserMenu: "Open user menu",
     accessManaged: "Your access is managed by your administrator",
     dashboardOverview: "Dashboard Overview",
@@ -377,7 +377,7 @@ const dashboardMessages = {
     closeNavigation: "አሰሳን ዝጋ",
     expandSidebar: "የጎን አሞሌን ዘርጋ",
     collapseSidebar: "የጎን አሞሌን ሰብስብ",
-    dashboardHome: "የHealSync ዳሽቦርድ",
+    dashboardHome: "የSmart Feedback ዳሽቦርድ",
     openUserMenu: "የተጠቃሚ ምናሌ ክፈት",
     accessManaged: "መዳረሻዎ በአስተዳዳሪዎ ይተዳደራል",
     dashboardOverview: "የዳሽቦርድ አጠቃላይ እይታ",
@@ -434,7 +434,7 @@ const dashboardMessages = {
     closeNavigation: "Daandii cufi",
     expandSidebar: "Cinaacha bal’isi",
     collapseSidebar: "Cinaacha gabaabsi",
-    dashboardHome: "Daashboordii HealSync",
+    dashboardHome: "Daashboordii Smart Feedback",
     openUserMenu: "Menyu fayyadamaa bani",
     accessManaged: "Argamni keessan bulchaa keessaniin to’atama",
     dashboardOverview: "Ilaalcha Waliigalaa Daashboordii",

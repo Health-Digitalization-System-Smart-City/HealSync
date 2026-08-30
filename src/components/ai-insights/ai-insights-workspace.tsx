@@ -136,23 +136,21 @@ export function AiInsightsWorkspace() {
               />
             </div>
 
-            {/* Quick Stats Sidebar */}
-            <aside className="order-1 min-w-0 xl:order-2">
+            {/* Sidebar: stats + collapsible analytics */}
+            <aside className="order-1 min-w-0 space-y-4 xl:order-2">
               <QuickStatsSidebar
                 summary={data.analytics.summary}
                 data={data}
                 onAsk={askAbout}
               />
+              <AnalyticsExplorablePanel
+                branches={data.analytics.branches}
+                services={data.analytics.services}
+                themes={data.analytics.themes}
+                themesCoverage={data.analytics.themesCoverage}
+              />
             </aside>
           </div>
-
-          {/* Collapsible analytics below */}
-          <AnalyticsExplorablePanel
-            branches={data.analytics.branches}
-            services={data.analytics.services}
-            themes={data.analytics.themes}
-            themesCoverage={data.analytics.themesCoverage}
-          />
         </>
       ) : null}
     </div>

@@ -120,16 +120,11 @@ export function SidebarBrand({ collapsed = false }: { collapsed?: boolean }) {
           <Activity className="size-4.5" aria-hidden />
         </span>
         <div className="flex flex-col">
-          <div className="flex items-center gap-1.5">
-            <span className="text-foreground text-sm font-semibold tracking-tight">
-              HealSync
-            </span>
-            <span className="bg-primary/10 py-0.2 text-primary rounded px-1 text-[10px] font-semibold">
-              v1.0
-            </span>
-          </div>
+          <span className="text-foreground text-sm font-semibold tracking-tight">
+            Smart Feedback
+          </span>
           <span className="text-muted-foreground text-[11px]">
-            Smart City Health
+            Healthcare Platform
           </span>
         </div>
       </Link>

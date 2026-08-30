@@ -190,7 +190,7 @@ export function DashboardPageClient({
       {/* 1. Header Area with Greeting & Intro */}
       <PageIntro
         title={firstName ? `Welcome back, ${firstName}` : "Welcome back"}
-        description="Healthcare analytics, patient satisfaction trends, and clinical performance across HealSync branches."
+        description="Healthcare analytics, patient satisfaction trends, and clinical performance across Smart Feedback branches."
       />
 
       {/* 2. Global Interactive Filters */}

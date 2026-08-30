@@ -26,7 +26,7 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Profile & Security"
-        description="Your personal account details and what your role allows you to do across HealSync."
+        description="Your personal account details and what your role allows you to do across Smart Feedback."
       />
       <ProfileClient
         user={{

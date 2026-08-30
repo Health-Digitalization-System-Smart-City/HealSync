@@ -4,9 +4,9 @@ import { getBranches } from "@/features/branches/actions";
 import { PatientFeedbackForm } from "@/features/feedback/components/feedback-form";
 
 export const metadata: Metadata = {
-  title: "Patient Feedback | HealSync Healthcare",
+  title: "Patient Feedback | Smart Feedback",
   description:
-    "Share your healthcare experience with HealSync. Submit branch & service feedback to help us improve patient care.",
+    "Share your healthcare experience with Smart Feedback. Submit branch & service feedback to help us improve patient care.",
 };
 
 export default async function FeedbackPage() {

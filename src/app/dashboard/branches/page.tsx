@@ -36,6 +36,7 @@ export default async function BranchesPage() {
   const role = session.user.role ?? ROLES.ANALYST;
   const canCreate = hasPermission(role, PERMISSIONS.BRANCH_CREATE);
   const canUpdate = hasPermission(role, PERMISSIONS.BRANCH_UPDATE);
+  const canDelete = hasPermission(role, PERMISSIONS.BRANCH_DELETE);
 
   let branches: BranchOverview[] = [];
   let services: ServiceOption[] = [];
@@ -191,6 +192,7 @@ export default async function BranchesPage() {
         branchServiceIds={branchServiceIds}
         canCreate={canCreate}
         canUpdate={canUpdate}
+        canDelete={canDelete}
       />
     </div>
   );

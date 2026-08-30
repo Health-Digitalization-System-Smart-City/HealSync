@@ -103,7 +103,7 @@ function PhoneMockup() {
                 <HeartPulse className="h-4 w-4" aria-hidden />
               </span>
               <span className="text-sm font-bold text-neutral-800">
-                HealSync Helathcare
+                Smart Feedback
               </span>
             </div>
             <span className="rounded-full bg-teal-100 px-2.5 py-1 text-[10px] font-semibold text-teal-800">
@@ -193,7 +193,9 @@ export default function Home() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white shadow-sm shadow-teal-700/20">
               <HeartPulse className="h-5 w-5" aria-hidden />
             </span>
-            <span className="text-lg font-bold tracking-tight">HealSync</span>
+            <span className="text-lg font-bold tracking-tight">
+              Smart Feedback
+            </span>
           </Link>
 
           <nav
@@ -444,7 +446,7 @@ export default function Home() {
                 <HeartPulse className="h-4 w-4" aria-hidden />
               </span>
               <span className="text-base font-bold tracking-tight">
-                HealSync
+                Smart Feedback
               </span>
             </div>
             <p className="text-sm text-slate-500">{t("homeFooter")}</p>
@@ -469,7 +471,7 @@ export default function Home() {
               </Link>
             </div>
             <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} HealSync. {t("rights")}
+              © {new Date().getFullYear()} Smart Feedback. {t("rights")}
             </p>
           </div>
         </div>

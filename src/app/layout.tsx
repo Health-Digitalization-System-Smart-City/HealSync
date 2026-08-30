@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  applicationName: "HealSync",
+  applicationName: "Smart Feedback",
   title: {
-    default: "HealSync",
-    template: "%s · HealSync",
+    default: "Smart Feedback",
+    template: "%s · Smart Feedback",
   },
   description:
-    "Share your healthcare experience with HealSync and help our clinics improve patient care.",
+    "Share your healthcare experience with Smart Feedback and help our clinics improve patient care.",
   appleWebApp: {
     capable: true,
-    title: "HealSync",
+    title: "Smart Feedback",
     statusBarStyle: "default",
   },
   icons: {

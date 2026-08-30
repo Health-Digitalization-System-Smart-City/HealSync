@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
 
 export const metadata: Metadata = {
-  title: "Reset password | HealSync",
-  description: "Choose a new password for your HealSync account.",
+  title: "Reset password | Smart Feedback",
+  description: "Choose a new password for your Smart Feedback account.",
 };
 
 export default async function ResetPasswordPage({
