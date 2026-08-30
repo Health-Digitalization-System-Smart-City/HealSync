@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { AlertTriangle, Building2, MessageSquare, Smile } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  MessageSquare,
+  Smile,
+  TrendingUp,
+  Star,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { PageIntro } from "@/components/page-intro";
@@ -15,6 +22,7 @@ import {
   listBranchesWithAnalytics,
   type BranchOverview,
 } from "@/lib/analytics/db";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Branches",
@@ -70,6 +78,12 @@ export default async function BranchesPage() {
     (b) => b.satisfactionRate < 50,
   ).length;
 
+  // Get top performing branches
+  const topBranches = [...branches]
+    .filter((b) => b.isActive && b.totalFeedback > 0)
+    .sort((a, b) => b.satisfactionRate - a.satisfactionRate)
+    .slice(0, 3);
+
   return (
     <div className="space-y-8">
       <PageIntro
@@ -114,6 +128,61 @@ export default async function BranchesPage() {
           detail="active branches under 50% satisfaction"
         />
       </div>
+
+      {/* Top Performing Branches */}
+      {topBranches.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              Top Performing Branches
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {topBranches.map((branch, index) => (
+                <div
+                  key={branch.id}
+                  className="hover:bg-muted/50 rounded-lg border p-4 transition"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{branch.name}</h3>
+                        <p className="text-muted-foreground text-xs">
+                          {branch.code || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="border-emerald-200 text-emerald-600"
+                    >
+                      {branch.satisfactionRate}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      <span className="font-semibold">
+                        {branch.avgScore.toFixed(1)}
+                      </span>
+                      <span className="text-muted-foreground">/ 7.0</span>
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{branch.totalFeedback} reviews</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Branch grid + Admin management */}
       <BranchesView

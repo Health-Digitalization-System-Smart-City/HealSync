@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { Activity, AlertTriangle, MessageSquare, Smile } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  MessageSquare,
+  Smile,
+  TrendingUp,
+  Star,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { PageIntro } from "@/components/page-intro";
@@ -11,6 +18,7 @@ import {
   listServicesWithAnalytics,
   type ServiceOverview,
 } from "@/lib/analytics/db";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -46,6 +54,12 @@ export default async function ServicesPage() {
   const needsAttention = activeServices.filter(
     (s) => s.satisfactionRate < 50,
   ).length;
+
+  // Get top performing services
+  const topServices = [...services]
+    .filter((s) => s.isActive && s.totalFeedback > 0)
+    .sort((a, b) => b.satisfactionRate - a.satisfactionRate)
+    .slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -91,6 +105,61 @@ export default async function ServicesPage() {
           detail="active services under 50% satisfaction"
         />
       </div>
+
+      {/* Top Performing Services */}
+      {topServices.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
+              Top Performing Services
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {topServices.map((service, index) => (
+                <div
+                  key={service.id}
+                  className="hover:bg-muted/50 rounded-lg border p-4 transition"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{service.name}</h3>
+                        <p className="text-muted-foreground text-xs">
+                          {service.description || "Clinical service"}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="border-emerald-200 text-emerald-600"
+                    >
+                      {service.satisfactionRate}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      <span className="font-semibold">
+                        {service.avgScore.toFixed(1)}
+                      </span>
+                      <span className="text-muted-foreground">/ 7.0</span>
+                    </div>
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{service.totalFeedback} reviews</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Service grid + Admin management */}
       <ServicesView

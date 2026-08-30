@@ -167,6 +167,8 @@ model Branch {
   id        String   @id @default(cuid())
   name      String
   code      String?  @unique
+  address   String?
+  phone     String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -471,9 +471,8 @@ describe("analytics.ai authorization", () => {
     );
   });
 
-  it("keeps the analytics.ai permission in the seeded permission set", async () => {
-    const { ALL_PERMISSIONS } = await import("@/lib/auth/permissions");
-    expect(ALL_PERMISSIONS).toContain("analytics.ai");
+  it("keeps the analytics.ai permission in the seeded permission set", () => {
+    expect(Object.values(PERMISSIONS)).toContain("analytics.ai");
   });
 });
 
