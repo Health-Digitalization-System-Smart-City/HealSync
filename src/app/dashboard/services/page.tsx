@@ -32,6 +32,7 @@ export default async function ServicesPage() {
   const role = session.user.role ?? ROLES.ANALYST;
   const canCreate = hasPermission(role, PERMISSIONS.SERVICE_CREATE);
   const canUpdate = hasPermission(role, PERMISSIONS.SERVICE_UPDATE);
+  const canDelete = hasPermission(role, PERMISSIONS.SERVICE_DELETE);
 
   let services: ServiceOverview[] = [];
   try {
@@ -166,6 +167,7 @@ export default async function ServicesPage() {
         services={services}
         canCreate={canCreate}
         canUpdate={canUpdate}
+        canDelete={canDelete}
       />
     </div>
   );

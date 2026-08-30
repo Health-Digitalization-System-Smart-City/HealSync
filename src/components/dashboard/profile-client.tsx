@@ -244,7 +244,7 @@ export function ProfileClient({
                       </Badge>
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      {user.role} · HealSync dashboard
+                      {user.role} · Smart Feedback dashboard
                     </p>
                   </div>
                 </div>

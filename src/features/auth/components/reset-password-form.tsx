@@ -128,7 +128,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
         <AuthSupportPanel
           eyebrow="Secure access"
           title="Your account is protected and ready to use."
-          description="Start using your new password to sign in to the HealSync dashboard and continue patient care workflows safely."
+          description="Start using your new password to sign in to the Smart Feedback dashboard and continue patient care workflows safely."
         />
       </div>
     );
@@ -155,7 +155,7 @@ export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
         <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/70 p-4">
           <p className="flex items-start gap-2 text-sm leading-6 text-slate-700">
             <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
-            Create a strong password to protect your HealSync account and
+            Create a strong password to protect your Smart Feedback account and
             continue with secure access.
           </p>
         </div>

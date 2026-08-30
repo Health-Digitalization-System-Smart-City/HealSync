@@ -9,6 +9,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { writeAudit } from "@/lib/audit";
 import {
   createBranchSchema,
+  deleteBranchSchema,
   setBranchActiveSchema,
   setBranchServicesSchema,
   updateBranchSchema,
@@ -307,6 +308,68 @@ export async function setBranchServices(
     return fail(
       "DATABASE_ERROR",
       "Unable to update the branch services. Please try again.",
+    );
+  }
+}
+
+/**
+ * Permanently deletes a branch. Requires `branch.delete`; audited.
+ *
+ * The branch must have no feedback submissions — the database enforces
+ * Restrict on the Feedback → Branch relation. If feedback exists, the
+ * caller should deactivate instead.
+ */
+export async function deleteBranch(
+  input: unknown,
+): Promise<ActionResponse<{ id: string }>> {
+  const auth = await requirePermissionResult(PERMISSIONS.BRANCH_DELETE);
+  if (!auth.success) return auth;
+
+  const parsed = deleteBranchSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail("VALIDATION_ERROR", "Invalid branch.");
+  }
+
+  const { id } = parsed.data;
+
+  try {
+    const existing = await db.branch.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { feedback: true, branchServices: true } },
+      },
+    });
+    if (!existing) return fail("NOT_FOUND", "Branch not found.");
+
+    if (existing._count.feedback > 0) {
+      return fail(
+        "VALIDATION_ERROR",
+        `Cannot delete \"${existing.name}\" because it has ${existing._count.feedback} feedback submission${existing._count.feedback === 1 ? "" : "s"}. Deactivate the branch instead to preserve historical data.`,
+      );
+    }
+
+    await db.$transaction([
+      db.branchService.deleteMany({ where: { branchId: id } }),
+      db.branch.delete({ where: { id } }),
+    ]);
+
+    await writeAudit({
+      actorId: auth.data.user.id,
+      action: "delete",
+      entityType: "branch",
+      entityId: id,
+      metadata: { name: existing.name },
+    });
+
+    revalidatePath("/dashboard/branches");
+    return ok({ id });
+  } catch (error) {
+    console.error("Failed to delete branch:", error);
+    return fail(
+      "DATABASE_ERROR",
+      "Unable to delete the branch. Please try again.",
     );
   }
 }

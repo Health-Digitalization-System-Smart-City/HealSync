@@ -1,4 +1,4 @@
-// Prisma schema — HealSync
+// Prisma schema — Smart Feedback
 //
 // Implements the data model documented in docs/DATABASE.md (§32 "Recommended
 // Prisma Domain Model"): authentication (Better Auth), RBAC

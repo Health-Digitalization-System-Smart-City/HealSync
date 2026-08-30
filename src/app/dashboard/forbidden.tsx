@@ -18,8 +18,8 @@ export default function Forbidden() {
       </h1>
       <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
         Your assigned role lacks the required server-side permission to view or
-        manage this resource. Access is governed strictly by the HealSync RBAC
-        matrix.
+        manage this resource. Access is governed strictly by the Smart Feedback
+        RBAC matrix.
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

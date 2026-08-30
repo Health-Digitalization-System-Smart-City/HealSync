@@ -45,3 +45,10 @@ export const setBranchServicesSchema = z.object({
 });
 
 export type SetBranchServicesInput = z.infer<typeof setBranchServicesSchema>;
+
+/** Hard delete: permanently removes a branch and its service links. */
+export const deleteBranchSchema = z.object({
+  id: z.string().min(1, "Branch is required"),
+});
+
+export type DeleteBranchInput = z.infer<typeof deleteBranchSchema>;

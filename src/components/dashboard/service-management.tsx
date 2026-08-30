@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   Building2,
   LayoutGrid,
@@ -14,6 +15,7 @@ import {
   RotateCcw,
   Search,
   Star,
+  Trash2,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -26,6 +28,7 @@ import { FormAlert } from "@/components/form-alert";
 import { SatisfactionBar } from "@/components/dashboard/satisfaction-bar";
 import {
   createService,
+  deleteService,
   setServiceActive,
   updateService,
 } from "@/features/services/actions";
@@ -38,12 +41,14 @@ type DialogState =
   | { type: "edit"; service: ServiceOverview }
   | { type: "deactivate"; service: ServiceOverview }
   | { type: "reactivate"; service: ServiceOverview }
+  | { type: "delete"; service: ServiceOverview }
   | null;
 
 export interface ServicesViewProps {
   services: ServiceOverview[];
   canCreate: boolean;
   canUpdate: boolean;
+  canDelete?: boolean;
 }
 
 type SortOption =
@@ -59,6 +64,7 @@ export function ServicesView({
   services,
   canCreate,
   canUpdate,
+  canDelete = false,
 }: ServicesViewProps) {
   const router = useRouter();
 
@@ -162,6 +168,12 @@ export function ServicesView({
     setDialog({ type: "reactivate", service });
   }
 
+  function openDelete(service: ServiceOverview, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    setErrorMessage(null);
+    setDialog({ type: "delete", service });
+  }
+
   // Submit handlers
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -218,6 +230,25 @@ export function ServicesView({
     }
   }
 
+  async function handleDelete() {
+    if (!dialog || dialog.type !== "delete") return;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const res = await deleteService({ id: dialog.service.id });
+      if (!res.success) {
+        setErrorMessage(res.error.message);
+        return;
+      }
+      setDialog(null);
+      router.refresh();
+    } catch {
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   const dialogTitle =
     dialog?.type === "create"
       ? "Add Clinical Service"
@@ -227,7 +258,9 @@ export function ServicesView({
           ? `Stop offering ${dialog.service.name}?`
           : dialog?.type === "reactivate"
             ? `Reactivate ${dialog.service.name}?`
-            : "";
+            : dialog?.type === "delete"
+              ? `Delete ${dialog.service.name}?`
+              : "";
 
   return (
     <div className="space-y-6">
@@ -710,14 +743,51 @@ export function ServicesView({
                             Analytics
                           </Button>
                           {canUpdate && (
+                            <>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={(e) => openEdit(service, e)}
+                              >
+                                <Pencil className="size-3.5" />
+                              </Button>
+                              {service.isActive ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 text-xs text-amber-600 hover:text-amber-700"
+                                  onClick={(e) => openDeactivate(service, e)}
+                                  title="Stop offering"
+                                >
+                                  <Power className="size-3.5" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 text-xs text-emerald-600 hover:text-emerald-700"
+                                  onClick={(e) => openReactivate(service, e)}
+                                  title="Reactivate"
+                                >
+                                  <RotateCcw className="size-3.5" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          {canDelete && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="h-8 text-xs"
-                              onClick={(e) => openEdit(service, e)}
+                              className="h-8 text-xs text-rose-600 hover:text-rose-700"
+                              onClick={(e) => openDelete(service, e)}
+                              title="Delete"
                             >
-                              <Pencil className="size-3.5" />
+                              <Trash2 className="size-3.5" />
                             </Button>
                           )}
                         </div>
@@ -870,6 +940,49 @@ export function ServicesView({
                           ? "Stop Offering"
                           : "Reactivate Service"}
                       </span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {dialog?.type === "delete" && (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-500/30 dark:bg-rose-500/10">
+                    <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-rose-800 dark:text-rose-300">
+                        This action cannot be undone
+                      </p>
+                      <p className="text-sm leading-relaxed text-rose-700 dark:text-rose-400">
+                        Deleting &quot;{dialog.service.name}&quot; will
+                        permanently remove this service, all branch linkages,
+                        and all associated data. If this service has feedback
+                        submissions, you must deactivate it instead.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-border flex justify-end gap-2 border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDialog(null)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isSubmitting}
+                      onClick={handleDelete}
+                      className="gap-1.5 bg-rose-600 text-white hover:bg-rose-700"
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                      <span>Delete Service Permanently</span>
                     </Button>
                   </div>
                 </div>

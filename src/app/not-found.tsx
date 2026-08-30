@@ -6,9 +6,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Page Not Found | HealSync Healthcare",
+  title: "Page Not Found | Smart Feedback",
   description:
-    "The page you were looking for could not be found. Return to HealSync home or submit patient feedback.",
+    "The page you were looking for could not be found. Return to Smart Feedback home or submit patient feedback.",
 };
 
 export default function NotFound() {
@@ -35,7 +35,7 @@ export default function NotFound() {
               <HeartPulse className="h-5 w-5" aria-hidden />
             </span>
             <span className="text-lg font-bold tracking-tight text-slate-900">
-              HealSync
+              Smart Feedback
             </span>
           </Link>
 
@@ -120,8 +120,7 @@ export default function NotFound() {
       <footer className="relative z-10 border-t border-slate-200/80 bg-white/60 py-6 text-center text-xs text-slate-500 backdrop-blur-xs">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-4 sm:flex-row sm:px-6 lg:px-8">
           <p>
-            © {new Date().getFullYear()} HealSync Healthcare. All rights
-            reserved.
+            © {new Date().getFullYear()} Smart Feedback. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link href="/" className="transition-colors hover:text-teal-800">

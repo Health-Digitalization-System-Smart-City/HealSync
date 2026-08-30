@@ -2,23 +2,16 @@
 
 import { useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { AlertTriangle, BarChart3, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 import { getAiInsightsPageData } from "@/features/ai-insights/actions";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AiInsightsPageData } from "@/lib/ai-insights/page-data";
-import { cn } from "@/lib/utils";
 import { PeriodSelector, type PeriodSelection } from "./period-selector";
-import { OverviewMetrics } from "./overview-metrics";
-import { AiSummaryCard } from "./ai-summary-card";
-import { AiSpotlight } from "./ai-spotlight";
-import {
-  BranchPerformanceTable,
-  ServicePerformanceTable,
-} from "./performance-tables";
-import { ThemesSection } from "./themes-section";
-import { AskAiPanel, type AskAiPrefill } from "./ask-ai-panel";
+import { AiChatPanel, type AskAiPrefill } from "./ai-chat-panel";
+import { QuickStatsSidebar } from "./quick-stats-sidebar";
+import { AnalyticsExplorablePanel } from "./analytics-explorable-panel";
 
 const PRESET_LABELS: Record<string, string> = {
   today: "Today",
@@ -29,15 +22,12 @@ const PRESET_LABELS: Record<string, string> = {
 };
 
 /**
- * AI Insights workspace (Phase 2). Owns the selected period and loads:
- *  - deterministic analytics (always rendered, even if the AI fails),
- *  - the cached/generatable AI summary,
- *  - the Ask AI assistant, in a sticky, collapsible right-hand sidebar.
+ * AI Insights workspace — redesigned with AI chat as the hero.
  *
- * Uses React Query (same convention as the analytics dashboard) so period
- * switches keep the previous data visible while the next period loads.
- * The page-level permission check happens in the server component; every
- * server action re-checks `analytics.ai` server-side.
+ * Layout:
+ *  - Period selector (top, full width)
+ *  - Chat (2/3) + Quick Stats (1/3) on desktop; stacked on mobile
+ *  - Collapsible analytics below (branches, services, themes)
  */
 export function AiInsightsWorkspace() {
   const [selection, setSelection] = useState<PeriodSelection>({
@@ -45,7 +35,6 @@ export function AiInsightsWorkspace() {
     startDate: "",
     endDate: "",
   });
-  const [askOpen, setAskOpen] = useState(true);
   const [prefill, setPrefill] = useState<AskAiPrefill | null>(null);
 
   const queryKey = [
@@ -77,19 +66,6 @@ export function AiInsightsWorkspace() {
   });
 
   const data: AiInsightsPageData | undefined = pageQuery.data;
-  const periodKey = `${selection.period}:${selection.startDate}:${selection.endDate}`;
-
-  // For AI generation the action re-resolves the period itself. Custom ranges
-  // must send the original YYYY-MM-DD strings (parseDateOnly format); presets
-  // need no dates at all.
-  const periodForGeneration = {
-    value: selection.period,
-    startDate: selection.period === "custom" ? selection.startDate : undefined,
-    endDate: selection.period === "custom" ? selection.endDate : undefined,
-  };
-
-  // Resolved ISO dates (server-computed) so the Ask AI panel always has an
-  // explicit, validated date range — even for presets like "today".
   const periodForAsk = data
     ? {
         value: selection.period,
@@ -101,9 +77,7 @@ export function AiInsightsWorkspace() {
   const periodLabel =
     data?.period.label ?? PRESET_LABELS[selection.period] ?? "This period";
 
-  /** Open the assistant and ask a guided question (e.g. from the spotlight). */
   function askAbout(question: string) {
-    setAskOpen(true);
     setPrefill({ question, nonce: Date.now() });
   }
 
@@ -116,15 +90,18 @@ export function AiInsightsWorkspace() {
         disabled={pageQuery.isFetching}
       />
 
-      {/* Load error (deterministic analytics failed — retry) */}
+      {/* Load error */}
       {pageQuery.isError && !data ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-10 text-center">
-          <AlertTriangle className="size-6 text-amber-600" aria-hidden />
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-10 text-center dark:border-amber-500/30 dark:bg-amber-500/10">
+          <AlertTriangle
+            className="size-6 text-amber-600 dark:text-amber-400"
+            aria-hidden
+          />
           <div>
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Could not load analytics
             </h3>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               {pageQuery.error instanceof Error
                 ? pageQuery.error.message
                 : "Please try again."}
@@ -143,108 +120,90 @@ export function AiInsightsWorkspace() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-        {/* Main analytics column */}
-        <div className="order-2 min-w-0 space-y-6 xl:order-1">
-          {pageQuery.isLoading && !data ? (
-            <OverviewSkeleton />
-          ) : data ? (
-            <>
-              {/* Guided insights — deterministic, with one-click questions */}
-              <AiSpotlight data={data} onAsk={askAbout} />
-
-              {/* Overview metrics (deterministic) */}
-              <OverviewMetrics summary={data.analytics.summary} />
-
-              {/* AI summary */}
-              <AiSummaryCard
-                key={periodKey}
-                period={periodForGeneration}
-                initial={
-                  data.insight
-                    ? {
-                        status: "ok",
-                        insight: data.insight,
-                        feedbackCount: data.feedbackCount,
-                        cached: data.insightCached,
-                      }
-                    : data.feedbackCount === 0
-                      ? { status: "no-feedback", feedbackCount: 0 }
-                      : null
-                }
-                loading={false}
-                periodLabel={data.period.label}
+      {/* Main layout: Chat + Sidebar */}
+      {pageQuery.isLoading && !data ? (
+        <WorkspaceSkeleton />
+      ) : data ? (
+        <>
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
+            {/* AI Chat — hero */}
+            <div className="order-2 min-w-0 xl:order-1">
+              <AiChatPanel
+                data={data}
+                period={periodForAsk}
+                periodLabel={periodLabel}
+                prefill={prefill}
               />
+            </div>
 
-              {/* Branch + service performance */}
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <BranchPerformanceTable branches={data.analytics.branches} />
-                <ServicePerformanceTable services={data.analytics.services} />
-              </div>
-
-              {/* Themes */}
-              <ThemesSection
+            {/* Sidebar: stats + collapsible analytics */}
+            <aside className="order-1 min-w-0 space-y-4 xl:order-2">
+              <QuickStatsSidebar
+                summary={data.analytics.summary}
+                data={data}
+                onAsk={askAbout}
+              />
+              <AnalyticsExplorablePanel
+                branches={data.analytics.branches}
+                services={data.analytics.services}
                 themes={data.analytics.themes}
-                coverage={data.analytics.themesCoverage}
+                themesCoverage={data.analytics.themesCoverage}
               />
-            </>
-          ) : null}
-        </div>
-
-        {/* Ask AI — sticky, collapsible sidebar (top of the page on mobile) */}
-        <aside
-          className={cn(
-            "order-1 min-w-0 xl:order-2",
-            askOpen ? "xl:sticky xl:top-16 xl:w-95" : "xl:w-12",
-          )}
-        >
-          <AskAiPanel
-            key={`ask-${periodKey}::${prefill?.nonce ?? ""}`}
-            period={periodForAsk}
-            periodLabel={periodLabel}
-            open={askOpen}
-            onToggle={() => setAskOpen((isOpen) => !isOpen)}
-            prefill={prefill}
-            ready={Boolean(periodForAsk.startDate && periodForAsk.endDate)}
-            initialQuestion={prefill?.question ?? ""}
-          />
-        </aside>
-      </div>
+            </aside>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
 
-function OverviewSkeleton() {
+function WorkspaceSkeleton() {
   return (
     <div className="space-y-6" aria-busy="true">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="mt-4 h-8 w-16" />
-            <Skeleton className="mt-2 h-3 w-28" />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        {/* Chat skeleton */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700/50 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-10 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-40" />
+            </div>
           </div>
-        ))}
+          <div className="mt-8 space-y-4">
+            <Skeleton className="h-20 w-full rounded-xl" />
+            <Skeleton className="h-16 w-3/4 rounded-xl" />
+            <Skeleton className="h-16 w-5/6 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Sidebar skeleton */}
+        <div className="space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700/50 dark:bg-slate-900">
+            <Skeleton className="mb-3 h-3 w-20" />
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700/50 dark:bg-slate-900">
+            <Skeleton className="mb-3 h-3 w-24" />
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex items-center gap-2 text-xs font-medium text-violet-600">
-          <Loader2 className="size-3.5 animate-spin" aria-hidden />
-          Analyzing clinic feedback…
-        </div>
-        <div className="mt-4 space-y-2.5">
-          <Skeleton className="h-3.5 w-full" />
-          <Skeleton className="h-3.5 w-5/6" />
-          <Skeleton className="h-16 w-full rounded-lg" />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-        <BarChart3 className="size-3.5" aria-hidden />
-        Loading branch and service analytics…
+      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+        <RefreshCw className="size-3.5 animate-spin" aria-hidden />
+        Loading analytics data…
       </div>
     </div>
   );

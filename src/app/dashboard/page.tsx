@@ -7,7 +7,7 @@ import { AiInsightsSkeleton } from "@/components/ai-insights/ai-insights-skeleto
 import { SimpleDashboard } from "@/components/dashboard/simple-dashboard";
 
 export const metadata: Metadata = {
-  title: "Dashboard | HealSync",
+  title: "Dashboard | Smart Feedback",
   description: "Healthcare clinic feedback and patient satisfaction overview.",
 };
 
