@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 //
-// AI Insights page states: initial loading, deterministic analytics + AI
-// summary rendering, the Ask AI panel, and error handling. Server actions are
+// AI Insights page states: initial loading, deterministic analytics,
+// the AI chat panel, and error handling. Server actions are
 // mocked — these tests verify the UI renders each state correctly.
 
 import { describe, expect, it, vi } from "vitest";
@@ -106,7 +106,7 @@ function makePageData(
 }
 
 describe("AiInsightsWorkspace", () => {
-  it("renders the period selector and deterministic analytics", async () => {
+  it("renders the period selector, chat panel, and sidebar stats", async () => {
     vi.mocked(getAiInsightsPageData).mockResolvedValue({
       success: true,
       data: makePageData(),
@@ -114,18 +114,20 @@ describe("AiInsightsWorkspace", () => {
 
     renderWorkspace();
 
+    // Period selector is rendered
     expect(
       await screen.findByRole("group", { name: /Analysis period/i }),
     ).toBeTruthy();
-    expect(await screen.findByText("Branch 1")).toBeTruthy();
-    expect(await screen.findByText("Laboratory")).toBeTruthy();
-    expect(await screen.findByText("Waiting Time")).toBeTruthy();
-    // Deterministic metrics render.
-    expect(await screen.findByText("Satisfaction Rate")).toBeTruthy();
-    // AI summary offers generation.
-    expect(
-      await screen.findByRole("button", { name: /Generate AI Summary/i }),
-    ).toBeTruthy();
+
+    // Chat panel header
+    expect(await screen.findByText("AI Assistant")).toBeTruthy();
+
+    // Welcome screen with suggested questions
+    expect(await screen.findByText("Ask me about your clinic")).toBeTruthy();
+
+    // Sidebar stats
+    expect(await screen.findByText("Quick Stats")).toBeTruthy();
+    expect(screen.getAllByText("42").length).toBeGreaterThanOrEqual(1); // feedback count
   });
 
   it("shows a loading skeleton before the first data arrives", () => {
@@ -135,10 +137,10 @@ describe("AiInsightsWorkspace", () => {
 
     renderWorkspace();
 
-    expect(screen.getByText("Analyzing clinic feedback…")).toBeTruthy();
+    expect(screen.getByText("Loading analytics data…")).toBeTruthy();
   });
 
-  it("shows guided insights and submits the spotlight question to the AI", async () => {
+  it("submits a question from the sidebar quick actions and shows the answer", async () => {
     vi.mocked(getAiInsightsPageData).mockResolvedValue({
       success: true,
       data: makePageData(),
@@ -155,10 +157,15 @@ describe("AiInsightsWorkspace", () => {
 
     renderWorkspace();
 
+    // Wait for sidebar quick actions
     expect(
       await screen.findByText(/Satisfaction fell 7 pts vs Yesterday/i),
     ).toBeTruthy();
-    const action = screen.getByRole("button", { name: /Ask why/i });
+
+    // Click the quick action
+    const action = screen.getByRole("button", {
+      name: /Satisfaction fell 7 pts/i,
+    });
     fireEvent.click(action);
 
     await waitFor(() => {
@@ -169,6 +176,8 @@ describe("AiInsightsWorkspace", () => {
         }),
       );
     });
+
+    // The AI answer is rendered in the chat
     expect(
       await screen.findByText("Satisfaction dropped after the service change."),
     ).toBeTruthy();
@@ -190,7 +199,7 @@ describe("AiInsightsWorkspace", () => {
   });
 });
 
-describe("AskAiPanel", () => {
+describe("AskAiPanel (legacy)", () => {
   it("renders the question input and disables submit when empty", () => {
     render(<AskAiPanel period={{ value: "today" }} periodLabel="Today" />);
 
